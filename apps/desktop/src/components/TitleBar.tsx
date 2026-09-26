@@ -3,9 +3,9 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 const appWindow = getCurrentWindow();
 
 const buttons = [
-  { label: "Fechar", color: "bg-[#FF5F57]", action: () => appWindow.close() },
-  { label: "Minimizar", color: "bg-[#FEBC2E]", action: () => appWindow.minimize() },
-  { label: "Maximizar", color: "bg-[#28C840]", action: () => appWindow.toggleMaximize() },
+  { label: "Fechar", color: "bg-[#FF5F57]", action: () => void appWindow.close() },
+  { label: "Minimizar", color: "bg-[#FEBC2E]", action: () => void appWindow.minimize() },
+  { label: "Maximizar", color: "bg-[#28C840]", action: () => void appWindow.toggleMaximize() },
 ];
 
 /**
@@ -16,7 +16,7 @@ export function TitleBar() {
   return (
     <header
       data-tauri-drag-region
-      onDoubleClick={() => appWindow.toggleMaximize()}
+      onDoubleClick={() => void appWindow.toggleMaximize()}
       className="flex h-11 shrink-0 items-center gap-2 px-4"
     >
       {buttons.map((b) => (

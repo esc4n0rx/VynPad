@@ -1,0 +1,43 @@
+name: Bug
+description: Algo não funciona como deveria
+labels: [bug]
+body:
+  - type: textarea
+    id: descricao
+    attributes:
+      label: O que aconteceu?
+      description: Descreva o problema e o que você esperava que acontecesse.
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      placeholder: |
+        1. Abrir o PadGaming
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: versao
+    attributes:
+      label: Versão do PadGaming
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: so
+    attributes:
+      label: Sistema do server
+      options: [Windows 11, Windows 10, Linux]
+    validations:
+      required: true
+  - type: input
+    id: android
+    attributes:
+      label: Celular e versão do Android (se aplicável)
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs ou pacote de diagnóstico
+      description: Anexe o arquivo gerado em Configurações → Sobre → Exportar diagnóstico.

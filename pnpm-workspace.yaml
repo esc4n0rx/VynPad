@@ -1,2 +1,5 @@
 packages:
   - apps/desktop
+allowBuilds:
+  # Os hooks são instalados pelo script `prepare` da raiz.
+  lefthook: false

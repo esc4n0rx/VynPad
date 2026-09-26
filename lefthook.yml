@@ -1,0 +1,31 @@
+# Hooks de git (https://lefthook.dev). Instalados por `pnpm install` (script `prepare`).
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: rustfmt
+      glob: "*.rs"
+      run: rustfmt --edition 2024 {staged_files}
+      stage_fixed: true
+
+    - name: prettier
+      root: "apps/desktop/"
+      glob: "*.{ts,tsx,js,json,css,html}"
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+
+    - name: eslint
+      root: "apps/desktop/"
+      glob: "*.{ts,tsx}"
+      run: pnpm exec eslint --fix {staged_files}
+      stage_fixed: true
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: pnpm exec commitlint --edit {1}
+
+pre-push:
+  jobs:
+    - name: clippy
+      run: cargo clippy --workspace --all-targets -- -D warnings

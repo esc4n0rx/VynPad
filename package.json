@@ -4,5 +4,17 @@
   "packageManager": "pnpm@12.6.0",
   "engines": {
     "node": ">=22"
+  },
+  "scripts": {
+    "prepare": "lefthook install",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "format": "pnpm -r format",
+    "format:check": "pnpm -r format:check"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
+    "lefthook": "^2.1.14"
   }
 }
