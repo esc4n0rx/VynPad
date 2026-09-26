@@ -1,0 +1,30 @@
+[package]
+name = "padgaming-desktop"
+description = "Server desktop do PadGaming (shell Tauri)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lib]
+# O sufixo `_lib` evita conflito de nome entre lib e bin no Windows
+# (https://github.com/rust-lang/cargo/issues/8519).
+name = "padgaming_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+padgaming-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tauri = { version = "2", features = [] }
+tauri-plugin-log = "2"
+tauri-plugin-opener = "2"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = "2"
+
+[lints]
+workspace = true

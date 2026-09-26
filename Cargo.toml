@@ -1,7 +1,6 @@
 [workspace]
 resolver = "2"
-# apps/desktop/src-tauri entra no workspace na T-002.
-members = ["crates/*"]
+members = ["crates/*", "apps/desktop/src-tauri"]
 
 [workspace.package]
 version = "0.1.0"

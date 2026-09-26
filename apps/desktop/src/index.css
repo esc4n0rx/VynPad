@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* Tokens completos do design system chegam na T-501. */
+@theme {
+  --font-sans: "Inter Variable", "Segoe UI Variable", system-ui, sans-serif;
+  --color-accent: #0a84ff;
+}
+
+:root {
+  color-scheme: dark;
+  font-size: 13px;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fundo sólido provisório: a janela é transparente e o vidro (Mica/Acrylic) entra na T-502. */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #1c1c1e;
+  color: rgb(255 255 255 / 0.92);
+  user-select: none;
+}

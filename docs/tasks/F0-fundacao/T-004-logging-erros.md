@@ -21,6 +21,7 @@ Padronizar erros e logs em todos os crates para facilitar o suporte e a depuraç
 - **Nunca** logar tokens, chaves ou PIN (criar o tipo `Secret<T>` com `Debug` mascarado).
 
 ## Detalhes técnicos
+- **Conflito a resolver:** a T-002 registrou o `tauri-plugin-log`, que instala um logger global do crate `log`. O `tracing-subscriber` com a ponte `tracing-log` também tenta instalar um. Escolher um só: manter o plugin (logs do frontend chegam ao Rust) e encaminhar o `tracing` para ele, ou remover o plugin e expor um command próprio para logs do frontend.
 - O hot path (T-301) não loga por pacote; usa contadores atômicos e loga resumos.
 
 ## Critérios de aceite
