@@ -1,0 +1,13 @@
+[package]
+name = "padgaming-net"
+description = "Rede do server: loop UDP de input, canal de controle TLS e descoberta mDNS."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+padgaming-protocol.workspace = true
+
+[lints]
+workspace = true

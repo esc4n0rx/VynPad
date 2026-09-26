@@ -1,0 +1,17 @@
+[package]
+name = "padgaming-core"
+description = "Orquestração do server: sessões, slots e métricas."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+padgaming-driver.workspace = true
+padgaming-mapping.workspace = true
+padgaming-net.workspace = true
+padgaming-protocol.workspace = true
+padgaming-storage.workspace = true
+
+[lints]
+workspace = true

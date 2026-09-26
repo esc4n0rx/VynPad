@@ -1,0 +1,36 @@
+# Rust
+/target/
+**/src-tauri/target/
+**/src-tauri/gen/schemas/
+
+# Node / frontend
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+
+# Android
+.gradle/
+**/android/**/build/
+local.properties
+captures/
+*.keystore
+*.jks
+
+# IDEs / SO
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+.DS_Store
+Thumbs.db
+
+# Ambiente e dados locais
+.env
+.env.*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+*.log
+logs/

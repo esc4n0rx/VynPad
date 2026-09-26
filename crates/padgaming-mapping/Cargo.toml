@@ -1,0 +1,12 @@
+[package]
+name = "padgaming-mapping"
+description = "Pipeline puro de mapeamento: deadzones, curvas, gyro e remapeamento de botões."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+
+[lints]
+workspace = true

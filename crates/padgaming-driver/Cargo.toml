@@ -1,0 +1,12 @@
+[package]
+name = "padgaming-driver"
+description = "Trait VirtualPadDriver e backends de emulação do X360 (ViGEmBus no Windows, uinput no Linux)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+
+[lints]
+workspace = true
