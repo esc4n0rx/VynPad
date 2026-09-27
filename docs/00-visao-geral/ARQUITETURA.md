@@ -90,7 +90,7 @@ sequenceDiagram
   S-->>A: UDP Rumble (quando muda + repete a cada 100 ms se ≠ 0)
   A->>S: UDP Ping
   S-->>A: UDP Pong (métricas RTT)
-  Note over S: 250 ms sem pacotes → estado neutro<br/>30 s → libera o slot
+  Note over S: 250 ms sem pacotes → estado neutro<br/>TLS caiu → slot reservado por 30 s
 ```
 
 ## 5. Comunicação UI ↔ backend

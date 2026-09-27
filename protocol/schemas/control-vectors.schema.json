@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://padgaming.local/schemas/control-vectors.schema.json",
+  "title": "Test vectors do canal de controle (protocol/test-vectors/control.json)",
+  "description": "PROTOCOLO.md §11.",
+  "type": "object",
+  "required": ["format", "description", "vectors"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "format": { "const": 1 },
+    "description": { "type": "string" },
+    "vectors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "description", "frame_hex", "expect"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "description": { "type": "string" },
+          "frame_hex": { "type": "string", "pattern": "^([0-9a-f]{2})*$" },
+          "expect": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["result", "message"],
+                "additionalProperties": false,
+                "properties": {
+                  "result": { "const": "ok" },
+                  "message": { "$ref": "control-message.schema.json" }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["result"],
+                "additionalProperties": false,
+                "properties": {
+                  "result": { "enum": ["ignore", "bad_frame", "bad_message"] }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

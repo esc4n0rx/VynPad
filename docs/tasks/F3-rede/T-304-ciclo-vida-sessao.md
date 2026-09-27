@@ -15,7 +15,7 @@ Nunca deixar um botão "preso" no jogo e reconectar sem que o jogador perca o co
 - Watchdog (thread leve ou tarefa com timer de 50 ms):
   - **250 ms** sem UDP → envia o report neutro ao driver (mantém o pad plugado).
   - **5 s** → sessão `Suspended` (UI mostra "Reconectando…").
-  - **30 s** → unplug + slot `Free`.
+  - Queda do TLS (ou 15 s sem mensagem de controle) → sessão encerrada; slot `Reserved` por **30 s** → depois, unplug + slot `Free` (PROTOCOLO §9).
 - Reconexão: o mesmo `device_token` dentro de 30 s → mesmo slot, novo `session_id`/`udp_key`, sem unplug (o jogo não percebe).
 - `bye` explícito → libera o slot na hora.
 - Suspensão/retomada do Windows: ao retomar, revalidar o driver e as sessões.

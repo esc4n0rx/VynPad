@@ -14,8 +14,7 @@ Repassar a vibração pedida pelo jogo para o celular do slot correspondente.
 ## Escopo
 - Thread `rumble-tx` consome `driver.rumble_events()`.
 - Resolve slot → sessão → endereço UDP do client + `SessionCipher`.
-- Envia o pacote `0x20` quando o valor muda; repete a cada 100 ms enquanto ≠ 0 até receber `rumble_ack_seq` ≥ `seq` enviado.
-- Ao zerar, envia `0,0` três vezes (garante o desligamento mesmo com perda).
+- Envia o pacote `0x20` com um `rumble_id` novo quando o valor muda e retransmite o estado atual a cada 100 ms até o client devolver `rumble_ack_id` igual ao `rumble_id` atual (PROTOCOLO §6.4 e §8). Isso vale também para `0,0`, o que garante o desligamento mesmo com perda.
 - Configuração por perfil: intensidade (0–200%) e desligar rumble.
 - Teste de vibração pela UI (botão "Testar vibração" no card do slot).
 

@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://padgaming.local/schemas/control-message.schema.json",
+  "title": "Mensagem do canal de controle PadGaming v1",
+  "description": "PROTOCOLO.md §5.2. Campos desconhecidos são permitidos (e ignorados). Mensagens de type desconhecido não são validadas por este schema: são ignoradas.",
+  "type": "object",
+  "required": ["type"],
+  "properties": {
+    "type": { "enum": ["hello", "welcome", "reject", "config", "bye", "ping", "pong"] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "hello" } } },
+      "then": { "$ref": "#/$defs/hello" }
+    },
+    {
+      "if": { "properties": { "type": { "const": "welcome" } } },
+      "then": { "$ref": "#/$defs/welcome" }
+    },
+    {
+      "if": { "properties": { "type": { "const": "reject" } } },
+      "then": { "$ref": "#/$defs/reject" }
+    },
+    {
+      "if": { "properties": { "type": { "const": "config" } } },
+      "then": { "$ref": "#/$defs/config" }
+    },
+    {
+      "if": { "properties": { "type": { "const": "bye" } } },
+      "then": { "$ref": "#/$defs/bye" }
+    }
+  ],
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "bytes16": {
+      "description": "16 bytes em base64url sem padding",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{21}[AQgw]$"
+    },
+    "bytes32": {
+      "description": "32 bytes em base64url sem padding",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$"
+    },
+    "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+    "proto_ver": { "type": "integer", "minimum": 1, "maximum": 255 },
+    "debug_message": { "type": "string", "maxLength": 256 },
+    "auth": {
+      "type": "object",
+      "required": ["method"],
+      "oneOf": [
+        {
+          "properties": {
+            "method": { "const": "pairing_token" },
+            "token": { "$ref": "#/$defs/bytes16" }
+          },
+          "required": ["token"]
+        },
+        {
+          "properties": {
+            "method": { "const": "pin" },
+            "pin": { "type": "string", "pattern": "^[0-9]{6}$" }
+          },
+          "required": ["pin"]
+        },
+        {
+          "properties": {
+            "method": { "const": "device_token" },
+            "token": { "$ref": "#/$defs/bytes32" }
+          },
+          "required": ["token"]
+        }
+      ]
+    },
+    "config_fields": {
+      "type": "object",
+      "required": ["slot", "send_rate_hz", "gyro_enabled", "rumble_enabled", "touch_haptics"],
+      "properties": {
+        "slot": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "send_rate_hz": { "type": "integer", "minimum": 10, "maximum": 500 },
+        "gyro_enabled": { "type": "boolean" },
+        "rumble_enabled": { "type": "boolean" },
+        "touch_haptics": { "type": "boolean" }
+      }
+    },
+    "hello": {
+      "type": "object",
+      "required": ["proto_ver", "device_id", "name", "model", "os_ver", "caps", "auth"],
+      "properties": {
+        "proto_ver": { "$ref": "#/$defs/proto_ver" },
+        "device_id": { "$ref": "#/$defs/uuid" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "model": { "type": "string", "maxLength": 64 },
+        "os_ver": { "type": "string", "maxLength": 32 },
+        "app_ver": { "type": "string", "maxLength": 32 },
+        "caps": {
+          "type": "object",
+          "required": ["gyro", "rumble"],
+          "properties": {
+            "gyro": { "type": "boolean" },
+            "rumble": { "type": "boolean" }
+          }
+        },
+        "auth": { "$ref": "#/$defs/auth" }
+      }
+    },
+    "welcome": {
+      "type": "object",
+      "required": [
+        "proto_ver",
+        "session_id",
+        "udp_port",
+        "udp_key",
+        "server_id",
+        "server_name",
+        "config"
+      ],
+      "properties": {
+        "proto_ver": { "$ref": "#/$defs/proto_ver" },
+        "session_id": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "udp_port": { "$ref": "#/$defs/port" },
+        "udp_key": { "$ref": "#/$defs/bytes32" },
+        "device_token": { "$ref": "#/$defs/bytes32" },
+        "server_id": { "$ref": "#/$defs/uuid" },
+        "server_name": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "config": { "$ref": "#/$defs/config_fields" }
+      }
+    },
+    "reject": {
+      "type": "object",
+      "required": ["reason"],
+      "properties": {
+        "reason": {
+          "description": "Valores desconhecidos DEVEM ser aceitos e tratados como erro genérico.",
+          "type": "string",
+          "examples": ["bad_request", "bad_auth", "locked", "revoked", "no_slot", "version"]
+        },
+        "retry_after_s": { "type": "integer", "minimum": 0, "maximum": 3600 },
+        "supported_versions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/proto_ver" },
+          "minItems": 1
+        },
+        "message": { "$ref": "#/$defs/debug_message" }
+      }
+    },
+    "config": { "$ref": "#/$defs/config_fields" },
+    "bye": {
+      "type": "object",
+      "required": ["reason"],
+      "properties": {
+        "reason": {
+          "description": "Valores desconhecidos DEVEM ser aceitos e tratados como erro genérico.",
+          "type": "string",
+          "examples": ["user", "shutdown", "revoked", "kicked", "timeout", "seq_exhausted", "error"]
+        },
+        "message": { "$ref": "#/$defs/debug_message" }
+      }
+    }
+  }
+}

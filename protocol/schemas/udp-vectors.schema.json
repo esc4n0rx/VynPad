@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://padgaming.local/schemas/udp-vectors.schema.json",
+  "title": "Test vectors UDP (protocol/test-vectors/udp.json)",
+  "description": "PROTOCOLO.md §11.",
+  "type": "object",
+  "required": ["format", "description", "vectors"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "format": { "const": 1 },
+    "description": { "type": "string" },
+    "vectors": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/vector" }
+    }
+  },
+  "$defs": {
+    "hex": { "type": "string", "pattern": "^([0-9a-f]{2})*$" },
+    "u8": { "type": "integer", "minimum": 0, "maximum": 255 },
+    "u16": { "type": "integer", "minimum": 0, "maximum": 65535 },
+    "u32": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+    "i16": { "type": "integer", "minimum": -32768, "maximum": 32767 },
+    "i64": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+    "vector": {
+      "type": "object",
+      "required": ["name", "description", "receiver", "packet_hex", "expect"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "description": { "type": "string" },
+        "decode_only": {
+          "description": "Se true, o vector só vale para o decoder (o fio tem bits reservados ligados).",
+          "type": "boolean"
+        },
+        "receiver": {
+          "type": "object",
+          "required": ["role", "session_id", "key_hex", "last_seq"],
+          "additionalProperties": false,
+          "properties": {
+            "role": { "enum": ["server", "client"] },
+            "session_id": { "$ref": "#/$defs/u32" },
+            "key_hex": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "last_seq": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/u32" }] }
+          }
+        },
+        "packet_hex": { "$ref": "#/$defs/hex" },
+        "expect": {
+          "oneOf": [{ "$ref": "#/$defs/expect_ok" }, { "$ref": "#/$defs/expect_error" }]
+        }
+      }
+    },
+    "expect_ok": {
+      "type": "object",
+      "required": ["result", "header", "payload", "payload_plain_hex"],
+      "additionalProperties": false,
+      "properties": {
+        "result": { "const": "ok" },
+        "header": {
+          "type": "object",
+          "required": ["magic", "ver", "type", "session_id", "seq"],
+          "additionalProperties": false,
+          "properties": {
+            "magic": { "$ref": "#/$defs/u16" },
+            "ver": { "$ref": "#/$defs/u8" },
+            "type": { "$ref": "#/$defs/u8" },
+            "session_id": { "$ref": "#/$defs/u32" },
+            "seq": { "$ref": "#/$defs/u32" }
+          }
+        },
+        "payload": {
+          "type": "object",
+          "description": "Campos decodificados, exatamente como o decoder deve produzi-los.",
+          "additionalProperties": false,
+          "properties": {
+            "t_client_us": { "$ref": "#/$defs/i64" },
+            "t_server_rx_us": { "$ref": "#/$defs/i64" },
+            "server_proc_us": { "$ref": "#/$defs/u32" },
+            "buttons": { "$ref": "#/$defs/u16" },
+            "lt": { "$ref": "#/$defs/u8" },
+            "rt": { "$ref": "#/$defs/u8" },
+            "lx": { "$ref": "#/$defs/i16" },
+            "ly": { "$ref": "#/$defs/i16" },
+            "rx": { "$ref": "#/$defs/i16" },
+            "ry": { "$ref": "#/$defs/i16" },
+            "rumble_ack_id": { "$ref": "#/$defs/u16" },
+            "flags": { "$ref": "#/$defs/u8" },
+            "battery": { "$ref": "#/$defs/u8" },
+            "gx": { "$ref": "#/$defs/i16" },
+            "gy": { "$ref": "#/$defs/i16" },
+            "gz": { "$ref": "#/$defs/i16" },
+            "ax": { "$ref": "#/$defs/i16" },
+            "ay": { "$ref": "#/$defs/i16" },
+            "az": { "$ref": "#/$defs/i16" },
+            "rumble_id": { "$ref": "#/$defs/u16" },
+            "large": { "$ref": "#/$defs/u8" },
+            "small": { "$ref": "#/$defs/u8" }
+          }
+        },
+        "payload_plain_hex": { "$ref": "#/$defs/hex" }
+      }
+    },
+    "expect_error": {
+      "type": "object",
+      "required": ["result", "error"],
+      "additionalProperties": false,
+      "properties": {
+        "result": { "const": "error" },
+        "error": {
+          "enum": [
+            "too_short",
+            "bad_magic",
+            "bad_version",
+            "unknown_type",
+            "wrong_direction",
+            "bad_length",
+            "unknown_session",
+            "stale_seq",
+            "bad_tag",
+            "bad_payload"
+          ]
+        }
+      }
+    }
+  }
+}

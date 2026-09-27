@@ -1,0 +1,404 @@
+{
+  "$schema": "../schemas/control-vectors.schema.json",
+  "format": 1,
+  "description": "Frames do canal de controle PadGaming v1 (PROTOCOLO.md §5). Gerado por protocol/tools/gen.mjs — não edite à mão.",
+  "vectors": [
+    {
+      "name": "hello_pairing_token",
+      "description": "hello do primeiro pareamento via QR code.",
+      "frame_hex": "f90000007b2274797065223a2268656c6c6f222c2270726f746f5f766572223a312c226465766963655f6964223a2233663262386331612d396434652d346237662d386136632d316532643363346235613639222c226e616d65223a2247616c61787920646f205061756c6f222c226d6f64656c223a22534d2d5339323142222c226f735f766572223a22416e64726f6964203134222c2263617073223a7b226779726f223a747275652c2272756d626c65223a747275657d2c2261757468223a7b226d6574686f64223a2270616972696e675f746f6b656e222c22746f6b656e223a2245424553457851564668635947526f62484230654877227d7d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "hello",
+          "proto_ver": 1,
+          "device_id": "3f2b8c1a-9d4e-4b7f-8a6c-1e2d3c4b5a69",
+          "name": "Galaxy do Paulo",
+          "model": "SM-S921B",
+          "os_ver": "Android 14",
+          "caps": {
+            "gyro": true,
+            "rumble": true
+          },
+          "auth": {
+            "method": "pairing_token",
+            "token": "EBESExQVFhcYGRobHB0eHw"
+          }
+        }
+      }
+    },
+    {
+      "name": "hello_pin",
+      "description": "hello do pareamento por PIN (zero à esquerda preservado).",
+      "frame_hex": "dd0000007b2274797065223a2268656c6c6f222c2270726f746f5f766572223a312c226465766963655f6964223a2233663262386331612d396434652d346237662d386136632d316532643363346235613639222c226e616d65223a2247616c61787920646f205061756c6f222c226d6f64656c223a22534d2d5339323142222c226f735f766572223a22416e64726f6964203134222c2263617073223a7b226779726f223a747275652c2272756d626c65223a747275657d2c2261757468223a7b226d6574686f64223a2270696e222c2270696e223a22303432393137227d7d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "hello",
+          "proto_ver": 1,
+          "device_id": "3f2b8c1a-9d4e-4b7f-8a6c-1e2d3c4b5a69",
+          "name": "Galaxy do Paulo",
+          "model": "SM-S921B",
+          "os_ver": "Android 14",
+          "caps": {
+            "gyro": true,
+            "rumble": true
+          },
+          "auth": {
+            "method": "pin",
+            "pin": "042917"
+          }
+        }
+      }
+    },
+    {
+      "name": "hello_device_token",
+      "description": "hello de reconexão de um dispositivo já pareado, sem gyro.",
+      "frame_hex": "200100007b2274797065223a2268656c6c6f222c2270726f746f5f766572223a312c226465766963655f6964223a2233663262386331612d396434652d346237662d386136632d316532643363346235613639222c226e616d65223a2247616c61787920646f205061756c6f222c226d6f64656c223a22534d2d5339323142222c226f735f766572223a22416e64726f6964203134222c2263617073223a7b226779726f223a66616c73652c2272756d626c65223a747275657d2c2261757468223a7b226d6574686f64223a226465766963655f746f6b656e222c22746f6b656e223a22316a58663930686f323659633232615f7a7a726f344c416e6d346868426a334a6f4d4c34515a386b684855227d2c226170705f766572223a22312e302e30227d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "hello",
+          "proto_ver": 1,
+          "device_id": "3f2b8c1a-9d4e-4b7f-8a6c-1e2d3c4b5a69",
+          "name": "Galaxy do Paulo",
+          "model": "SM-S921B",
+          "os_ver": "Android 14",
+          "caps": {
+            "gyro": false,
+            "rumble": true
+          },
+          "auth": {
+            "method": "device_token",
+            "token": "1jXf90ho26Yc22a_zzro4LAnm4hhBj3JoML4QZ8khHU"
+          },
+          "app_ver": "1.0.0"
+        }
+      }
+    },
+    {
+      "name": "hello_unknown_fields_ignored",
+      "description": "Campos desconhecidos (inclusive aninhados) são ignorados.",
+      "frame_hex": "2f0100007b2274797065223a2268656c6c6f222c2270726f746f5f766572223a312c226465766963655f6964223a2233663262386331612d396434652d346237662d386136632d316532643363346235613639222c226e616d65223a2247616c61787920646f205061756c6f222c226d6f64656c223a22534d2d5339323142222c226f735f766572223a22416e64726f6964203134222c2263617073223a7b226779726f223a747275652c2272756d626c65223a747275652c226675747572655f636170223a747275657d2c2261757468223a7b226d6574686f64223a2270616972696e675f746f6b656e222c22746f6b656e223a2245424553457851564668635947526f62484230654877227d2c226675747572655f6669656c64223a7b22616e797468696e67223a5b312c322c335d7d7d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "hello",
+          "proto_ver": 1,
+          "device_id": "3f2b8c1a-9d4e-4b7f-8a6c-1e2d3c4b5a69",
+          "name": "Galaxy do Paulo",
+          "model": "SM-S921B",
+          "os_ver": "Android 14",
+          "caps": {
+            "gyro": true,
+            "rumble": true,
+            "future_cap": true
+          },
+          "auth": {
+            "method": "pairing_token",
+            "token": "EBESExQVFhcYGRobHB0eHw"
+          },
+          "future_field": {
+            "anything": [
+              1,
+              2,
+              3
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "welcome_first_pairing",
+      "description": "welcome com device_token (só no primeiro pareamento).",
+      "frame_hex": "6f0100007b2274797065223a2277656c636f6d65222c2270726f746f5f766572223a312c2273657373696f6e5f6964223a3330353431393839362c227564705f706f7274223a34373830312c227564705f6b6579223a2241414543417751464267634943516f4c4441304f4478415245684d554652595847426b6147787764486838222c226465766963655f746f6b656e223a22316a58663930686f323659633232615f7a7a726f344c416e6d346868426a334a6f4d4c34515a386b684855222c227365727665725f6964223a2235623063386131652d326634642d346337612d396531622d306433663661376238633964222c227365727665725f6e616d65223a2250432d53616c61222c22636f6e666967223a7b22736c6f74223a312c2273656e645f726174655f687a223a3235302c226779726f5f656e61626c6564223a66616c73652c2272756d626c655f656e61626c6564223a747275652c22746f7563685f68617074696373223a747275657d7d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "welcome",
+          "proto_ver": 1,
+          "session_id": 305419896,
+          "udp_port": 47801,
+          "udp_key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+          "device_token": "1jXf90ho26Yc22a_zzro4LAnm4hhBj3JoML4QZ8khHU",
+          "server_id": "5b0c8a1e-2f4d-4c7a-9e1b-0d3f6a7b8c9d",
+          "server_name": "PC-Sala",
+          "config": {
+            "slot": 1,
+            "send_rate_hz": 250,
+            "gyro_enabled": false,
+            "rumble_enabled": true,
+            "touch_haptics": true
+          }
+        }
+      }
+    },
+    {
+      "name": "welcome_reconnect",
+      "description": "welcome de reconexão (sem device_token), sessão com session_id máximo.",
+      "frame_hex": "320100007b2274797065223a2277656c636f6d65222c2270726f746f5f766572223a312c2273657373696f6e5f6964223a323134373438333634372c227564705f706f7274223a34373830312c227564705f6b6579223a226f4b47696f36536c7071656f71617172724b32757237437873724f3074626133754c6d3675377939767238222c227365727665725f6964223a2235623063386131652d326634642d346337612d396531622d306433663661376238633964222c227365727665725f6e616d65223a2250432d53616c61222c22636f6e666967223a7b22736c6f74223a302c2273656e645f726174655f687a223a3235302c226779726f5f656e61626c6564223a747275652c2272756d626c655f656e61626c6564223a747275652c22746f7563685f68617074696373223a747275657d7d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "welcome",
+          "proto_ver": 1,
+          "session_id": 2147483647,
+          "udp_port": 47801,
+          "udp_key": "oKGio6SlpqeoqaqrrK2ur7CxsrO0tba3uLm6u7y9vr8",
+          "server_id": "5b0c8a1e-2f4d-4c7a-9e1b-0d3f6a7b8c9d",
+          "server_name": "PC-Sala",
+          "config": {
+            "slot": 0,
+            "send_rate_hz": 250,
+            "gyro_enabled": true,
+            "rumble_enabled": true,
+            "touch_haptics": true
+          }
+        }
+      }
+    },
+    {
+      "name": "reject_bad_auth",
+      "description": "reject por credencial inválida.",
+      "frame_hex": "250000007b2274797065223a2272656a656374222c22726561736f6e223a226261645f61757468227d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "reject",
+          "reason": "bad_auth"
+        }
+      }
+    },
+    {
+      "name": "reject_locked",
+      "description": "reject por excesso de PINs errados.",
+      "frame_hex": "360000007b2274797065223a2272656a656374222c22726561736f6e223a226c6f636b6564222c2272657472795f61667465725f73223a36307d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "reject",
+          "reason": "locked",
+          "retry_after_s": 60
+        }
+      }
+    },
+    {
+      "name": "reject_version",
+      "description": "reject por proto_ver não suportado.",
+      "frame_hex": "640000007b2274797065223a2272656a656374222c22726561736f6e223a2276657273696f6e222c22737570706f727465645f76657273696f6e73223a5b315d2c226d657373616765223a2270726f746f5f7665722032206ec3a36f207375706f727461646f227d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "reject",
+          "reason": "version",
+          "supported_versions": [
+            1
+          ],
+          "message": "proto_ver 2 não suportado"
+        }
+      }
+    },
+    {
+      "name": "reject_unknown_reason",
+      "description": "reason desconhecido é válido (tratado como erro genérico).",
+      "frame_hex": "280000007b2274797065223a2272656a656374222c22726561736f6e223a226d61696e74656e616e6365227d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "reject",
+          "reason": "maintenance"
+        }
+      }
+    },
+    {
+      "name": "config",
+      "description": "config com o estado completo (gyro ligado pela UI).",
+      "frame_hex": "6c0000007b2274797065223a22636f6e666967222c22736c6f74223a312c2273656e645f726174655f687a223a3132302c226779726f5f656e61626c6564223a747275652c2272756d626c655f656e61626c6564223a747275652c22746f7563685f68617074696373223a747275657d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "config",
+          "slot": 1,
+          "send_rate_hz": 120,
+          "gyro_enabled": true,
+          "rumble_enabled": true,
+          "touch_haptics": true
+        }
+      }
+    },
+    {
+      "name": "bye_user",
+      "description": "bye iniciado pelo usuário.",
+      "frame_hex": "1e0000007b2274797065223a22627965222c22726561736f6e223a2275736572227d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "bye",
+          "reason": "user"
+        }
+      }
+    },
+    {
+      "name": "bye_seq_exhausted",
+      "description": "bye por esgotamento do seq (§6.3).",
+      "frame_hex": "270000007b2274797065223a22627965222c22726561736f6e223a227365715f657868617573746564227d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "bye",
+          "reason": "seq_exhausted"
+        }
+      }
+    },
+    {
+      "name": "ping",
+      "description": "Keepalive do canal de controle.",
+      "frame_hex": "0f0000007b2274797065223a2270696e67227d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "ping"
+        }
+      }
+    },
+    {
+      "name": "pong",
+      "description": "Resposta ao keepalive.",
+      "frame_hex": "0f0000007b2274797065223a22706f6e67227d",
+      "expect": {
+        "result": "ok",
+        "message": {
+          "type": "pong"
+        }
+      }
+    },
+    {
+      "name": "unknown_type_ignored",
+      "description": "type desconhecido é ignorado.",
+      "frame_hex": "1a0000007b2274797065223a2274656c656d65747279222c2278223a317d",
+      "expect": {
+        "result": "ignore"
+      }
+    },
+    {
+      "name": "frame_zero_length",
+      "description": "length = 0.",
+      "frame_hex": "00000000",
+      "expect": {
+        "result": "bad_frame"
+      }
+    },
+    {
+      "name": "frame_too_large",
+      "description": "length = 16385 (acima do máximo de 16384); o erro sai só pelo cabeçalho do frame.",
+      "frame_hex": "01400000",
+      "expect": {
+        "result": "bad_frame"
+      }
+    },
+    {
+      "name": "invalid_json",
+      "description": "JSON truncado.",
+      "frame_hex": "0e0000007b2274797065223a2270696e6722",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "invalid_utf8",
+      "description": "Byte 0xFF no meio do JSON (UTF-8 inválido).",
+      "frame_hex": "1e0000007b2274797065223a22627965222c22726561736f6e223a227573ff72227d",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "not_an_object",
+      "description": "O JSON precisa ser um objeto.",
+      "frame_hex": "110000005b7b2274797065223a2270696e67227d5d",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "missing_type",
+      "description": "Objeto sem o discriminador type.",
+      "frame_hex": "110000007b22726561736f6e223a2275736572227d",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "hello_missing_auth",
+      "description": "hello sem auth.",
+      "frame_hex": "b60000007b2274797065223a2268656c6c6f222c2270726f746f5f766572223a312c226465766963655f6964223a2233663262386331612d396434652d346237662d386136632d316532643363346235613639222c226e616d65223a2247616c61787920646f205061756c6f222c226d6f64656c223a22534d2d5339323142222c226f735f766572223a22416e64726f6964203134222c2263617073223a7b226779726f223a747275652c2272756d626c65223a747275657d7d",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "hello_pin_five_digits",
+      "description": "PIN com 5 dígitos.",
+      "frame_hex": "dc0000007b2274797065223a2268656c6c6f222c2270726f746f5f766572223a312c226465766963655f6964223a2233663262386331612d396434652d346237662d386136632d316532643363346235613639222c226e616d65223a2247616c61787920646f205061756c6f222c226d6f64656c223a22534d2d5339323142222c226f735f766572223a22416e64726f6964203134222c2263617073223a7b226779726f223a747275652c2272756d626c65223a747275657d2c2261757468223a7b226d6574686f64223a2270696e222c2270696e223a223432393137227d7d",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "hello_unknown_auth_method",
+      "description": "auth.method desconhecido.",
+      "frame_hex": "e80000007b2274797065223a2268656c6c6f222c2270726f746f5f766572223a312c226465766963655f6964223a2233663262386331612d396434652d346237662d386136632d316532643363346235613639222c226e616d65223a2247616c61787920646f205061756c6f222c226d6f64656c223a22534d2d5339323142222c226f735f766572223a22416e64726f6964203134222c2263617073223a7b226779726f223a747275652c2272756d626c65223a747275657d2c2261757468223a7b226d6574686f64223a2270617373776f7264222c2270617373776f7264223a2268756e74657232227d7d",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "hello_pairing_token_wrong_length",
+      "description": "pairing_token com 32 bytes em vez de 16.",
+      "frame_hex": "0e0100007b2274797065223a2268656c6c6f222c2270726f746f5f766572223a312c226465766963655f6964223a2233663262386331612d396434652d346237662d386136632d316532643363346235613639222c226e616d65223a2247616c61787920646f205061756c6f222c226d6f64656c223a22534d2d5339323142222c226f735f766572223a22416e64726f6964203134222c2263617073223a7b226779726f223a747275652c2272756d626c65223a747275657d2c2261757468223a7b226d6574686f64223a2270616972696e675f746f6b656e222c22746f6b656e223a22316a58663930686f323659633232615f7a7a726f344c416e6d346868426a334a6f4d4c34515a386b684855227d7d",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "hello_token_with_padding",
+      "description": "Token em base64 com padding (=) em vez de base64url sem padding.",
+      "frame_hex": "fb0000007b2274797065223a2268656c6c6f222c2270726f746f5f766572223a312c226465766963655f6964223a2233663262386331612d396434652d346237662d386136632d316532643363346235613639222c226e616d65223a2247616c61787920646f205061756c6f222c226d6f64656c223a22534d2d5339323142222c226f735f766572223a22416e64726f6964203134222c2263617073223a7b226779726f223a747275652c2272756d626c65223a747275657d2c2261757468223a7b226d6574686f64223a2270616972696e675f746f6b656e222c22746f6b656e223a2245424553457851564668635947526f624842306548773d3d227d7d",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "welcome_session_id_zero",
+      "description": "session_id 0 é reservado.",
+      "frame_hex": "2a0100007b2274797065223a2277656c636f6d65222c2270726f746f5f766572223a312c2273657373696f6e5f6964223a302c227564705f706f7274223a34373830312c227564705f6b6579223a2241414543417751464267634943516f4c4441304f4478415245684d554652595847426b6147787764486838222c227365727665725f6964223a2235623063386131652d326634642d346337612d396531622d306433663661376238633964222c227365727665725f6e616d65223a2250432d53616c61222c22636f6e666967223a7b22736c6f74223a312c2273656e645f726174655f687a223a3235302c226779726f5f656e61626c6564223a66616c73652c2272756d626c655f656e61626c6564223a747275652c22746f7563685f68617074696373223a747275657d7d",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "welcome_slot_out_of_range",
+      "description": "slot 4 (só existem 0–3).",
+      "frame_hex": "320100007b2274797065223a2277656c636f6d65222c2270726f746f5f766572223a312c2273657373696f6e5f6964223a3330353431393839362c227564705f706f7274223a34373830312c227564705f6b6579223a2241414543417751464267634943516f4c4441304f4478415245684d554652595847426b6147787764486838222c227365727665725f6964223a2235623063386131652d326634642d346337612d396531622d306433663661376238633964222c227365727665725f6e616d65223a2250432d53616c61222c22636f6e666967223a7b22736c6f74223a342c2273656e645f726174655f687a223a3235302c226779726f5f656e61626c6564223a66616c73652c2272756d626c655f656e61626c6564223a747275652c22746f7563685f68617074696373223a747275657d7d",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "config_incomplete",
+      "description": "config sem touch_haptics (o estado é sempre completo).",
+      "frame_hex": "580000007b2274797065223a22636f6e666967222c22736c6f74223a312c2273656e645f726174655f687a223a3235302c226779726f5f656e61626c6564223a66616c73652c2272756d626c655f656e61626c6564223a747275657d",
+      "expect": {
+        "result": "bad_message"
+      }
+    },
+    {
+      "name": "config_send_rate_too_high",
+      "description": "send_rate_hz acima de 500.",
+      "frame_hex": "6e0000007b2274797065223a22636f6e666967222c22736c6f74223a312c2273656e645f726174655f687a223a313030302c226779726f5f656e61626c6564223a66616c73652c2272756d626c655f656e61626c6564223a747275652c22746f7563685f68617074696373223a747275657d",
+      "expect": {
+        "result": "bad_message"
+      }
+    }
+  ]
+}

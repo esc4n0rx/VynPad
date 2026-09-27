@@ -14,6 +14,12 @@ pre-commit:
       run: pnpm exec prettier --write {staged_files}
       stage_fixed: true
 
+    - name: prettier-protocol
+      root: "protocol/"
+      glob: "*.{js,mjs,json}"
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+
     - name: eslint
       root: "apps/desktop/"
       glob: "*.{ts,tsx}"

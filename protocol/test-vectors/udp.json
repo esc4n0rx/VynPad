@@ -1,0 +1,686 @@
+{
+  "$schema": "../schemas/udp-vectors.schema.json",
+  "format": 1,
+  "description": "Pacotes UDP do protocolo PadGaming v1 (PROTOCOLO.md §6). Gerado por protocol/tools/gen.mjs — não edite à mão.",
+  "vectors": [
+    {
+      "name": "input_neutral",
+      "description": "InputState em repouso, primeiro pacote da sessão (seq 0).",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "50470101785634120000000058fa4d31ade6a6d113615c61af434e27f8b1f3f5e1ad5ba3640f3167ad1cd8ad9062d15c6262fec3",
+      "expect": {
+        "result": "ok",
+        "header": {
+          "magic": 18256,
+          "ver": 1,
+          "type": 1,
+          "session_id": 305419896,
+          "seq": 0
+        },
+        "payload": {
+          "t_client_us": 1000000,
+          "buttons": 0,
+          "lt": 0,
+          "rt": 0,
+          "lx": 0,
+          "ly": 0,
+          "rx": 0,
+          "ry": 0,
+          "rumble_ack_id": 0,
+          "flags": 0,
+          "battery": 255
+        },
+        "payload_plain_hex": "40420f0000000000000000000000000000000000000000ff"
+      }
+    },
+    {
+      "name": "input_typical",
+      "description": "InputState típico, logo depois do seq 41. Botões: dpad_left, right_shoulder, a.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 41
+      },
+      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "expect": {
+        "result": "ok",
+        "header": {
+          "magic": 18256,
+          "ver": 1,
+          "type": 1,
+          "session_id": 305419896,
+          "seq": 42
+        },
+        "payload": {
+          "t_client_us": 5123456789,
+          "buttons": 4612,
+          "lt": 0,
+          "rt": 200,
+          "lx": 12000,
+          "ly": -8000,
+          "rx": -1,
+          "ry": 32767,
+          "rumble_ack_id": 3,
+          "flags": 0,
+          "battery": 87
+        },
+        "payload_plain_hex": "15bf613101000000041200c8e02ec0e0ffffff7f03000057"
+      }
+    },
+    {
+      "name": "input_extremes",
+      "description": "Todos os botões válidos, gatilhos no máximo e analógicos nos limites de i16; lacuna de seq (perda) é aceita. Botões: dpad_up, dpad_down, dpad_left, dpad_right, start, back, left_thumb, right_thumb, left_shoulder, right_shoulder, guide, a, b, x, y.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 998
+      },
+      "packet_hex": "5047010178563412e8030000d12a4ce6c8ea4ec30c0daccbf17d3901ae5a954a4074f63345d016fc8926faabc34992dac3ce4b35",
+      "expect": {
+        "result": "ok",
+        "header": {
+          "magic": 18256,
+          "ver": 1,
+          "type": 1,
+          "session_id": 305419896,
+          "seq": 1000
+        },
+        "payload": {
+          "t_client_us": 7777777,
+          "buttons": 63487,
+          "lt": 255,
+          "rt": 255,
+          "lx": -32768,
+          "ly": 32767,
+          "rx": 32767,
+          "ry": -32768,
+          "rumble_ack_id": 65535,
+          "flags": 0,
+          "battery": 100
+        },
+        "payload_plain_hex": "f1ad760000000000fff7ffff0080ff7fff7f0080ffff0064"
+      }
+    },
+    {
+      "name": "input_large_values",
+      "description": "session_id máximo (2^31-1), seq perto do limite de u32 e t_client_us = 2^53-1: exige leitura sem sinal.",
+      "receiver": {
+        "role": "server",
+        "session_id": 2147483647,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 4294967293
+      },
+      "packet_hex": "50470101ffffff7ffeffffffbcc9be52d39961b6eb5101a8d97f71b2f79b8626d1360960aef52a105874518668e316beaf1bddf0",
+      "expect": {
+        "result": "ok",
+        "header": {
+          "magic": 18256,
+          "ver": 1,
+          "type": 1,
+          "session_id": 2147483647,
+          "seq": 4294967294
+        },
+        "payload": {
+          "t_client_us": 9007199254740991,
+          "buttons": 0,
+          "lt": 0,
+          "rt": 0,
+          "lx": 0,
+          "ly": 0,
+          "rx": 0,
+          "ry": 0,
+          "rumble_ack_id": 0,
+          "flags": 0,
+          "battery": 255
+        },
+        "payload_plain_hex": "ffffffffffff1f00000000000000000000000000000000ff"
+      }
+    },
+    {
+      "name": "input_reserved_bits_ignored",
+      "description": "Bit reservado 0x0800 em buttons e bit 7 em flags ligados no fio: o decoder mascara (buttons & 0xF7FF, flags & 0x01). Botões: a.",
+      "decode_only": true,
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 6
+      },
+      "packet_hex": "504701017856341207000000b14d8b4822e87a89622e4e33fc88109a329da241f1ed89faa6ec18d16faee1c1f9d67dd5510a3775",
+      "expect": {
+        "result": "ok",
+        "header": {
+          "magic": 18256,
+          "ver": 1,
+          "type": 1,
+          "session_id": 305419896,
+          "seq": 7
+        },
+        "payload": {
+          "t_client_us": 1000000,
+          "buttons": 4096,
+          "lt": 0,
+          "rt": 0,
+          "lx": 0,
+          "ly": 0,
+          "rx": 0,
+          "ry": 0,
+          "rumble_ack_id": 0,
+          "flags": 0,
+          "battery": 255
+        },
+        "payload_plain_hex": "40420f0000000000001800000000000000000000000080ff"
+      }
+    },
+    {
+      "name": "input_motion",
+      "description": "InputState + Motion com o aparelho quase parado (gravidade em Y). Botões: b.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 9
+      },
+      "packet_hex": "50470102785634120a0000005d689a71f4063f35c23a66d5aa3e35f88677c37b9b6fa1757f15d2a694b26678214bcaa3b975a4f68b9051a2c435edb1ef8a1abb",
+      "expect": {
+        "result": "ok",
+        "header": {
+          "magic": 18256,
+          "ver": 1,
+          "type": 2,
+          "session_id": 305419896,
+          "seq": 10
+        },
+        "payload": {
+          "t_client_us": 2000000,
+          "buttons": 8192,
+          "lt": 0,
+          "rt": 0,
+          "lx": 0,
+          "ly": 0,
+          "rx": 0,
+          "ry": 0,
+          "rumble_ack_id": 0,
+          "flags": 1,
+          "battery": 50,
+          "gx": 1571,
+          "gy": -250,
+          "gz": 0,
+          "ax": 12,
+          "ay": 981,
+          "az": -35
+        },
+        "payload_plain_hex": "80841e000000000000200000000000000000000000000132230606ff00000c00d503ddff"
+      }
+    },
+    {
+      "name": "input_motion_saturated",
+      "description": "Motion com todos os eixos saturados nos limites de i16.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 10
+      },
+      "packet_hex": "50470102785634120b000000f673f4bc09c5ac30eb3a0c063bb8128c62449d0355be7df8cb86043fbe9af275094c6712f05b7fe2935593d0a34100bf54711a4a",
+      "expect": {
+        "result": "ok",
+        "header": {
+          "magic": 18256,
+          "ver": 1,
+          "type": 2,
+          "session_id": 305419896,
+          "seq": 11
+        },
+        "payload": {
+          "t_client_us": 1000000,
+          "buttons": 0,
+          "lt": 0,
+          "rt": 0,
+          "lx": 0,
+          "ly": 0,
+          "rx": 0,
+          "ry": 0,
+          "rumble_ack_id": 0,
+          "flags": 1,
+          "battery": 255,
+          "gx": 32767,
+          "gy": -32768,
+          "gz": 32767,
+          "ax": -32768,
+          "ay": 32767,
+          "az": -32768
+        },
+        "payload_plain_hex": "40420f0000000000000000000000000000000000000001ffff7f0080ff7f0080ff7f0080"
+      }
+    },
+    {
+      "name": "ping",
+      "description": "Ping do client.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 42
+      },
+      "packet_hex": "50470110785634122b000000aabcbb4680d08284d7a69124b49671ad9d9236458aa8fced",
+      "expect": {
+        "result": "ok",
+        "header": {
+          "magic": 18256,
+          "ver": 1,
+          "type": 16,
+          "session_id": 305419896,
+          "seq": 43
+        },
+        "payload": {
+          "t_client_us": 123456789012
+        },
+        "payload_plain_hex": "141a99be1c000000"
+      }
+    },
+    {
+      "name": "pong",
+      "description": "Pong do server, primeiro pacote S→C da sessão (direção 1 no nonce).",
+      "receiver": {
+        "role": "client",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "5047011178563412000000008025e250d8e39c2a52be330d7b3fdd5b04b8f0d8a7fef711e689a6932869ca3af2be5079",
+      "expect": {
+        "result": "ok",
+        "header": {
+          "magic": 18256,
+          "ver": 1,
+          "type": 17,
+          "session_id": 305419896,
+          "seq": 0
+        },
+        "payload": {
+          "t_client_us": 123456789012,
+          "t_server_rx_us": 98765432101,
+          "server_proc_us": 37
+        },
+        "payload_plain_hex": "141a99be1c00000025e5e0fe1600000025000000"
+      }
+    },
+    {
+      "name": "rumble_on",
+      "description": "Rumble ligado (rumble_id 1).",
+      "receiver": {
+        "role": "client",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 4
+      },
+      "packet_hex": "504701207856341205000000f213f7cf4fc9edaedc73a39faa4f1a73bb7faa56",
+      "expect": {
+        "result": "ok",
+        "header": {
+          "magic": 18256,
+          "ver": 1,
+          "type": 32,
+          "session_id": 305419896,
+          "seq": 5
+        },
+        "payload": {
+          "rumble_id": 1,
+          "large": 255,
+          "small": 128
+        },
+        "payload_plain_hex": "0100ff80"
+      }
+    },
+    {
+      "name": "rumble_off",
+      "description": "Rumble desligado (large = small = 0); o client aplica e para os motores.",
+      "receiver": {
+        "role": "client",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 5
+      },
+      "packet_hex": "50470120785634120600000069d50b4a36d5b5eb2438b2fb00687445666d740d",
+      "expect": {
+        "result": "ok",
+        "header": {
+          "magic": 18256,
+          "ver": 1,
+          "type": 32,
+          "session_id": 305419896,
+          "seq": 6
+        },
+        "payload": {
+          "rumble_id": 2,
+          "large": 0,
+          "small": 0
+        },
+        "payload_plain_hex": "02000000"
+      }
+    },
+    {
+      "name": "too_short_empty",
+      "description": "Datagrama vazio.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "",
+      "expect": {
+        "result": "error",
+        "error": "too_short"
+      }
+    },
+    {
+      "name": "too_short_header",
+      "description": "Só 11 bytes (cabeçalho incompleto).",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "50470101785634122a0000",
+      "expect": {
+        "result": "error",
+        "error": "too_short"
+      }
+    },
+    {
+      "name": "bad_magic_big_endian",
+      "description": "magic gravado em big-endian (bytes 47 50): erro clássico de endianness.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "47500101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb5dea2f27542e6efa98b322b3571c7a3d",
+      "expect": {
+        "result": "error",
+        "error": "bad_magic"
+      }
+    },
+    {
+      "name": "bad_version",
+      "description": "ver = 2 (pacote bem formado e selado).",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "50470201785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb75d77941852265f085b66a3db8cf5165",
+      "expect": {
+        "result": "error",
+        "error": "bad_version"
+      }
+    },
+    {
+      "name": "unknown_type",
+      "description": "type 0x03 não existe na v1.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "50470103785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdbd6931727db8850871de76da8e2ee2ae7",
+      "expect": {
+        "result": "error",
+        "error": "unknown_type"
+      }
+    },
+    {
+      "name": "wrong_direction_at_server",
+      "description": "Server recebendo um Rumble (tipo S→C).",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "504701207856341201000000b82702b7fa099281096d15c5d9d33d34dc72a737",
+      "expect": {
+        "result": "error",
+        "error": "wrong_direction"
+      }
+    },
+    {
+      "name": "wrong_direction_at_client",
+      "description": "Client recebendo um InputState (tipo C→S).",
+      "receiver": {
+        "role": "client",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "expect": {
+        "result": "error",
+        "error": "wrong_direction"
+      }
+    },
+    {
+      "name": "bad_length_truncated",
+      "description": "InputState sem o último byte (51 bytes).",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c05",
+      "expect": {
+        "result": "error",
+        "error": "bad_length"
+      }
+    },
+    {
+      "name": "bad_length_trailing_byte",
+      "description": "InputState com 1 byte extra no fim (53 bytes).",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e00",
+      "expect": {
+        "result": "error",
+        "error": "bad_length"
+      }
+    },
+    {
+      "name": "bad_length_motion_type_input_size",
+      "description": "type 0x02 com o tamanho de um InputState (52 bytes).",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "50470102785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "expect": {
+        "result": "error",
+        "error": "bad_length"
+      }
+    },
+    {
+      "name": "unknown_session",
+      "description": "session_id diferente do da sessão ativa.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "50470101795634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdbbefafe74a4e17848e2087b98953edee0",
+      "expect": {
+        "result": "error",
+        "error": "unknown_session"
+      }
+    },
+    {
+      "name": "stale_seq_replay",
+      "description": "Mesmo seq do último aceito (replay).",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 42
+      },
+      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "expect": {
+        "result": "error",
+        "error": "stale_seq"
+      }
+    },
+    {
+      "name": "stale_seq_older",
+      "description": "seq menor que o último aceito (fora de ordem).",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 43
+      },
+      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "expect": {
+        "result": "error",
+        "error": "stale_seq"
+      }
+    },
+    {
+      "name": "stale_seq_no_wraparound",
+      "description": "seq 0 depois de 0xFFFFFFFF: não existe wrap-around, o pacote é descartado.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 4294967295
+      },
+      "packet_hex": "5047010178563412000000000d072300ace6a6d117735ca94f6d8ec7074e0c8ae2ad5b0b39625a0cfffc4e5c7c8283e805309403",
+      "expect": {
+        "result": "error",
+        "error": "stale_seq"
+      }
+    },
+    {
+      "name": "bad_tag_flipped_tag",
+      "description": "Último bit da tag invertido.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 41
+      },
+      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054f",
+      "expect": {
+        "result": "error",
+        "error": "bad_tag"
+      }
+    },
+    {
+      "name": "bad_tag_flipped_ciphertext",
+      "description": "Primeiro byte do ciphertext adulterado.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 41
+      },
+      "packet_hex": "50470101785634122a00000071e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "expect": {
+        "result": "error",
+        "error": "bad_tag"
+      }
+    },
+    {
+      "name": "bad_tag_tampered_header",
+      "description": "seq do cabeçalho trocado de 42 para 43 depois de selar (AAD e nonce mudam).",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 41
+      },
+      "packet_hex": "50470101785634122b000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "expect": {
+        "result": "error",
+        "error": "bad_tag"
+      }
+    },
+    {
+      "name": "bad_tag_wrong_key",
+      "description": "Selado com outra chave de sessão.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 41
+      },
+      "packet_hex": "50470101785634122a0000009a2c3eb07b83c1740429661b24018ef8eed3910e03f4580e32b9093ff04dc0dfc8a2656e9a97bd7c",
+      "expect": {
+        "result": "error",
+        "error": "bad_tag"
+      }
+    },
+    {
+      "name": "bad_tag_wrong_nonce_direction",
+      "description": "InputState (C→S) selado com direction = 1 no nonce.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": 41
+      },
+      "packet_hex": "50470101785634122a000000d1d5cb14db832acd3f239d3aff7179d47b1c40591e86b69d0cf432aa0e13e2dc52f72a50ab69dfce",
+      "expect": {
+        "result": "error",
+        "error": "bad_tag"
+      }
+    },
+    {
+      "name": "bad_payload_input_with_motion_flag",
+      "description": "type 0x01 com o bit de motion ligado em flags.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9ddb9e9a5c56efd590a3573e35e7554cf952",
+      "expect": {
+        "result": "error",
+        "error": "bad_payload"
+      }
+    },
+    {
+      "name": "bad_payload_motion_without_flag",
+      "description": "type 0x02 com o bit de motion desligado em flags.",
+      "receiver": {
+        "role": "server",
+        "session_id": 305419896,
+        "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "last_seq": null
+      },
+      "packet_hex": "50470102785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb57e503d49b607280c8134316946e0cfc294cbc4efe608f5e4855d8f0",
+      "expect": {
+        "result": "error",
+        "error": "bad_payload"
+      }
+    }
+  ]
+}

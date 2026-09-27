@@ -9,7 +9,7 @@ Transforma um celular Android em um **controle Xbox 360 nativo** para PC. O clie
 | `apps/desktop` | Server desktop (Tauri 2 + React) |
 | `apps/android` | Client Android (Kotlin + Compose) |
 | `crates/` | Núcleo em Rust: protocolo, driver, mapeamento, rede, armazenamento, core, simulador |
-| `protocol/` | Test vectors compartilhados entre Rust e Kotlin |
+| `protocol/` | Schemas, test vectors e implementação de referência do protocolo (compartilhados entre Rust e Kotlin) |
 | `docs/` | Especificação, arquitetura, roadmap e tasks |
 
 ## Desenvolvimento

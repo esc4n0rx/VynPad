@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://padgaming.local/schemas/discovery-response.schema.json",
+  "title": "Resposta ao broadcast PGDISC1",
+  "description": "PROTOCOLO.md §3.2. Campos desconhecidos são permitidos (e ignorados).",
+  "type": "object",
+  "required": ["id", "name", "ver", "tcp", "udp", "os", "free", "fp"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "name": { "type": "string", "minLength": 1, "maxLength": 63 },
+    "ver": { "type": "integer", "minimum": 1, "maximum": 255 },
+    "tcp": { "type": "integer", "minimum": 1, "maximum": 65535 },
+    "udp": { "type": "integer", "minimum": 1, "maximum": 65535 },
+    "os": { "type": "string", "examples": ["windows", "linux"] },
+    "free": { "type": "integer", "minimum": 0, "maximum": 4 },
+    "fp": { "type": "string", "pattern": "^[0-9a-f]{16}$" }
+  }
+}
