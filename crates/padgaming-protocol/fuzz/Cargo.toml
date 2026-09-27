@@ -1,0 +1,37 @@
+[package]
+name = "padgaming-protocol-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+padgaming-protocol = { path = ".." }
+
+# Fora do workspace principal: exige nightly (cargo +nightly fuzz).
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "udp_decode"
+path = "fuzz_targets/udp_decode.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "udp_roundtrip"
+path = "fuzz_targets/udp_roundtrip.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "control_frame"
+path = "fuzz_targets/control_frame.rs"
+test = false
+doc = false
+bench = false

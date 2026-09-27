@@ -1,6 +1,6 @@
 //! Invólucro para valores sensíveis (chaves, tokens, PIN) que nunca devem aparecer em logs.
 
-use std::fmt;
+use core::fmt;
 
 /// Guarda um valor sensível. `Debug` e `Display` sempre imprimem `Secret(***)`,
 /// então o valor não vaza por `tracing`, `{:?}` ou mensagens de erro.
@@ -10,6 +10,7 @@ use std::fmt;
 pub struct Secret<T>(T);
 
 impl<T> Secret<T> {
+    /// Envolve um valor sensível.
     pub const fn new(value: T) -> Self {
         Self(value)
     }
@@ -19,6 +20,7 @@ impl<T> Secret<T> {
         &self.0
     }
 
+    /// Consome o invólucro e devolve o valor.
     pub fn into_inner(self) -> T {
         self.0
     }

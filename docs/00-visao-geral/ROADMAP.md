@@ -84,7 +84,7 @@ flowchart TD
 | ID | Task | Prio | Est. | Depende de | Status |
 |---|---|---|---|---|---|
 | [T-101](../tasks/F1-protocolo/T-101-spec-protocolo.md) | Especificação final do protocolo v1 + test vectors | P0 | M | — | ✅ |
-| [T-102](../tasks/F1-protocolo/T-102-crate-protocolo.md) | Crate `padgaming-protocol` | P0 | M | T-001, T-101 | ⬜ |
+| [T-102](../tasks/F1-protocolo/T-102-crate-protocolo.md) | Crate `padgaming-protocol` | P0 | M | T-001, T-101 | ✅ |
 | [T-103](../tasks/F1-protocolo/T-103-tls-pareamento.md) | TLS, certificado e pareamento QR/PIN | P0 | G | T-102 | ⬜ |
 
 ### F2 — Emulação Windows
