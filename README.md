@@ -18,7 +18,8 @@ Requisitos: Rust (versão fixada em `rust-toolchain.toml`), Node ≥ 22 e pnpm.
 
 ```sh
 cargo build --workspace
-cargo test --workspace
+cargo test --workspace --exclude padgaming-desktop
+cargo test -p padgaming-desktop   # separado: ver a nota no ci.yml (CRT estática do Tauri)
 pnpm install
 ```
 

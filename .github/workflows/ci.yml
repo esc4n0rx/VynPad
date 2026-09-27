@@ -73,7 +73,11 @@ jobs:
       # O generate_context! do Tauri exige o frontend compilado em apps/desktop/dist.
       - run: pnpm --filter @padgaming/desktop build
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
-      - run: cargo test --workspace --locked
+      # O desktop roda separado: no Windows, o tauri-build põe um msvcrt.lib vazio (CRT
+      # estática) no caminho de busca do linker, e o cargo o repassa aos doctests das outras
+      # crates da mesma invocação, que então ficam sem CRT (LNK1120).
+      - run: cargo test --workspace --exclude padgaming-desktop --locked
+      - run: cargo test -p padgaming-desktop --locked
 
   bundle:
     name: Build do app (${{ matrix.os }})
