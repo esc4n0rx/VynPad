@@ -22,3 +22,4 @@ Cada decisão tem contexto curto e consequência. Para mudar uma decisão, adici
 | D-16 | **Simulador CLI** (`padgaming-sim`) antes do Android | Esperar o app | Permite validar o server ponta a ponta desde o marco M1. |
 | D-17 | **Test vectors compartilhados** (`protocol/test-vectors/*.json`) entre Rust e Kotlin | Testes separados | Garante compatibilidade binária entre as duas implementações. |
 | D-18 | Extras no escopo v1: **rumble, tray + autostart, monitor de latência, gyro → analógico** | — | Escolhidos pelo produto. |
+| D-19 | **`tracing`** como sistema único de logs (arquivo com rotação diária + terminal); `tauri-plugin-log` removido | `tauri-plugin-log` | Spans por sessão, rotação com retenção de 7 arquivos, captura dos logs do crate `log` via `tracing-log`; o frontend loga por um command próprio. |

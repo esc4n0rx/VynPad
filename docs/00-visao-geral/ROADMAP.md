@@ -78,7 +78,7 @@ flowchart TD
 | [T-001](../tasks/F0-fundacao/T-001-monorepo-workspace.md) | Monorepo e workspace Cargo | P0 | P | — | ✅ |
 | [T-002](../tasks/F0-fundacao/T-002-scaffold-tauri-react.md) | Scaffold Tauri 2 + React/TS/Vite/Tailwind | P0 | M | T-001 | ✅ |
 | [T-003](../tasks/F0-fundacao/T-003-qualidade-ci.md) | Lint, format, hooks e CI | P1 | M | T-002 | ✅ |
-| [T-004](../tasks/F0-fundacao/T-004-logging-erros.md) | Logging, erros e diagnóstico | P0 | P | T-001 | ⬜ |
+| [T-004](../tasks/F0-fundacao/T-004-logging-erros.md) | Logging, erros e diagnóstico | P0 | P | T-001 | ✅ |
 
 ### F1 — Protocolo
 | ID | Task | Prio | Est. | Depende de | Status |

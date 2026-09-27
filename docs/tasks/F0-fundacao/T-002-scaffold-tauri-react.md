@@ -18,7 +18,7 @@ App desktop abrindo uma janela com React renderizado, pronto para receber o desi
 - Fonte Inter empacotada localmente (sem CDN; o app funciona offline).
 - `tauri.conf.json`: identificador `com.padgaming.server`, nome de produto "PadGaming", janela 1100×720 (mínimo 900×600), `decorations: false`, `transparent: true` (o visual em si fica na T-502).
 - Capabilities do Tauri 2 (`capabilities/default.json`) com o mínimo necessário.
-- Plugins iniciais: `tauri-plugin-single-instance` (reforça a janela existente), `tauri-plugin-log`.
+- Plugins iniciais: `tauri-plugin-single-instance` (reforça a janela existente), `tauri-plugin-log` *(removido na T-004, ver D-19)*.
 - Scripts: `pnpm dev`, `pnpm build`, `pnpm tauri dev`, `pnpm tauri build`.
 
 ## Detalhes técnicos

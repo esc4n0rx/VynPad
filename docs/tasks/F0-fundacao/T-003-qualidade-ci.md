@@ -6,7 +6,7 @@
 | Prioridade | P1 |
 | Estimativa | M |
 | Depende de | T-002 |
-| Status | ✅ Concluída (2026-09-26) — falta validar no GitHub Actions |
+| Status | ✅ Concluída (2026-09-26) |
 
 ## Objetivo
 Garantir qualidade constante desde o início, com feedback automático em cada push/PR.
@@ -23,7 +23,7 @@ Garantir qualidade constante desde o início, com feedback automático em cada p
 
 ## Critérios de aceite
 - [x] Um PR com warning de clippy ou erro de lint falha no CI. *(validado localmente: `clippy -D warnings` sai com erro; o workflow roda o mesmo comando)*
-- [ ] O CI completo leva < 15 min com cache quente. *(pendente: medir no primeiro push)*
+- [ ] O CI completo leva < 15 min com cache quente. *(primeira execução no GitHub Actions passou em todos os jobs; tempo ainda não medido)*
 - [x] `cargo deny check` passa.
 
 ## Fora de escopo
