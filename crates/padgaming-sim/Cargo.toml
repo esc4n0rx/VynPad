@@ -6,7 +6,26 @@ edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
+[features]
+# `connect --gamepad`: repassa um controle físico local (via `gilrs`). Fica fora do build
+# padrão porque, no Linux, o `gilrs` exige libudev.
+gamepad = ["dep:gilrs"]
+
 [dependencies]
+padgaming-protocol = { workspace = true }
+anyhow = { workspace = true }
+clap = { version = "4", features = ["derive"] }
+ctrlc = "3"
+gilrs = { version = "0.11", optional = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+toml = "1"
+
+[dev-dependencies]
+padgaming-core = { workspace = true }
+padgaming-driver = { workspace = true, features = ["mock"] }
+padgaming-mapping = { workspace = true }
+padgaming-net = { workspace = true }
 
 [lints]
 workspace = true

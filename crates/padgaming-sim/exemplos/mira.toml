@@ -1,0 +1,15 @@
+# Mira por gyro: o aparelho gira para a direita e volta, com o botão A apertado no meio.
+loop = true
+
+[[step]]
+duration = "1s"
+gyro = [0.0, 0.0, 0.0]
+
+[[step]]
+duration = "500ms"
+buttons = ["a"]
+gyro = [0.0, -1.0, 0.0]   # gira para a direita: o analógico direito vai para a direita
+
+[[step]]
+duration = "500ms"
+gyro = [0.0, 1.0, 0.0]    # volta
