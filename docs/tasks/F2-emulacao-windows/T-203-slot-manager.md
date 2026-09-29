@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | T-202 |
-| Status | ⬜ A fazer |
+| Status | ✅ Concluída |
 
 ## Objetivo
 Gerenciar até 4 controles virtuais simultâneos, cada um vinculado a uma sessão, com regras previsíveis de atribuição.
@@ -24,9 +24,17 @@ Gerenciar até 4 controles virtuais simultâneos, cada um vinculado a uma sessã
 - A troca de slots exige unplug/replug no ViGEm (o índice XInput é atribuído pelo Windows); documentar essa limitação na UI.
 
 ## Critérios de aceite
-- [ ] Testes com `MockDriver` cobrindo todas as transições.
-- [ ] O 5º client recebe `no_slot`.
-- [ ] Reconexão dentro de 30 s volta para o mesmo slot.
+- [x] Testes com `MockDriver` cobrindo todas as transições.
+- [x] O 5º client recebe `no_slot`.
+- [x] Reconexão dentro de 30 s volta para o mesmo slot.
 
 ## Fora de escopo
 - Timeouts de rede (T-304).
+
+## Implementação
+- `padgaming-core::slots::SlotManager` (sobre `Arc<dyn VirtualPadDriver>`), com `Clock` injetável (`padgaming-core::clock`).
+- API de rede: `assign` (preferido → menor livre → `NoSlot`; reconexão do mesmo dispositivo volta ao mesmo slot sem replugar), `submit` (hot path), `suspend`, `release`, `tick` (expira reservas de 30 s).
+- API da UI: `disconnect_slot` (devolve a sessão para o `bye{kicked}`), `set_paused`, `swap`, `snapshot` e `subscribe` (uma `SlotsSnapshot` por mudança).
+- Hot path: tabela `ArcSwap` de controles ativos; `submit` não usa lock nem aloca (`tests/hot_path.rs`), exceto no primeiro input da sessão, que pluga o controle.
+- Decisão: `swap` remove e repluga os controles ativos em ordem de slot; se o replug falhar, o slot volta a `Reserved` e pluga no próximo input.
+- Fica para a T-302/T-304: chamar `assign`/`suspend`/`release`/`tick` a partir do servidor de controle.
