@@ -6,7 +6,17 @@ edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
+[features]
+# `MockDriver`, para testar o resto do server sem driver instalado.
+mock = []
+
 [dependencies]
+crossbeam-channel = "0.5"
+thiserror = { workspace = true }
+
+[dev-dependencies]
+# Liga o mock também ao testar só esta crate (os testes de integração precisam dele).
+padgaming-driver = { path = ".", features = ["mock"] }
 
 [lints]
 workspace = true

@@ -2780,6 +2780,9 @@ dependencies = [
 [[package]]
 name = "padgaming-core"
 version = "0.1.0"
+dependencies = [
+ "padgaming-driver",
+]
 
 [[package]]
 name = "padgaming-desktop"
@@ -2801,6 +2804,11 @@ dependencies = [
 [[package]]
 name = "padgaming-driver"
 version = "0.1.0"
+dependencies = [
+ "crossbeam-channel",
+ "padgaming-driver",
+ "thiserror 2.0.21",
+]
 
 [[package]]
 name = "padgaming-mapping"

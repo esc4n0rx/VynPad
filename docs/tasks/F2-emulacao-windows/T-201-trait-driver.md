@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | P |
 | Depende de | T-001 |
-| Status | ⬜ A fazer |
+| Status | ✅ Concluída |
 
 ## Objetivo
 Isolar o backend de emulação (ViGEm no Windows, uinput no Linux) atrás de uma interface comum, testável sem driver instalado.
@@ -29,8 +29,12 @@ pub trait VirtualPadDriver: Send + Sync {
 - Seleção do backend por `cfg(target_os)` numa factory `default_driver()`.
 
 ## Critérios de aceite
-- [ ] O `padgaming-core` compila e testa usando só o `MockDriver`.
-- [ ] `update()` não aloca (verificado no teste com um allocator contador).
+- [x] O `padgaming-core` compila e testa usando só o `MockDriver`.
+- [x] `update()` não aloca (verificado no teste com um allocator contador).
 
 ## Fora de escopo
 - Implementações reais (T-202, T-801).
+
+## Implementação
+- `default_driver()` ainda devolve um driver que se declara indisponível (`DriverStatus::Error`); T-202 (Windows) e T-801 (Linux) plugam os backends reais.
+- `update()` é verificado sem alocação em `tests/no_alloc.rs` (allocator contador por thread).

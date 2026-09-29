@@ -8,5 +8,8 @@ publish.workspace = true
 
 [dependencies]
 
+[dev-dependencies]
+padgaming-driver = { workspace = true, features = ["mock"] }
+
 [lints]
 workspace = true

@@ -90,7 +90,7 @@ flowchart TD
 ### F2 — Emulação Windows
 | ID | Task | Prio | Est. | Depende de | Status |
 |---|---|---|---|---|---|
-| [T-201](../tasks/F2-emulacao-windows/T-201-trait-driver.md) | Trait `VirtualPadDriver` + driver mock | P0 | P | T-001 | ⬜ |
+| [T-201](../tasks/F2-emulacao-windows/T-201-trait-driver.md) | Trait `VirtualPadDriver` + driver mock | P0 | P | T-001 | ✅ |
 | [T-202](../tasks/F2-emulacao-windows/T-202-backend-vigem.md) | Backend ViGEmBus | P0 | M | T-201 | ⬜ |
 | [T-203](../tasks/F2-emulacao-windows/T-203-slot-manager.md) | Slot Manager (4 controles) | P0 | M | T-202 | ⬜ |
 | [T-204](../tasks/F2-emulacao-windows/T-204-rumble-server.md) | Rumble: driver → client | P1 | M | T-202, T-301 | ⬜ |
