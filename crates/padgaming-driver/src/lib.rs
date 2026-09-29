@@ -7,8 +7,12 @@ use crossbeam_channel::Receiver;
 
 #[cfg(any(test, feature = "mock"))]
 mod mock;
+#[cfg(windows)]
+mod vigem;
 #[cfg(any(test, feature = "mock"))]
 pub use mock::MockDriver;
+#[cfg(windows)]
+pub use vigem::VigemDriver;
 
 /// Quantidade de controles simultâneos.
 pub const MAX_SLOTS: u8 = 4;
@@ -183,22 +187,33 @@ pub trait VirtualPadDriver: Send + Sync {
     fn rumble_events(&self) -> Receiver<RumbleEvent>;
 }
 
-/// Backend da plataforma atual.
+/// Backend da plataforma atual: `ViGEmBus` no Windows.
 ///
-/// Ainda sem backends reais (T-202 no Windows, T-801 no Linux): devolve um driver que
-/// se declara indisponível, para o resto do app já tratar o caso.
+/// Sem `ViGEmBus` instalado o driver é criado mesmo assim, com `status()` em
+/// [`DriverStatus::NotInstalled`]. No Linux (T-801) ainda não há backend: o driver devolvido se
+/// declara indisponível, para o resto do app já tratar o caso.
 pub fn default_driver() -> Box<dyn VirtualPadDriver> {
-    Box::new(Unavailable)
+    #[cfg(windows)]
+    {
+        Box::new(VigemDriver::new())
+    }
+    #[cfg(not(windows))]
+    {
+        Box::new(Unavailable)
+    }
 }
 
+#[cfg(not(windows))]
 struct Unavailable;
 
+#[cfg(not(windows))]
 impl Unavailable {
     fn status() -> DriverStatus {
         DriverStatus::Error("nenhum backend de emulação para esta plataforma".to_owned())
     }
 }
 
+#[cfg(not(windows))]
 impl VirtualPadDriver for Unavailable {
     fn status(&self) -> DriverStatus {
         Self::status()
@@ -239,6 +254,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(windows))]
     #[test]
     fn default_driver_reports_unavailable_until_a_backend_exists() {
         let driver = default_driver();

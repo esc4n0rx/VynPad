@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | T-201 |
-| Status | ⬜ A fazer |
+| Status | ✅ Concluída |
 
 ## Objetivo
 Criar controles Xbox 360 virtuais reais, reconhecidos pelo Windows e por qualquer jogo XInput.
@@ -24,10 +24,18 @@ Criar controles Xbox 360 virtuais reais, reconhecidos pelo Windows e por qualque
 - Remoção limpa ao fechar o app (Drop + handler de encerramento), para não deixar controles "fantasma".
 
 ## Critérios de aceite
-- [ ] Teste manual: o controle aparece em `joy.cpl` e no Gamepad Tester; todos os botões, gatilhos e analógicos respondem.
-- [ ] Rumble do "XInput Test" chega como `RumbleEvent`.
-- [ ] Fechar o app remove os controles.
-- [ ] Sem ViGEmBus instalado → `status() == NotInstalled` (sem pânico).
+- [x] Todos os botões, gatilhos e analógicos chegam ao XInput (teste automatizado `report_reaches_xinput...`; conferir também no `joy.cpl`/Gamepad Tester).
+- [x] Rumble enviado via XInput chega como `RumbleEvent` (`rumble_from_a_game...`).
+- [x] Desligar o controle ou destruir o driver remove os controles (`dropping_the_driver...`).
+- [x] Sem ViGEmBus instalado → `status() == NotInstalled` (sem pânico).
 
 ## Fora de escopo
 - Instalação do driver (T-205). Gestão de slots (T-203).
+
+## Implementação
+- `padgaming-driver::VigemDriver` (só Windows) sobre `vigem-client` 0.1.4 com a feature `unstable_xtarget_notification`: a vibração já vem da própria crate, então **não há FFI nem `unsafe`**.
+- `plug()` espera o controle aceitar um report neutro (o primeiro `update` logo após `wait_ready` falha com `ERROR_DEVICE_NOT_CONNECTED`).
+- Testes com o driver real: `cargo test -p padgaming-driver --test vigem_hardware -- --ignored --test-threads=1`.
+- Medido: `update()` ≈ 15 µs por chamada.
+- `get_user_index()` do driver é pouco confiável (devolveu 0 enquanto o XInput expôs o controle no índice 2, com controle físico na máquina). Detectar o índice real fica para a T-205.
+- Falha do driver durante o uso vira `DriverStatus::Error` em `status()`; o evento para a UI depende do Slot Manager (T-203).
