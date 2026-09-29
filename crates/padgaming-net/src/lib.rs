@@ -1,11 +1,14 @@
 //! Rede do server: loop UDP de input, canal de controle TLS e descoberta mDNS.
 //!
-//! Por enquanto expõe a base de segurança (T-103):
+//! - [`input`]: loop UDP de input, o hot path (T-301).
+//!
+//! Base de segurança (T-103):
 //! - [`identity`]: certificado autoassinado, fingerprint e configuração TLS 1.3.
 //! - [`pairing`]: tokens, PIN, rate limit, device tokens e a trait [`pairing::PairingService`].
 //! - [`qr`]: QR code (SVG) da URI de pareamento.
 
 pub mod identity;
+pub mod input;
 pub mod pairing;
 pub mod qr;
 

@@ -100,7 +100,7 @@ flowchart TD
 ### F3 — Rede
 | ID | Task | Prio | Est. | Depende de | Status |
 |---|---|---|---|---|---|
-| [T-301](../tasks/F3-rede/T-301-udp-input-loop.md) | Loop UDP de input (hot path) | P0 | G | T-102, T-203, T-206 | ⬜ |
+| [T-301](../tasks/F3-rede/T-301-udp-input-loop.md) | Loop UDP de input (hot path) | P0 | G | T-102, T-203, T-206 | ✅ |
 | [T-302](../tasks/F3-rede/T-302-control-server-tls.md) | Servidor de controle TLS | P0 | G | T-103, T-203 | ⬜ |
 | [T-303](../tasks/F3-rede/T-303-descoberta-mdns.md) | Descoberta mDNS + broadcast | P0 | M | T-102 | ⬜ |
 | [T-304](../tasks/F3-rede/T-304-ciclo-vida-sessao.md) | Ciclo de vida da sessão e reconexão | P0 | M | T-301, T-302 | ⬜ |

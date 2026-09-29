@@ -2848,14 +2848,20 @@ dependencies = [
 name = "padgaming-net"
 version = "0.1.0"
 dependencies = [
+ "arc-swap",
  "base64 0.22.1",
+ "crossbeam-channel",
  "getrandom 0.3.4",
+ "padgaming-core",
+ "padgaming-driver",
+ "padgaming-mapping",
  "padgaming-protocol",
  "qrcode",
  "rcgen",
  "rustls",
  "serde_json",
  "sha2 0.11.0",
+ "socket2",
  "subtle",
  "tempfile",
  "thiserror 2.0.21",
@@ -2863,6 +2869,7 @@ dependencies = [
  "tokio-rustls",
  "tracing",
  "uuid",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
