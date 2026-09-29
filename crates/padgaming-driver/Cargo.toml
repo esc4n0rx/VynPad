@@ -18,12 +18,13 @@ tracing = { workspace = true }
 [dev-dependencies]
 # Liga o mock também ao testar só esta crate (os testes de integração precisam dele).
 padgaming-driver = { path = ".", features = ["mock"] }
+tempfile = "3"
 
 [lints]
 workspace = true
 
 [target."cfg(windows)".dependencies]
-vigem-client = { version = "0.1.4", features = ["unstable_xtarget_notification"] }
-
-[target."cfg(windows)".dev-dependencies]
 rusty-xinput = "1.3.0"
+vigem-client = { version = "0.1.4", features = ["unstable_xtarget_notification"] }
+windows-service = "0.8.1"
+winreg = "0.56.0"

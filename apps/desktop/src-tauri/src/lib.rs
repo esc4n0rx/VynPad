@@ -1,5 +1,6 @@
 //! Shell Tauri do server: janela, plugins e commands expostos à UI.
 
+mod driver;
 mod error;
 mod logging;
 
@@ -55,7 +56,13 @@ fn log_from_frontend(level: FrontendLogLevel, message: &str) -> Result<(), AppEr
 }
 
 fn register_commands<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
-    builder.invoke_handler(tauri::generate_handler![app_info, log_from_frontend])
+    builder.invoke_handler(tauri::generate_handler![
+        app_info,
+        log_from_frontend,
+        driver::driver_status,
+        driver::open_vigem_download,
+        driver::xinput_slots,
+    ])
 }
 
 /// Traz a janela principal para frente (usado quando uma segunda instância é aberta).
@@ -87,6 +94,11 @@ pub fn run() {
     }));
 
     register_commands(builder)
+        .manage(driver::AppState::with_default_driver())
+        .setup(|app| {
+            driver::spawn_watcher(app.handle());
+            Ok(())
+        })
         .plugin(tauri_plugin_opener::init())
         .run(tauri::generate_context!())
         .expect("falha ao iniciar o PadGaming");
@@ -94,6 +106,9 @@ pub fn run() {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
+    use padgaming_driver::MockDriver;
     use serde_json::{Value, json};
     use tauri::ipc::{CallbackFn, InvokeBody};
     use tauri::test::{INVOKE_KEY, get_ipc_response, mock_builder, mock_context, noop_assets};
@@ -104,6 +119,7 @@ mod tests {
     /// Chama um command pela camada IPC do Tauri, como o frontend faria.
     fn invoke(cmd: &str, args: Value) -> Result<Value, Value> {
         let app = register_commands(mock_builder())
+            .manage(driver::AppState::new(Arc::new(MockDriver::default())))
             .build(mock_context(noop_assets()))
             .expect("app de teste");
         let webview =
@@ -130,6 +146,15 @@ mod tests {
         let info = invoke("app_info", json!({})).unwrap();
         assert_eq!(info["app_version"], env!("CARGO_PKG_VERSION"));
         assert_eq!(info["core_version"], padgaming_core::VERSION);
+    }
+
+    #[test]
+    fn driver_status_e_xinput_slots_respondem_pela_camada_ipc() {
+        let status = invoke("driver_status", json!({})).unwrap();
+        assert_eq!(status, json!({ "state": "ready" }));
+
+        let slots = invoke("xinput_slots", json!({})).unwrap();
+        assert_eq!(slots.as_array().unwrap().len(), 4);
     }
 
     #[test]

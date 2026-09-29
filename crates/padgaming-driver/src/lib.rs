@@ -8,11 +8,18 @@ use crossbeam_channel::Receiver;
 #[cfg(any(test, feature = "mock"))]
 mod mock;
 #[cfg(windows)]
+pub mod setup;
+#[cfg(windows)]
 mod vigem;
+#[cfg(windows)]
+pub mod xinput;
 #[cfg(any(test, feature = "mock"))]
 pub use mock::MockDriver;
 #[cfg(windows)]
 pub use vigem::VigemDriver;
+
+/// Página oficial de download do `ViGEmBus`, para onde o usuário é levado se faltar o driver.
+pub const VIGEM_DOWNLOAD_URL: &str = "https://vigembusdriver.com/download/";
 
 /// Quantidade de controles simultâneos.
 pub const MAX_SLOTS: u8 = 4;
@@ -120,6 +127,8 @@ pub enum DriverStatus {
         /// Versão mínima exigida.
         required: String,
     },
+    /// Instalado, mas o serviço está parado (o app pode ter aberto antes do serviço subir).
+    ServiceStopped,
     /// Qualquer outra falha.
     Error(String),
 }

@@ -79,8 +79,8 @@ fn report_reaches_xinput_and_unplug_removes_the_pad() {
         );
     };
 
-    let reported = driver.user_index(&pad);
-    println!("índice XInput real: {index}; get_user_index: {reported:?}");
+    // O índice medido no plug tem de ser o que o XInput realmente usa.
+    assert_eq!(driver.user_index(&pad), Some(u8::try_from(index).unwrap()));
 
     driver.unplug(pad).unwrap();
     std::thread::sleep(Duration::from_millis(300));
@@ -198,4 +198,37 @@ fn update_cost_is_small() {
         per_call < Duration::from_micros(500),
         "update() lento: {per_call:?}"
     );
+}
+
+#[test]
+#[ignore = "requer ViGEmBus instalado"]
+fn status_is_ready_and_service_is_running() {
+    use padgaming_driver::setup::{self, ServiceState};
+
+    let driver = VigemDriver::new();
+    assert_eq!(driver.status(), DriverStatus::Ready);
+    assert_eq!(setup::service_state(), ServiceState::Running);
+    let version = setup::installed_version().expect("versão no registro");
+    println!("ViGEmBus instalado: {version}");
+}
+
+#[test]
+#[ignore = "requer ViGEmBus instalado"]
+fn plugged_pads_are_seen_as_occupied_xinput_slots() {
+    use padgaming_driver::xinput::XInputProbe;
+
+    let probe = XInputProbe::load().expect("XInput indisponível");
+    let driver = driver();
+    let before = probe.connected();
+    let pad = driver.plug(slot(0)).unwrap();
+    let index = usize::from(driver.user_index(&pad).expect("índice do controle novo"));
+    assert!(
+        !before[index],
+        "o índice devolvido já estava ocupado antes do plug"
+    );
+    assert!(
+        probe.connected()[index],
+        "o controle novo não aparece como ocupado"
+    );
+    driver.unplug(pad).unwrap();
 }

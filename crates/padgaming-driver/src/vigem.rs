@@ -15,21 +15,24 @@ use std::time::{Duration, Instant};
 use crossbeam_channel::{Receiver, Sender, unbounded};
 use vigem_client::{Client, Error as VigemError, TargetId, XButtons, XGamepad, Xbox360Wired};
 
+use crate::setup::{self, ServiceState};
+use crate::xinput::XInputProbe;
 use crate::{
     DriverError, DriverStatus, MAX_SLOTS, PadHandle, RumbleEvent, SlotId, VirtualPadDriver, XReport,
 };
 
 /// Quanto esperar um controle novo aceitar reports.
 const SETTLE_TIMEOUT: Duration = Duration::from_secs(2);
+/// Quanto esperar o `XInput` enxergar o controle novo, para descobrir o índice dele.
+const XINPUT_VISIBLE_TIMEOUT: Duration = Duration::from_millis(500);
 
 type Target = Xbox360Wired<Arc<Client>>;
-
-/// Versão mínima do `ViGEmBus` mostrada quando o client da crate recusa o driver instalado.
-const REQUIRED_BUS: &str = "ViGEmBus 1.16 ou superior";
 
 /// Controle ligado em um slot.
 struct Pad {
     token: u64,
+    /// Índice `XInput` que o Windows deu ao controle, achado por diferença de ocupação.
+    xinput_index: Option<u8>,
     target: Option<Target>,
     notifier: Option<JoinHandle<()>>,
 }
@@ -50,6 +53,7 @@ pub struct VigemDriver {
     status: Mutex<DriverStatus>,
     pads: [Mutex<Option<Pad>>; MAX_SLOTS as usize],
     next_token: AtomicU64,
+    probe: Option<XInputProbe>,
     rumble_tx: Sender<RumbleEvent>,
     rumble_rx: Receiver<RumbleEvent>,
 }
@@ -70,6 +74,7 @@ impl VigemDriver {
             status: Mutex::new(DriverStatus::NotInstalled),
             pads: Default::default(),
             next_token: AtomicU64::new(1),
+            probe: XInputProbe::load(),
             rumble_tx,
             rumble_rx,
         };
@@ -95,7 +100,11 @@ impl VigemDriver {
                 Ok(connected)
             }
             Err(error) => {
-                let status = status_from_error(error);
+                let status = setup::classify_bus_error(
+                    error,
+                    setup::service_state(),
+                    setup::installed_version(),
+                );
                 *Self::lock(&self.status) = status.clone();
                 Err(status)
             }
@@ -106,17 +115,6 @@ impl VigemDriver {
     fn note_failure(&self, error: VigemError) {
         tracing::error!(%error, "ViGEmBus falhou durante o uso");
         *Self::lock(&self.status) = DriverStatus::Error(error.to_string());
-    }
-}
-
-fn status_from_error(error: VigemError) -> DriverStatus {
-    match error {
-        VigemError::BusNotFound => DriverStatus::NotInstalled,
-        VigemError::BusVersionMismatch => DriverStatus::Outdated {
-            found: "incompatível".to_owned(),
-            required: REQUIRED_BUS.to_owned(),
-        },
-        other => DriverStatus::Error(other.to_string()),
     }
 }
 
@@ -158,13 +156,40 @@ fn settle(target: &mut Target) -> Result<(), DriverError> {
     }
 }
 
+/// Espera o `XInput` expor o controle novo e devolve o índice que passou a estar ocupado.
+///
+/// Se houver mais de um índice novo (um controle físico chegou junto), vale o menor.
+fn find_new_index(probe: &XInputProbe, before: [bool; MAX_SLOTS as usize]) -> Option<u8> {
+    let deadline = Instant::now() + XINPUT_VISIBLE_TIMEOUT;
+    loop {
+        let now = probe.connected();
+        if let Some(index) = (0..MAX_SLOTS).find(|i| {
+            let i = usize::from(*i);
+            now[i] && !before[i]
+        }) {
+            return Some(index);
+        }
+        if Instant::now() >= deadline {
+            return None;
+        }
+        thread::sleep(Duration::from_millis(10));
+    }
+}
+
 fn backend(error: VigemError) -> DriverError {
     DriverError::Backend(error.to_string())
 }
 
 impl VirtualPadDriver for VigemDriver {
     fn status(&self) -> DriverStatus {
-        if Self::lock(&self.client).is_none() {
+        let connected = Self::lock(&self.client).is_some();
+        if connected {
+            // O serviço pode parar com o app aberto: solta a conexão e passa a reconectar.
+            if setup::service_state() == ServiceState::Stopped {
+                *Self::lock(&self.client) = None;
+                *Self::lock(&self.status) = DriverStatus::ServiceStopped;
+            }
+        } else {
             let _ = self.connect_client();
         }
         Self::lock(&self.status).clone()
@@ -177,11 +202,17 @@ impl VirtualPadDriver for VigemDriver {
             return Err(DriverError::SlotOccupied(slot));
         }
 
+        let occupied_before = self.probe.as_ref().map(XInputProbe::connected);
         let mut target = Xbox360Wired::new(client, TargetId::XBOX360_WIRED);
         target.plugin().map_err(backend)?;
         // Se algo falhar daqui em diante, o `Drop` do target desliga o controle.
         target.wait_ready().map_err(backend)?;
         settle(&mut target)?;
+        let xinput_index = self
+            .probe
+            .as_ref()
+            .zip(occupied_before)
+            .and_then(|(probe, before)| find_new_index(probe, before));
 
         let tx = self.rumble_tx.clone();
         let notifier = target
@@ -198,6 +229,7 @@ impl VirtualPadDriver for VigemDriver {
         let token = self.next_token.fetch_add(1, Ordering::Relaxed);
         *entry = Some(Pad {
             token,
+            xinput_index,
             target: Some(target),
             notifier: Some(notifier),
         });
@@ -237,12 +269,13 @@ impl VirtualPadDriver for VigemDriver {
 
     fn user_index(&self, handle: &PadHandle) -> Option<u8> {
         let mut entry = Self::lock(&self.pads[usize::from(handle.slot().index())]);
-        let target = entry
-            .as_mut()
-            .filter(|p| p.token == handle.token())?
-            .target
-            .as_mut()?;
-        let index = u8::try_from(target.get_user_index().ok()?).ok()?;
+        let pad = entry.as_mut().filter(|p| p.token == handle.token())?;
+        // `get_user_index` do driver é pouco confiável; a diferença de ocupação do XInput,
+        // medida no plug, é a fonte principal.
+        if pad.xinput_index.is_some() {
+            return pad.xinput_index;
+        }
+        let index = u8::try_from(pad.target.as_mut()?.get_user_index().ok()?).ok()?;
         (index < MAX_SLOTS).then_some(index)
     }
 
@@ -271,21 +304,5 @@ mod tests {
         assert_eq!((pad.left_trigger, pad.right_trigger), (1, 2));
         assert_eq!((pad.thumb_lx, pad.thumb_ly), (-3, 4));
         assert_eq!((pad.thumb_rx, pad.thumb_ry), (-5, 6));
-    }
-
-    #[test]
-    fn bus_errors_become_driver_status() {
-        assert_eq!(
-            status_from_error(VigemError::BusNotFound),
-            DriverStatus::NotInstalled
-        );
-        assert!(matches!(
-            status_from_error(VigemError::BusVersionMismatch),
-            DriverStatus::Outdated { .. }
-        ));
-        assert!(matches!(
-            status_from_error(VigemError::BusAccessFailed(5)),
-            DriverStatus::Error(_)
-        ));
     }
 }

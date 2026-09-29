@@ -10,6 +10,9 @@ use serde::Serialize;
 pub enum ErrorCode {
     Internal,
     InvalidInput,
+    /// Recurso indisponível nesta plataforma (só é devolvido fora do Windows).
+    #[cfg_attr(windows, allow(dead_code))]
+    Unsupported,
 }
 
 impl ErrorCode {
@@ -17,6 +20,7 @@ impl ErrorCode {
         match self {
             Self::Internal => "errors.internal",
             Self::InvalidInput => "errors.invalid_input",
+            Self::Unsupported => "errors.unsupported",
         }
     }
 }
