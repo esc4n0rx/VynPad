@@ -34,6 +34,8 @@ pub mod control;
 pub mod crypto;
 pub mod error;
 pub mod packet;
+#[cfg(feature = "std")]
+pub mod pairing_uri;
 pub mod secret;
 pub mod session;
 

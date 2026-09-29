@@ -27,6 +27,40 @@ fn num<T: TryFrom<i64>>(v: &Value, field: &str) -> T {
     T::try_from(n).unwrap_or_else(|_| panic!("campo {field} fora da faixa"))
 }
 
+// ---------------------------------------------------------------- URI de pareamento
+
+#[test]
+fn pairing_uri_vectors() {
+    use padgaming_protocol::pairing_uri::PairingUri;
+
+    let vectors = load("pairing-uri.json");
+    assert!(!vectors.is_empty());
+    for v in vectors {
+        let name = v["name"].as_str().unwrap();
+        let parsed = PairingUri::parse(v["uri"].as_str().unwrap());
+        let expect = &v["expect"];
+        if expect["result"] == "ok" {
+            let got = parsed.unwrap_or_else(|e| panic!("{name}: {e}"));
+            let p = &expect["params"];
+            let hosts: Vec<String> = got.hosts.iter().map(ToString::to_string).collect();
+            assert_eq!(json!(hosts), p["hosts"], "{name}");
+            assert_eq!(json!(got.port), p["port"], "{name}");
+            assert_eq!(hex::encode(got.fingerprint), p["fingerprint_hex"], "{name}");
+            assert_eq!(
+                hex::encode(got.pairing_token.expose()),
+                p["pairing_token_hex"],
+                "{name}"
+            );
+            assert_eq!(json!(got.name), p["name"], "{name}");
+            let again = PairingUri::parse(&got.encode().unwrap()).unwrap();
+            assert_eq!(again, got, "{name}: roundtrip");
+        } else {
+            let err = parsed.expect_err(name);
+            assert_eq!(err.code(), expect["error"], "{name}");
+        }
+    }
+}
+
 // ---------------------------------------------------------------- UDP
 
 /// Decodificação completa como o server/client fazem: passos 1–10 da §6.5.

@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | G |
 | Depende de | T-102 |
-| Status | ⬜ A fazer |
+| Status | ✅ Concluída |
 
 ## Objetivo
 Garantir que só dispositivos autorizados controlem o PC, sem exigir que o usuário entenda de certificados.
@@ -27,10 +27,16 @@ Garantir que só dispositivos autorizados controlem o PC, sem exigir que o usuá
 - Opção "Regenerar identidade do server" (invalida todos os pareamentos) documentada para a T-605.
 
 ## Critérios de aceite
-- [ ] Um token expirado ou reutilizado é rejeitado.
-- [ ] O 6º PIN errado dispara o bloqueio.
-- [ ] O banco nunca contém tokens em texto puro.
-- [ ] Testes unitários cobrindo cada caminho de `auth`.
+- [x] Um token expirado ou reutilizado é rejeitado.
+- [x] O 6º PIN errado dispara o bloqueio.
+- [x] O banco nunca contém tokens em texto puro.
+- [x] Testes unitários cobrindo cada caminho de `auth`.
 
 ## Fora de escopo
 - Loop de accept TCP e sessões (T-302). Telas de pareamento (T-603).
+
+## Implementação
+- `padgaming-net::identity`: `ServerIdentity` (`load_or_create`, `regenerate`, `tls_config` só TLS 1.3, provedor `ring`).
+- `padgaming-net::pairing`: `PairingService`/`PairingManager`, `DeviceStore`, `Clock` injetável.
+- `padgaming-net::qr`: SVG do QR. `padgaming-protocol::pairing_uri`: encoder/parser da URI, conferido contra `pairing-uri.json`.
+- O PIN vale 2 min (PROTOCOLO §4.3 atualizado). O bloqueio conta erros por IP **e** globalmente.

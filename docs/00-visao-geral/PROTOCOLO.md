@@ -86,7 +86,7 @@ padgaming://pair?v=1&h=192.168.0.10,10.0.0.5&p=47800&fp=<32 B base64url>&t=<16 B
 | Credencial | Formato | Regras |
 |---|---|---|
 | `pairing_token` | 128 bits aleatórios | Uso único, expira em 5 min. Transportado no QR. |
-| `pin` | 6 dígitos (texto, preserva zeros à esquerda) | Exibido no server, expira em 5 min. Após **5 erros** (contagem global do server, não por dispositivo), bloqueio de **60 s** (`reject` `locked`). |
+| `pin` | 6 dígitos (texto, preserva zeros à esquerda) | Exibido no server, expira em 2 min, uso único. Após **5 erros** (contagem global do server e também por IP), bloqueio de **60 s** (`reject` `locked`). |
 | `device_token` | 256 bits aleatórios | Emitido no `welcome` do primeiro pareamento. O server guarda só o **SHA-256**. O client guarda junto com o fingerprint fixado. |
 
 **Fluxo por PIN:** o client conecta via descoberta confiando no primeiro certificado (TOFU); as duas telas mostram os 8 primeiros bytes do fingerprint (`fp` do mDNS) para o usuário conferir antes de digitar o PIN.
