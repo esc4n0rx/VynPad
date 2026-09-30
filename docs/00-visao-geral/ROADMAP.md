@@ -111,7 +111,7 @@ flowchart TD
 ### F4 — Persistência
 | ID | Task | Prio | Est. | Depende de | Status |
 |---|---|---|---|---|---|
-| [T-401](../tasks/F4-persistencia/T-401-setup-sqlx.md) | Setup SQLite + sqlx + migrations | P0 | P | T-001 | ⬜ |
+| [T-401](../tasks/F4-persistencia/T-401-setup-sqlx.md) | Setup SQLite + sqlx + migrations | P0 | P | T-001 | ✅ |
 | [T-402](../tasks/F4-persistencia/T-402-schema-v1.md) | Schema v1 | P0 | M | T-401 | ⬜ |
 | [T-403](../tasks/F4-persistencia/T-403-repositorios-commands.md) | Repositórios, serviços e commands | P0 | M | T-402, T-506 | ⬜ |
 

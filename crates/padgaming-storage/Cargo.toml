@@ -7,6 +7,15 @@ rust-version.workspace = true
 publish.workspace = true
 
 [dependencies]
+dirs = { workspace = true }
+# `sqlite` traz o SQLite embutido (bundled); sem TLS, pois o banco é local.
+sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "sqlite", "macros", "migrate"] }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"
 
 [lints]
 workspace = true
