@@ -6,3 +6,4 @@ Rede do server: loop UDP de input, canal de controle TLS e descoberta mDNS.
 - `control`: servidor de controle TLS: handshake, sessões, keepalive e confirmação de novos dispositivos (T-302).
 - `identity`, `pairing`, `qr`: certificado, fingerprint, tokens/PIN e QR do pareamento (T-103).
 - `discovery`: anúncio mDNS, respondedor de broadcast `PGDISC1` e dispositivos próximos (T-303).
+- `firewall`: verificação, correção (UAC) e autodiagnóstico das regras do firewall do Windows (T-306).
