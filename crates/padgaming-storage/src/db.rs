@@ -8,8 +8,8 @@ use sqlx::migrate::{MigrateError, Migrator};
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteSynchronous};
 use sqlx::{Row, SqlitePool};
 
-use crate::backup;
 use crate::error::{MigrationFailure, StorageError};
+use crate::{backup, seed};
 
 /// Nome do arquivo do banco.
 pub const DB_FILE: &str = "padgaming.db";
@@ -42,8 +42,11 @@ pub struct Database {
 
 impl Database {
     /// Abre (ou cria) `padgaming.db` em `dir` com as migrations embutidas.
+    ///
+    /// Depois de migrar, aplica os seeds ([`seed::apply`]) e a retenção do histórico
+    /// ([`seed::prune_connection_log`]); os dois são idempotentes.
     pub async fn open(dir: &Path) -> Result<Self, StorageError> {
-        Self::open_with(dir, &MIGRATOR).await
+        Self::open_with(dir, &MIGRATOR).await?.maintain().await
     }
 
     /// Como [`Self::open`], com outro conjunto de migrations (testes).
@@ -72,7 +75,7 @@ impl Database {
 
     /// Banco em memória, com as migrations embutidas (testes).
     pub async fn in_memory() -> Result<Self, StorageError> {
-        Self::in_memory_with(&MIGRATOR).await
+        Self::in_memory_with(&MIGRATOR).await?.maintain().await
     }
 
     /// Banco em memória com outro conjunto de migrations.
@@ -90,6 +93,27 @@ impl Database {
             StorageError::Migration(Box::new(failure(migrator, &error, None, false, false)))
         })?;
         Ok(Self { pool, path: None })
+    }
+
+    /// Seeds e retenção do boot. Se falharem o banco é fechado e o erro sobe.
+    async fn maintain(self) -> Result<Self, StorageError> {
+        let now = seed::now_ms();
+        let result = async {
+            seed::apply(&self.pool, now).await?;
+            let pruned = seed::prune_connection_log(&self.pool, now).await?;
+            if pruned > 0 {
+                tracing::info!(pruned, "histórico de conexões podado");
+            }
+            Ok::<(), sqlx::Error>(())
+        }
+        .await;
+        match result {
+            Ok(()) => Ok(self),
+            Err(error) => {
+                self.pool.close().await;
+                Err(error.into())
+            }
+        }
     }
 
     /// O pool de conexões.

@@ -5,6 +5,9 @@
 //! - Antes de migrar um banco que já tem dados, faz o backup `padgaming.db.bak-<versão>` (os 3
 //!   últimos ficam); se a migração falhar, restaura o backup e devolve um erro legível
 //!   ([`StorageError::Migration`]).
+//! - Schema v1 (`migrations/0001_schema.sql`): `settings`, `profiles`, `devices` e
+//!   `connection_log`. Os seeds (perfil "Padrão" e configurações padrão) e a retenção do histórico
+//!   (30 dias / 10 mil linhas) rodam em todo boot, em [`seed`].
 //! - [`Database::in_memory`] cria um banco em memória para os testes.
 //!
 //! # Migrations
@@ -24,6 +27,7 @@
 pub mod backup;
 mod db;
 mod error;
+pub mod seed;
 
 pub use db::{DB_FILE, Database, MIGRATOR, default_data_dir};
 pub use error::{MigrationFailure, StorageError};

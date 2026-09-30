@@ -1,7 +1,8 @@
 # padgaming-storage
 
-Persistência em SQLite (`sqlx`): pool, migrations embutidas, backup e restauração. Os
-repositórios chegam na T-403 e o schema na T-402.
+Persistência em SQLite (`sqlx`): pool, migrations embutidas, backup e restauração, schema v1
+(`settings`, `profiles`, `devices`, `connection_log`), seeds e retenção do histórico. Os
+repositórios chegam na T-403.
 
 - Banco: `%APPDATA%\PadGaming\padgaming.db` (Windows) ou `~/.local/share/padgaming/padgaming.db`
   (Linux); ver `default_data_dir()`.

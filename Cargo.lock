@@ -3266,6 +3266,8 @@ name = "padgaming-storage"
 version = "0.1.0"
 dependencies = [
  "dirs",
+ "padgaming-mapping",
+ "serde_json",
  "sqlx",
  "tempfile",
  "thiserror 2.0.21",
