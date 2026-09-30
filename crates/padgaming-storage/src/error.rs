@@ -102,3 +102,33 @@ impl StorageError {
         self.to_string()
     }
 }
+
+/// Falha de uma operação de dados (repositórios e serviços), depois de o banco estar aberto.
+#[derive(Debug, thiserror::Error)]
+pub enum DataError {
+    /// Não existe o registro pedido.
+    #[error("{0} não encontrado")]
+    NotFound(&'static str),
+    /// O dado não passou na validação (o texto diz o motivo, para mostrar ao usuário).
+    #[error("{0}")]
+    Invalid(String),
+    /// O perfil embutido não pode ser editado nem apagado; duplique-o para personalizar.
+    #[error(
+        "o perfil padrão é do app e não pode ser alterado nem apagado; duplique-o para personalizar"
+    )]
+    Builtin,
+    /// O perfil está em uso; apagar exige confirmação.
+    #[error("o perfil está em uso por {devices} dispositivo(s) e {slots} controle(s) ativo(s)")]
+    InUse {
+        /// Dispositivos que o têm como perfil padrão.
+        devices: u32,
+        /// Controles ativos usando o perfil agora.
+        slots: u32,
+    },
+    /// Arquivo de perfil (`.padprofile`) inválido.
+    #[error("arquivo de perfil inválido: {0}")]
+    Import(String),
+    /// Erro do SQLite/sqlx.
+    #[error("erro no banco de dados: {0}")]
+    Database(#[from] sqlx::Error),
+}

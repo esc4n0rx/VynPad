@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE profiles SET name = ?, description = ?, icon = ?, schema_version = ?, config = ?, updated_at = ? WHERE id = ? AND is_builtin = 0",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": []
+  },
+  "hash": "92f875a8f9ffeff2c4f3453176844e62a0ab204c479de7c6b7ef093388be2b85"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO devices (id, name, model, os_version, token_hash, paired_at, revoked) VALUES (?, ?, ?, ?, ?, ?, 0) ON CONFLICT (id) DO UPDATE SET name = excluded.name, model = excluded.model, os_version = excluded.os_version, token_hash = excluded.token_hash, paired_at = excluded.paired_at, revoked = 0",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "84ec335859bbdb3a19bf3d56a332a9b910c57167556fd7a6a4e836a831f36558"
+}

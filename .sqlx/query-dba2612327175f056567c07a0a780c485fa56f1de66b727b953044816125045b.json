@@ -1,0 +1,86 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id, device_id, event, slot, detail, at FROM connection_log WHERE (?1 IS NULL OR device_id = ?1) AND (?2 IS NULL OR id < ?2) ORDER BY id DESC LIMIT ?3",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "connection_log",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "name": "device_id",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "connection_log",
+            "name": "device_id"
+          }
+        }
+      },
+      {
+        "name": "event",
+        "ordinal": 2,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "connection_log",
+            "name": "event"
+          }
+        }
+      },
+      {
+        "name": "slot",
+        "ordinal": 3,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "connection_log",
+            "name": "slot"
+          }
+        }
+      },
+      {
+        "name": "detail",
+        "ordinal": 4,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "connection_log",
+            "name": "detail"
+          }
+        }
+      },
+      {
+        "name": "at",
+        "ordinal": 5,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "connection_log",
+            "name": "at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "dba2612327175f056567c07a0a780c485fa56f1de66b727b953044816125045b"
+}

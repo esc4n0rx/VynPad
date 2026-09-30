@@ -4,7 +4,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use padgaming_mapping::{Profile, SCHEMA_VERSION};
-use sqlx::SqlitePool;
+use sqlx::{SqliteConnection, SqlitePool};
 
 /// `id` do perfil "Padrão" embutido. Fixo, para o app achá-lo e para o seed ser idempotente.
 pub const BUILTIN_PROFILE_ID: &str = "00000000-0000-4000-8000-000000000001";
@@ -46,10 +46,22 @@ pub fn now_ms() -> i64 {
 /// nunca é tocado.
 pub async fn apply(pool: &SqlitePool, now: i64) -> Result<(), sqlx::Error> {
     let mut tx = pool.begin().await?;
+    apply_settings_in(&mut tx, now).await?;
+    apply_builtin_profile_in(&mut tx, now).await?;
+    tx.commit().await
+}
+
+/// Só o perfil "Padrão" (recria se sumiu, repõe se foi adulterado).
+pub async fn apply_builtin_profile(pool: &SqlitePool, now: i64) -> Result<(), sqlx::Error> {
+    let mut tx = pool.begin().await?;
+    apply_builtin_profile_in(&mut tx, now).await?;
+    tx.commit().await
+}
+
+async fn apply_settings_in(tx: &mut SqliteConnection, now: i64) -> Result<(), sqlx::Error> {
     for (key, value) in DEFAULT_SETTINGS {
         sqlx::query(
-            "INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?) \
-             ON CONFLICT (key) DO NOTHING",
+            "INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)              ON CONFLICT (key) DO NOTHING",
         )
         .bind(key)
         .bind(value)
@@ -57,15 +69,12 @@ pub async fn apply(pool: &SqlitePool, now: i64) -> Result<(), sqlx::Error> {
         .execute(&mut *tx)
         .await?;
     }
+    Ok(())
+}
+
+async fn apply_builtin_profile_in(tx: &mut SqliteConnection, now: i64) -> Result<(), sqlx::Error> {
     sqlx::query(
-        "INSERT INTO profiles \
-             (id, name, description, icon, is_builtin, schema_version, config, created_at, updated_at) \
-         VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?) \
-         ON CONFLICT (id) DO UPDATE SET \
-             name = excluded.name, description = excluded.description, icon = excluded.icon, \
-             is_builtin = 1, schema_version = excluded.schema_version, config = excluded.config, \
-             updated_at = CASE WHEN profiles.config = excluded.config \
-                               THEN profiles.updated_at ELSE excluded.updated_at END",
+        "INSERT INTO profiles              (id, name, description, icon, is_builtin, schema_version, config, created_at, updated_at)          VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?)          ON CONFLICT (id) DO UPDATE SET              name = excluded.name, description = excluded.description, icon = excluded.icon,              is_builtin = 1, schema_version = excluded.schema_version, config = excluded.config,              updated_at = CASE WHEN profiles.config = excluded.config                                THEN profiles.updated_at ELSE excluded.updated_at END",
     )
     .bind(BUILTIN_PROFILE_ID)
     .bind(BUILTIN_PROFILE_NAME)
@@ -77,7 +86,7 @@ pub async fn apply(pool: &SqlitePool, now: i64) -> Result<(), sqlx::Error> {
     .bind(now)
     .execute(&mut *tx)
     .await?;
-    tx.commit().await
+    Ok(())
 }
 
 /// Aplica a retenção do `connection_log`: apaga o que passou de 30 dias e, do que sobrar, tudo

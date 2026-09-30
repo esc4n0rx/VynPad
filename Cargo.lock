@@ -3148,6 +3148,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "padgaming-dbprep"
+version = "0.1.0"
+dependencies = [
+ "sqlx",
+ "tokio",
+]
+
+[[package]]
 name = "padgaming-desktop"
 version = "0.1.0"
 dependencies = [
@@ -3267,12 +3275,14 @@ version = "0.1.0"
 dependencies = [
  "dirs",
  "padgaming-mapping",
+ "serde",
  "serde_json",
  "sqlx",
  "tempfile",
  "thiserror 2.0.21",
  "tokio",
  "tracing",
+ "uuid",
 ]
 
 [[package]]

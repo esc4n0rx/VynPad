@@ -8,6 +8,9 @@
 //! - Schema v1 (`migrations/0001_schema.sql`): `settings`, `profiles`, `devices` e
 //!   `connection_log`. Os seeds (perfil "Padrão" e configurações padrão) e a retenção do histórico
 //!   (30 dias / 10 mil linhas) rodam em todo boot, em [`seed`].
+//! - Repositórios e serviços sobre o schema: [`SettingsService`] (`AppSettings` tipada e o aviso
+//!   `settings:changed`), [`ProfileService`] (CRUD, duplicar, `.padprofile`, troca a quente via
+//!   [`ProfileHost`]), [`DeviceRepo`] e [`ConnectionLog`]. As queries são verificadas em compilação.
 //! - [`Database::in_memory`] cria um banco em memória para os testes.
 //!
 //! # Migrations
@@ -19,16 +22,26 @@
 //!
 //! # Queries verificadas em compilação
 //!
-//! O CI não tem banco, então as macros `query!`/`query_as!` (T-403) usam o modo offline: o
+//! O CI não tem banco, então as macros `query!`/`query_as!` usam o modo offline: o
 //! `SQLX_OFFLINE=true` em `.cargo/config.toml` faz o compilador ler os metadados de `.sqlx/`, que
-//! são versionados. Para atualizá-los depois de mudar uma query ou uma migration, veja o README
-//! do crate.
+//! são versionados. Para atualizá-los depois de mudar uma query ou uma migration, rode
+//! `scripts/sqlx-prepare.sh` (veja o README do crate).
 
 pub mod backup;
 mod db;
+pub mod devices;
 mod error;
+pub mod log;
+pub mod profiles;
 pub mod seed;
+pub mod settings;
 
 pub use db::{DB_FILE, Database, MIGRATOR, default_data_dir};
-pub use error::{MigrationFailure, StorageError};
+pub use devices::{Device, DeviceDefaults, DeviceRepo, NewPairing};
+pub use error::{DataError, MigrationFailure, StorageError};
+pub use log::{ConnectionLog, LogEntry, LogEvent, LogQuery};
+pub use profiles::{
+    NoHost, ProfileHost, ProfileInput, ProfileRepo, ProfileService, ProfileSummary, StoredProfile,
+};
+pub use settings::{AppSettings, Language, Ports, SettingsRepo, SettingsService, Theme};
 pub use sqlx::SqlitePool;

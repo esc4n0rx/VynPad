@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE devices SET preferred_slot = ?, default_profile_id = ?, color = ? WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "86be82f66f6d7dce481b09bd6db2b18c4f6186edfa0ed74f2157ffa9dafc319b"
+}

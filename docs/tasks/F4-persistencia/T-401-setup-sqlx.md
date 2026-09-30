@@ -35,6 +35,6 @@ Pronto em `padgaming-storage` (`Database`):
 - Backup `padgaming.db.bak-<versão>` (via `VACUUM INTO`, consistente com o WAL) só quando há migrations pendentes **e** o banco já tem dados; ficam os 3 de versão mais alta.
 - Migration que falha: fecha o pool, restaura o backup e devolve `StorageError::Migration` com mensagem em português (etapa, se os dados foram restaurados, onde está o backup, detalhe técnico). Como o SQLite tem DDL transacional, uma migration com instrução quebrada no meio não deixa rastro. Banco novo (sem dados) cuja migration falha é descartado. Banco de versão mais nova que o app → `StorageError::TooNew`; migration editada depois de publicada → erro claro do checksum.
 - `Database::in_memory()` para os testes (uma conexão só, senão cada conexão seria um banco).
-- Sem `DATABASE_URL`: `.cargo/config.toml` define `SQLX_OFFLINE=true`. Ainda não há macros `query!` (não há tabelas), então `.sqlx/` só passa a existir na T-403; o procedimento para gerá-lo e o `sqlx-cli` estão no README do crate (o `sqlx-cli` **não está instalado** nesta máquina).
+- Sem `DATABASE_URL`: `.cargo/config.toml` define `SQLX_OFFLINE=true`. Ainda não há macros `query!` (não há tabelas), então `.sqlx/` passou a existir na T-403, gerado por `scripts/sqlx-prepare.sh` (sem `sqlx-cli`).
 
 Testes (15, arquivo real em pasta temporária): primeiro boot, pragmas, atualização com backup e dados preservados, falha com restauração (e o app subindo de novo depois), banco novo com falha, rotação dos backups, banco mais novo, migration editada, memória e caminho padrão.

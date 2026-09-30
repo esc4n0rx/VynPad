@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO connection_log (device_id, event, slot, detail, at) VALUES (?, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "9e9252e826df9190796b717bdfc28a9f203fb20923898d8367d4d1de5c4a80bf"
+}
