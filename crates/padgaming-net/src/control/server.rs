@@ -108,8 +108,8 @@ impl Shared {
 pub struct ControlServer {
     shared: Arc<Shared>,
     local_addr: SocketAddr,
-    accept: Option<JoinHandle<()>>,
-    watchdog: Option<JoinHandle<()>>,
+    accept: Mutex<Option<JoinHandle<()>>>,
+    watchdog: Mutex<Option<JoinHandle<()>>>,
 }
 
 impl ControlServer {
@@ -147,8 +147,8 @@ impl ControlServer {
         Ok(Self {
             shared,
             local_addr,
-            accept: Some(accept),
-            watchdog: Some(watchdog),
+            accept: Mutex::new(Some(accept)),
+            watchdog: Mutex::new(Some(watchdog)),
         })
     }
 
@@ -212,12 +212,25 @@ impl ControlServer {
     }
 
     /// Para de aceitar, manda `bye{shutdown}` às sessões e espera elas terminarem (até 2 s).
-    pub async fn shutdown(mut self) {
+    pub async fn shutdown(self) {
+        self.stop().await;
+    }
+
+    /// Como [`Self::shutdown`], sem consumir o servidor (quem o guarda num `Arc` compartilhado).
+    /// Chamar de novo não faz nada.
+    pub async fn stop(&self) {
         let _ = self.shared.shutdown.send(true);
-        for task in [self.accept.take(), self.watchdog.take()]
-            .into_iter()
-            .flatten()
-        {
+        let tasks = [
+            self.accept
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .take(),
+            self.watchdog
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .take(),
+        ];
+        for task in tasks.into_iter().flatten() {
             let _ = task.await;
         }
         let deadline = tokio::time::Instant::now() + SHUTDOWN_GRACE;

@@ -35,6 +35,7 @@ pub enum ProfileError {
 
 /// Forma da deadzone.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "snake_case")]
 pub enum DeadzoneShape {
     /// Pela distância ao centro (o analógico vira um círculo).
@@ -46,6 +47,7 @@ pub enum DeadzoneShape {
 
 /// Curva de resposta, de 0 a 1 (a curva sempre passa por (0,0) e (1,1)).
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Curve {
     /// Resposta 1:1.
@@ -65,6 +67,7 @@ pub enum Curve {
 
 /// Ajustes de um analógico.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(default)]
 pub struct StickConfig {
     /// Deadzone interna (fração 0–1 do curso): abaixo disso a saída é zero.
@@ -104,6 +107,7 @@ impl Default for StickConfig {
 
 /// Os dois analógicos.
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(default)]
 pub struct SticksConfig {
     /// Analógico esquerdo.
@@ -118,6 +122,7 @@ pub struct SticksConfig {
 
 /// Ajustes de um gatilho.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(default)]
 pub struct TriggerConfig {
     /// Deadzone (fração 0–1): abaixo disso a saída é zero.
@@ -140,6 +145,7 @@ impl Default for TriggerConfig {
 
 /// Os dois gatilhos.
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(default)]
 pub struct TriggersConfig {
     /// Gatilho esquerdo.
@@ -152,6 +158,7 @@ pub struct TriggersConfig {
 
 /// Quando o gyro age.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum GyroMode {
     /// Sempre.
@@ -171,6 +178,7 @@ pub enum GyroMode {
 
 /// Analógico que recebe o gyro.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "snake_case")]
 pub enum StickSide {
     /// Esquerdo.
@@ -182,6 +190,7 @@ pub enum StickSide {
 
 /// Movimento físico que alimenta um eixo do analógico.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "snake_case")]
 pub enum GyroAxis {
     /// Virar o aparelho para os lados (em torno do eixo Y).
@@ -194,6 +203,7 @@ pub enum GyroAxis {
 
 /// Filtro 1-Euro (suaviza o tremor sem atrasar movimentos rápidos).
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(default)]
 pub struct Smoothing {
     /// Liga o filtro.
@@ -218,6 +228,7 @@ impl Default for Smoothing {
 // Espelha o JSON do perfil, que tem várias chaves booleanas independentes.
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(default)]
 pub struct GyroConfig {
     /// Liga o gyro.
@@ -272,6 +283,7 @@ impl Default for GyroConfig {
 
 /// Para onde vai um botão.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(try_from = "String", into = "String")]
 pub enum ButtonTarget {
     /// Nenhum (o botão é ignorado).
@@ -312,6 +324,7 @@ impl From<ButtonTarget> for String {
 
 /// Turbo: enquanto o botão é segurado, ele liga e desliga `hz` vezes por segundo.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 pub struct Turbo {
     /// Botão (da entrada bruta).
     pub button: Button,
@@ -321,6 +334,7 @@ pub struct Turbo {
 
 /// Remapeamento e turbo.
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(default)]
 pub struct ButtonsConfig {
     /// Botões que não vão para si mesmos. Os ausentes são identidade.
@@ -333,6 +347,7 @@ pub struct ButtonsConfig {
 
 /// Perfil de mapeamento completo.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(default)]
 pub struct Profile {
     /// Versão do formato.

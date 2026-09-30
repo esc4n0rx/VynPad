@@ -16,6 +16,7 @@ padgaming-mapping = { path = "crates/padgaming-mapping" }
 padgaming-net = { path = "crates/padgaming-net" }
 padgaming-storage = { path = "crates/padgaming-storage" }
 padgaming-core = { path = "crates/padgaming-core" }
+padgaming-server = { path = "crates/padgaming-server" }
 
 # Externos (versões centralizadas)
 anyhow = "1"

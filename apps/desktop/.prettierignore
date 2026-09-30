@@ -1,3 +1,5 @@
 dist
 src-tauri
 pnpm-lock.yaml
+# Gerado pelo tauri-specta; o CI confere que bate com o gerador.
+src/lib/bindings.ts

@@ -7,6 +7,7 @@ targets = ["x86_64-pc-windows-msvc", "x86_64-unknown-linux-gnu"]
 ignore = [
   # Não mantido, mas só chega pelo gtk3-macros (dependência do Tauri no Linux), sem impacto de segurança conhecido.
   { id = "RUSTSEC-2024-0370", reason = "transitivo via gtk-rs do Tauri; sem correção upstream" },
+  { id = "RUSTSEC-2024-0436", reason = "`paste` (só macros de compilação) chega pelo specta, do tauri-specta; é aviso de projeto sem manutenção, não uma vulnerabilidade, e não há versão do specta sem ele" },
 ]
 
 [licenses]

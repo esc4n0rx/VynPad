@@ -333,6 +333,21 @@ impl Discovery {
             })
     }
 
+    /// Retira o anúncio da rede (com "goodbye") sem parar o resto; para quem guarda a descoberta
+    /// compartilhada e não pode consumi-la (o app encerrando). Chamar de novo não faz nada.
+    pub fn retire(&self) {
+        if let Some(parts) = self
+            .state
+            .mdns
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .as_mut()
+            && let Some(announcer) = parts.announcer.take()
+        {
+            announcer.shutdown();
+        }
+    }
+
     /// Para tudo: retira o anúncio (com "goodbye"), para a busca e o broadcast.
     pub fn shutdown(mut self) {
         self.stop_all();

@@ -486,3 +486,38 @@ fn every_slot_can_be_used_at_once() {
         assert_eq!(last.lx, i16::from(n));
     }
 }
+
+// ------------------------------------------------------------ monitor ao vivo
+
+#[test]
+fn live_report_mirrors_the_last_state_sent_to_the_pad() {
+    let f = fixture();
+    assert_eq!(f.manager.live_report(slot(0)), None, "sem controle plugado");
+    f.manager.assign(&device(1), 7, None).unwrap();
+    assert_eq!(
+        f.manager.live_report(slot(0)),
+        None,
+        "reservado ainda não plugou"
+    );
+
+    let report = XReport {
+        buttons: 0x1234,
+        lt: 200,
+        rt: 17,
+        lx: -32768,
+        ly: 32767,
+        rx: -1,
+        ry: 300,
+    };
+    f.manager.submit(7, &report).unwrap();
+    assert_eq!(f.manager.live_report(slot(0)), Some(report));
+    assert_eq!(f.manager.live_report(slot(1)), None);
+
+    // O neutro do watchdog também aparece.
+    assert!(f.manager.neutralize_session(7));
+    assert_eq!(f.manager.live_report(slot(0)), Some(XReport::default()));
+
+    // Sem controle plugado de novo depois de liberar.
+    f.manager.release(7);
+    assert_eq!(f.manager.live_report(slot(0)), None);
+}

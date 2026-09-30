@@ -113,7 +113,7 @@ flowchart TD
 |---|---|---|---|---|---|
 | [T-401](../tasks/F4-persistencia/T-401-setup-sqlx.md) | Setup SQLite + sqlx + migrations | P0 | P | T-001 | ✅ |
 | [T-402](../tasks/F4-persistencia/T-402-schema-v1.md) | Schema v1 | P0 | M | T-401 | ✅ |
-| [T-403](../tasks/F4-persistencia/T-403-repositorios-commands.md) | Repositórios, serviços e commands | P0 | M | T-402, T-506 | ⬜ |
+| [T-403](../tasks/F4-persistencia/T-403-repositorios-commands.md) | Repositórios, serviços e commands | P0 | M | T-402, T-506 | ✅ |
 
 ### F5 — UI Shell
 | ID | Task | Prio | Est. | Depende de | Status |
@@ -123,7 +123,7 @@ flowchart TD
 | [T-503](../tasks/F5-ui-shell/T-503-layout-navegacao.md) | Layout, sidebar, rotas e transições | P0 | M | T-501, T-502 | ⬜ |
 | [T-504](../tasks/F5-ui-shell/T-504-i18n.md) | i18n PT-BR / EN | P1 | P | T-503 | ⬜ |
 | [T-505](../tasks/F5-ui-shell/T-505-gamepad-svg-icones.md) | Gamepad SVG ao vivo + ícones | P0 | G | T-501 | ⬜ |
-| [T-506](../tasks/F5-ui-shell/T-506-bridge-tipada.md) | Bridge tipada Tauri ↔ React | P0 | M | T-002 | ⬜ |
+| [T-506](../tasks/F5-ui-shell/T-506-bridge-tipada.md) | Bridge tipada Tauri ↔ React | P0 | M | T-002 | ✅ |
 
 ### F6 — Features
 | ID | Task | Prio | Est. | Depende de | Status |

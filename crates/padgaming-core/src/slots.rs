@@ -21,7 +21,7 @@
 //! Limitação: o índice `XInput` é atribuído pelo Windows no plug. Trocar dois slots de lugar
 //! exige unplug/replug e o jogo verá os controles desconectarem por um instante.
 
-use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use std::time::{Duration, Instant};
 
@@ -73,12 +73,66 @@ struct HotPad {
     session: AtomicU32,
     /// Entrada ignorada (a UI pausou o slot).
     paused: AtomicBool,
+    /// Último estado enviado ao driver, empacotado em duas palavras (só para a UI ao vivo).
+    last: [AtomicU64; 2],
 }
 
 impl HotPad {
+    fn new(handle: PadHandle, session: u32) -> Self {
+        Self {
+            handle,
+            session: AtomicU32::new(session),
+            paused: AtomicBool::new(false),
+            last: [AtomicU64::new(0), AtomicU64::new(0)],
+        }
+    }
+
+    /// Envia o estado ao driver e guarda uma cópia para o monitor ao vivo. Sem lock e sem
+    /// alocação: são duas escritas atômicas relaxadas.
+    fn write(&self, driver: &dyn VirtualPadDriver, report: &XReport) -> Result<(), DriverError> {
+        let [a, b] = pack(report);
+        self.last[0].store(a, Ordering::Relaxed);
+        self.last[1].store(b, Ordering::Relaxed);
+        driver.update(&self.handle, report)
+    }
+
+    fn last_report(&self) -> XReport {
+        unpack([
+            self.last[0].load(Ordering::Relaxed),
+            self.last[1].load(Ordering::Relaxed),
+        ])
+    }
+
     /// Envia um estado neutro; erros são irrelevantes (o controle pode já ter sumido).
     fn neutralize(&self, driver: &dyn VirtualPadDriver) {
-        let _ = driver.update(&self.handle, &XReport::default());
+        let _ = self.write(driver, &XReport::default());
+    }
+}
+
+/// `XReport` em duas palavras de 64 bits: botões, gatilhos, LX e LY na primeira; RX e RY na segunda.
+#[allow(clippy::cast_sign_loss)]
+fn pack(r: &XReport) -> [u64; 2] {
+    [
+        u64::from(r.buttons)
+            | u64::from(r.lt) << 16
+            | u64::from(r.rt) << 24
+            | u64::from(r.lx as u16) << 32
+            | u64::from(r.ly as u16) << 48,
+        u64::from(r.rx as u16) | u64::from(r.ry as u16) << 16,
+    ]
+}
+
+#[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+fn unpack(words: [u64; 2]) -> XReport {
+    let [a, b] = words;
+    XReport {
+        buttons: a as u16,
+        lt: (a >> 16) as u8,
+        rt: (a >> 24) as u8,
+        lx: (a >> 32) as u16 as i16,
+        ly: (a >> 48) as u16 as i16,
+        rx: b as u16 as i16,
+        ry: (b >> 16) as u16 as i16,
     }
 }
 
@@ -303,7 +357,7 @@ impl SlotManager {
                 if pad.paused.load(Ordering::Relaxed) {
                     return Ok(());
                 }
-                return Ok(self.driver.update(&pad.handle, report)?);
+                return Ok(pad.write(self.driver.as_ref(), report)?);
             }
         }
         self.first_input(session, report)
@@ -325,11 +379,7 @@ impl SlotManager {
                 Phase::Reserved { .. } if occupant.paused => return Ok(()),
                 Phase::Reserved { .. } => {
                     let handle = self.driver.plug(slot_id(index))?;
-                    let pad = Arc::new(HotPad {
-                        handle,
-                        session: AtomicU32::new(session),
-                        paused: AtomicBool::new(false),
-                    });
+                    let pad = Arc::new(HotPad::new(handle, session));
                     occupant.phase = Phase::Active {
                         pad: Arc::clone(&pad),
                     };
@@ -342,7 +392,7 @@ impl SlotManager {
         if pad.paused.load(Ordering::Relaxed) {
             return Ok(());
         }
-        Ok(self.driver.update(&pad.handle, report)?)
+        Ok(pad.write(self.driver.as_ref(), report)?)
     }
 
     /// Solta todos os botões do controle da sessão sem tirá-lo do lugar (o pad continua
@@ -359,6 +409,15 @@ impl SlotManager {
         };
         pad.neutralize(self.driver.as_ref());
         true
+    }
+
+    /// O último estado enviado ao controle do `slot`, para o monitor ao vivo da UI. `None` se o
+    /// slot não tem controle plugado. Não bloqueia e não aloca; é uma leitura aproximada (as duas
+    /// palavras podem ser de pacotes vizinhos), boa para desenhar, não para decidir nada.
+    pub fn live_report(&self, slot: SlotId) -> Option<XReport> {
+        self.hot.load()[usize::from(slot.index())]
+            .as_ref()
+            .map(|pad| pad.last_report())
     }
 
     /// Disponibilidade atual do driver (para revalidar depois de o Windows retomar).
@@ -505,11 +564,8 @@ impl SlotManager {
                 continue; // fica `Reserved`; pluga no próximo input
             };
             let occupant = inner.slots[i].as_mut().expect("slot ocupado");
-            let pad = Arc::new(HotPad {
-                handle,
-                session: AtomicU32::new(session),
-                paused: AtomicBool::new(occupant.paused),
-            });
+            let pad = Arc::new(HotPad::new(handle, session));
+            pad.paused.store(occupant.paused, Ordering::Relaxed);
             occupant.phase = Phase::Active { pad };
         }
         self.publish(&inner);

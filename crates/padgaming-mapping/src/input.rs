@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 /// Um botão do controle X360. Os nomes JSON são os mesmos do protocolo (`a`, `dpad_up`...).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "snake_case")]
 pub enum Button {
     /// D-pad para cima.

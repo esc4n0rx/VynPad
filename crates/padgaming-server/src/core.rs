@@ -503,25 +503,34 @@ impl Core {
 
     // ------------------------------------------------------------------ encerramento
 
-    /// Encerra tudo: avisa os clients (`bye`), tira o anúncio da rede e fecha o banco.
-    pub async fn shutdown(mut self) {
+    /// Começa o encerramento sem consumir o `Core` (o app o guarda num `Arc`): avisa os clients
+    /// (`bye{shutdown}`), tira o anúncio da rede, para as tarefas de fundo e fecha o banco.
+    /// Chamar de novo não faz nada de mau.
+    pub async fn stop(&self) {
         self.stop.store(true, Ordering::Relaxed);
         for task in &self.tasks {
             task.abort();
         }
+        if let Some(discovery) = &self.discovery {
+            discovery.retire();
+        }
+        self.control.stop().await;
+        self.db.clone().close().await;
+        tracing::info!("server encerrado");
+    }
+
+    /// Encerra tudo e libera os recursos (threads, sockets). Para o app, que compartilha o
+    /// `Core`, use [`Self::stop`].
+    pub async fn shutdown(mut self) {
+        self.stop().await;
         if let Some(discovery) = self.discovery.take() {
             discovery.shutdown();
         }
-        match Arc::try_unwrap(self.control) {
-            Ok(control) => control.shutdown().await,
-            Err(shared) => drop(shared), // o `Drop` do servidor manda o shutdown
-        }
+        drop(self.control);
         drop(self.input);
         for thread in self.threads {
             let _ = thread.join();
         }
-        self.db.close().await;
-        tracing::info!("server encerrado");
     }
 }
 

@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | T-402, T-506 |
-| Status | 🟨 Camada Rust pronta; faltam os commands Tauri (dependem da T-506) e o `DeviceStore` (camada de composição) |
+| Status | ✅ Concluída |
 
 ## Objetivo
 Expor os dados de forma tipada para o core e para a UI.
@@ -21,7 +21,7 @@ Expor os dados de forma tipada para o core e para a UI.
 
 ## Critérios de aceite
 - [x] Testes de integração dos repositórios com o banco em memória.
-- [ ] Editar um perfil na UI altera o comportamento do slot sem reconectar. (`ProfileService::save` já chama `ProfileHost::apply`; falta o host real no `SlotManager` e o command.)
+- [x] Editar um perfil na UI altera o comportamento do slot sem reconectar. (`ProfileService::save` → `SlotRegistry` (host real) troca o `ProfileCell` do slot; teste de ponta a ponta em `padgaming-server/tests/core.rs`.)
 - [x] Não é possível apagar o perfil builtin nem um perfil em uso sem confirmação.
 
 ## Fora de escopo
@@ -39,3 +39,5 @@ Camada Rust pronta em `padgaming-storage` (o que não depende do Tauri):
 Decisões e desvios:
 - **`DeviceStore` fica fora do storage.** A trait é do `padgaming-net`; fazer o storage depender do net traria o TLS inteiro e o net já depende do core. O adaptador (`DeviceRepo` → `DeviceStore`, com `Handle::block_on`, pois o control server já chama a autenticação num `spawn_blocking`) entra na camada de composição do server, junto com o `ProfileHost` do `SlotManager` e o registro no `ConnectionLog` a partir dos eventos do `ControlServer`.
 - Os commands Tauri (`get_settings`... `get_connection_log`) esperam a T-506.
+
+Fechamento: o `DeviceStore` (`DeviceStoreAdapter`) e o `ProfileHost` (`SlotRegistry`) vivem no `padgaming-server`; os 15 commands da lista, mais os do server, estão em `apps/desktop/src-tauri/src/commands.rs` (T-506).

@@ -12,6 +12,7 @@ use crate::seed::now_ms;
 
 /// Idioma da interface.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 pub enum Language {
     /// Português do Brasil.
     #[serde(rename = "pt-BR")]
@@ -23,6 +24,7 @@ pub enum Language {
 
 /// Tema da interface.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
     /// Escuro.
@@ -35,6 +37,7 @@ pub enum Theme {
 
 /// Portas do server (mudam com reinício do app).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 pub struct Ports {
     /// Canal de controle (TCP).
     pub control: u16,
@@ -49,6 +52,7 @@ pub struct Ports {
 // mais claro.
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(default)]
 pub struct AppSettings {
     /// Idioma.

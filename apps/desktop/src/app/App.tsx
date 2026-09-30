@@ -1,18 +1,28 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "react-router";
+import { Toaster } from "@/components/feedback/Toaster";
+import { registerEventListeners } from "@/lib/api/events";
+import { log } from "@/lib/log";
+import { createQueryClient } from "./queryClient";
 import { router } from "./router";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    // Dados vêm do backend local: sem refetch agressivo por foco de janela.
-    queries: { refetchOnWindowFocus: false, retry: 1 },
-  },
-});
-
 export function App() {
+  const [queryClient] = useState(createQueryClient);
+
+  // Os eventos do backend são ligados uma vez, no boot, e valem enquanto a janela existir (não há
+  // "desligar": o StrictMode monta duas vezes em dev e `registerEventListeners` devolve o mesmo
+  // registro; desfazer no cleanup o deixaria surdo depois da segunda montagem).
+  useEffect(() => {
+    registerEventListeners(queryClient).catch((error: unknown) => {
+      log.error(`não consegui registrar os eventos do backend: ${JSON.stringify(error)}`);
+    });
+  }, [queryClient]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <Toaster />
     </QueryClientProvider>
   );
 }

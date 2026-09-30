@@ -1,14 +1,12 @@
-import { invoke } from "@tauri-apps/api/core";
-
-type Level = "error" | "warn" | "info" | "debug";
+import { commands, type FrontendLogLevel } from "@/lib/bindings";
 
 /** O backend recusa mensagens acima de 8 KB; cortamos antes com folga para o sufixo. */
 const MAX_LENGTH = 8000;
 
-function send(level: Level, message: string) {
+function send(level: FrontendLogLevel, message: string) {
   const text = message.length > MAX_LENGTH ? `${message.slice(0, MAX_LENGTH)}… [cortado]` : message;
   // Falha ao logar não deve quebrar a UI; o console ainda mostra em dev.
-  invoke("log_from_frontend", { level, message: text }).catch((err: unknown) => {
+  commands.logFromFrontend(level, text).catch((err: unknown) => {
     console.warn("falha ao enviar log ao backend", err);
   });
 }
