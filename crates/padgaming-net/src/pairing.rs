@@ -146,7 +146,22 @@ impl AuthError {
 /// Autentica o `hello` de um client.
 pub trait PairingService: Send + Sync {
     /// Valida `hello.auth` para o client em `peer`.
-    fn authenticate(&self, hello: &Hello, peer: IpAddr) -> Result<Authenticated, AuthError>;
+    ///
+    /// Num primeiro pareamento, depois de a credencial ser aceita e **antes** de gravar o
+    /// dispositivo, `approve` decide se ele entra (a confirmação "Pedir confirmação para novos
+    /// dispositivos", T-302). Se recusar, nada é gravado e o resultado é `bad_auth`. Não é
+    /// chamado na reconexão com `device_token`. `approve` pode bloquear (a espera é de até 30 s).
+    fn authenticate_with(
+        &self,
+        hello: &Hello,
+        peer: IpAddr,
+        approve: &dyn Fn(&Hello) -> bool,
+    ) -> Result<Authenticated, AuthError>;
+
+    /// Como [`Self::authenticate_with`], aprovando todo novo dispositivo.
+    fn authenticate(&self, hello: &Hello, peer: IpAddr) -> Result<Authenticated, AuthError> {
+        self.authenticate_with(hello, peer, &|_| true)
+    }
 }
 
 struct Expiring<T> {
@@ -357,7 +372,19 @@ impl<S: DeviceStore, C: Clock> PairingManager<S, C> {
         })
     }
 
-    fn enroll(&self, hello: &Hello) -> Result<Authenticated, AuthError> {
+    fn enroll(
+        &self,
+        hello: &Hello,
+        approve: &dyn Fn(&Hello) -> bool,
+    ) -> Result<Authenticated, AuthError> {
+        if !approve(hello) {
+            return Err(AuthError::Rejected(Reject {
+                reason: RejectReason::BadAuth,
+                retry_after_s: None,
+                supported_versions: None,
+                message: Some("pareamento recusado no computador".into()),
+            }));
+        }
         let token = random_bytes::<32>();
         self.store.save(DeviceRecord {
             device_id: hello.device_id.clone(),
@@ -375,18 +402,23 @@ impl<S: DeviceStore, C: Clock> PairingManager<S, C> {
 }
 
 impl<S: DeviceStore, C: Clock> PairingService for PairingManager<S, C> {
-    fn authenticate(&self, hello: &Hello, peer: IpAddr) -> Result<Authenticated, AuthError> {
+    fn authenticate_with(
+        &self,
+        hello: &Hello,
+        peer: IpAddr,
+        approve: &dyn Fn(&Hello) -> bool,
+    ) -> Result<Authenticated, AuthError> {
         match &hello.auth {
             Auth::DeviceToken { token } => {
                 self.authenticate_device_token(&hello.device_id, &token.expose().0)
             }
             Auth::PairingToken { token } => {
                 self.authenticate_pairing_token(&token.expose().0)?;
-                self.enroll(hello)
+                self.enroll(hello, approve)
             }
             Auth::Pin { pin } => {
                 self.authenticate_pin(pin.expose(), peer)?;
-                self.enroll(hello)
+                self.enroll(hello, approve)
             }
         }
     }
@@ -541,6 +573,34 @@ mod tests {
         assert_eq!(
             saved.token_hash,
             <[u8; 32]>::from(Sha256::digest(device_token.expose().0))
+        );
+    }
+
+    #[test]
+    fn approval_denied_does_not_enroll_and_skips_reconnection() {
+        let (manager, store, _) = setup();
+        let token = manager.issue_pairing_token();
+        let hello = hello_for(DEVICE, by_token(*token.expose()));
+        let err = manager
+            .authenticate_with(&hello, peer(2), &|_| false)
+            .unwrap_err();
+        assert_eq!(reason(err), RejectReason::BadAuth);
+        assert!(store.find(&hello.device_id).unwrap().is_none());
+
+        // A reconexão com device_token não passa pelo gate.
+        let token = manager.issue_pairing_token();
+        let hello = hello_for(DEVICE, by_token(*token.expose()));
+        let paired = manager.authenticate(&hello, peer(2)).unwrap();
+        let again = hello_for(
+            DEVICE,
+            Auth::DeviceToken {
+                token: Secret::new(*paired.device_token.unwrap().expose()),
+            },
+        );
+        assert!(
+            manager
+                .authenticate_with(&again, peer(2), &|_| false)
+                .is_ok()
         );
     }
 

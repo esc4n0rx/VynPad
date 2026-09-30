@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | T-102 (T-302/T-303 para os modos completos) |
-| Status | 🟨 M1 atingido; faltam `discover`/`pair` (T-302/T-303) e `--interactive` |
+| Status | 🟨 M1 atingido; faltam `discover` (T-303), os subcomandos `pair`/`connect` sem `--insecure-dev` e `--interactive` |
 
 ## Objetivo
 Testar o server ponta a ponta muito antes do app Android existir, e servir de base para os testes automatizados e o benchmark.
@@ -47,3 +47,5 @@ Pendente:
 - `discover` (T-303) e `pair` (T-302): existem como subcomandos que explicam a dependência.
 - `--interactive` (TUI com `ratatui`): não implementado.
 - `--gamepad` compila e roda, mas **não foi validado com um controle físico**: o `gilrs` não listou nenhum controle nesta máquina. O critério de jogar um jogo real com um controle em outro PC depende disso e da T-302.
+
+O canal de controle do client já existe como biblioteca (`padgaming_sim::control`: TLS 1.3 com fingerprint fixado ou TOFU, `hello`/`welcome`, `ping`/`bye`) e é exercitado pelos testes da T-302. Falta expô-lo na CLI (`pair` salvando o `device_token`, `connect` sem `--insecure-dev`).

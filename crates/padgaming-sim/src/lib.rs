@@ -1,6 +1,7 @@
 //! Simulador de client do `PadGaming`: testa o server sem o app Android.
 //!
 //! - [`client`]: envia input a uma taxa fixa, Pings a cada 250 ms e mede o RTT.
+//! - [`control`]: canal de controle TLS (fingerprint fixado, `hello`/`welcome`).
 //! - [`source`]: padrões prontos, scripts TOML e (com a feature `gamepad`) um controle físico.
 //! - [`link`]: perda, atraso, jitter e reordenação simulados.
 //! - [`report`]: relatório do `bench` em texto e JSON.
@@ -19,6 +20,7 @@
 
 pub mod cli;
 pub mod client;
+pub mod control;
 pub mod link;
 pub mod report;
 pub mod source;
