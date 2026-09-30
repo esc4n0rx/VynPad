@@ -122,6 +122,11 @@ pub(super) async fn run(
                 "esperado um hello válido",
             ));
             let _ = send(&mut writer, &message, limit).await;
+            shared.emit(ControlEvent::Rejected {
+                peer: peer.ip(),
+                device_id: None,
+                reason: RejectReason::BadRequest,
+            });
             return;
         }
     };
@@ -130,7 +135,13 @@ pub(super) async fn run(
         Ok(established) => established,
         Err(Refusal::Reject(rejection)) => {
             tracing::info!(%peer, reason = ?rejection.reason, "conexão recusada");
+            let reason = rejection.reason;
             let _ = send(&mut writer, &ControlMessage::Reject(rejection), limit).await;
+            shared.emit(ControlEvent::Rejected {
+                peer: peer.ip(),
+                device_id: Some(hello.device_id.clone()),
+                reason,
+            });
             return;
         }
         Err(Refusal::Close) => return,
@@ -162,6 +173,7 @@ pub(super) async fn run(
             session_id,
             slot,
             device_id: device.clone(),
+            peer: peer.ip(),
         });
         serve(&shared, reader, &mut writer, commands).await
     };
@@ -195,17 +207,21 @@ async fn establish(
     let slot;
     let key = random_bytes::<32>();
     let (command_tx, commands) = mpsc::unbounded_channel();
-    let setup = {
-        // O registro fica travado do sorteio do id até a inserção: dois handshakes
-        // simultâneos não podem escolher o mesmo `session_id`.
-        let mut live = shared.live();
+    // Consultado antes de pegar os locks: pode ir ao banco.
+    let preferred = shared.profiles.preferred_slot(&device).await;
+    {
+        // Sorteio do id e alocação do slot sob o lock: dois handshakes simultâneos não podem
+        // escolher o mesmo `session_id`. O id fica em `reserved` até a inserção em `live`, pois
+        // o `setup` abaixo é assíncrono e o lock não pode atravessar o `await`.
+        let live = shared.live();
+        let mut reserved = shared.reserved();
         session_id = loop {
             let id = u32::from_le_bytes(random_bytes::<4>()) & 0x7FFF_FFFF;
-            if id != 0 && !live.contains_key(&id) {
+            if id != 0 && !live.contains_key(&id) && !reserved.contains(&id) {
                 break id;
             }
         };
-        slot = match shared.slots.assign(&device, session_id, None) {
+        slot = match shared.slots.assign(&device, session_id, preferred) {
             Ok(slot) => slot,
             Err(padgaming_core::SlotError::NoSlot) => {
                 return Err(Refusal::Reject(reject(
@@ -218,12 +234,19 @@ async fn establish(
                 return Err(Refusal::Close);
             }
         };
-        let setup = shared.profiles.setup(slot, &device);
-        let activity = shared.input.add_session(SessionSpec {
-            session_id,
-            key: Secret::new(key),
-            profile: setup.profile,
-        });
+        reserved.insert(session_id);
+    }
+
+    let setup = shared.profiles.setup(slot, &device).await;
+    let config = setup.config;
+    let activity = shared.input.add_session(SessionSpec {
+        session_id,
+        key: Secret::new(key),
+        profile: setup.profile,
+    });
+    {
+        let mut live = shared.live();
+        shared.reserved().remove(&session_id);
         live.insert(
             session_id,
             Live {
@@ -240,12 +263,11 @@ async fn establish(
                 let _ = other.commands.send(Command::Bye(ByeReason::Kicked));
             }
         }
-        setup.config
-    };
+    }
 
     let config = Config {
         slot: slot.index(),
-        ..setup
+        ..config
     };
     Ok(Established {
         session_id,

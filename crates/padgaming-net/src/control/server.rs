@@ -1,6 +1,6 @@
 //! O listener e o estado compartilhado do servidor de controle.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io;
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -76,11 +76,19 @@ pub(super) struct Shared {
     pub require_approval: AtomicBool,
     approver: Mutex<Option<mpsc::Sender<ApprovalRequest>>>,
     live: Mutex<HashMap<u32, Live>>,
+    /// `session_id`s já sorteados por um handshake que ainda não entrou em `live` (o `setup` do
+    /// perfil é assíncrono e o lock de `live` não pode atravessar um `await`). Ordem dos locks:
+    /// `live`, depois `reserved`.
+    reserved: Mutex<HashSet<u32>>,
 }
 
 impl Shared {
     pub fn live(&self) -> MutexGuard<'_, HashMap<u32, Live>> {
         self.live.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
+    pub fn reserved(&self) -> MutexGuard<'_, HashSet<u32>> {
+        self.reserved.lock().unwrap_or_else(PoisonError::into_inner)
     }
 
     pub fn approver(&self) -> Option<mpsc::Sender<ApprovalRequest>> {
@@ -126,6 +134,7 @@ impl ControlServer {
             require_approval: AtomicBool::new(false),
             approver: Mutex::new(None),
             live: Mutex::new(HashMap::new()),
+            reserved: Mutex::new(HashSet::new()),
         });
         let accept = tokio::spawn(accept_loop(
             listener,

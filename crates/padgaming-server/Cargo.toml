@@ -1,0 +1,27 @@
+[package]
+name = "padgaming-server"
+description = "Composição do server: junta driver, slots, rede, descoberta, persistência e pareamento."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+padgaming-core = { workspace = true }
+padgaming-driver = { workspace = true }
+padgaming-mapping = { workspace = true }
+padgaming-net = { workspace = true }
+padgaming-protocol = { workspace = true }
+padgaming-storage = { workspace = true }
+crossbeam-channel = "0.5"
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+padgaming-driver = { workspace = true, features = ["mock"] }
+padgaming-sim = { path = "../padgaming-sim" }
+tempfile = "3"
+
+[lints]
+workspace = true

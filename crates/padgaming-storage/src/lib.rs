@@ -41,7 +41,8 @@ pub use devices::{Device, DeviceDefaults, DeviceRepo, NewPairing};
 pub use error::{DataError, MigrationFailure, StorageError};
 pub use log::{ConnectionLog, LogEntry, LogEvent, LogQuery};
 pub use profiles::{
-    NoHost, ProfileHost, ProfileInput, ProfileRepo, ProfileService, ProfileSummary, StoredProfile,
+    NoHost, ProfileHost, ProfileInput, ProfileRepo, ProfileService, ProfileSummary,
+    ResolvedProfile, StoredProfile,
 };
 pub use settings::{AppSettings, Language, Ports, SettingsRepo, SettingsService, Theme};
 pub use sqlx::SqlitePool;

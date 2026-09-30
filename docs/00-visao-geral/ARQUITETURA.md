@@ -54,14 +54,16 @@ PadGaming/
 │  ├─ padgaming-mapping/       # pipeline puro de mapeamento
 │  ├─ padgaming-net/           # UDP loop, TLS control, descoberta
 │  ├─ padgaming-storage/       # sqlx, migrations, repositórios
-│  ├─ padgaming-core/          # orquestração: sessões, slots, métricas
-│  └─ padgaming-sim/           # client simulador CLI
+│  ├─ padgaming-core/          # slots (SlotManager), relógio, XInput
+│  ├─ padgaming-server/        # composição: junta driver, slots, rede, descoberta, storage e pareamento (`Core`)
+│  ├─ padgaming-sim/           # client simulador CLI
+│  └─ padgaming-dbprep/        # ferramenta de dev: banco só com o schema para gerar o .sqlx/
 ├─ protocol/
 │  └─ test-vectors/            # JSON compartilhado Rust ↔ Kotlin
 └─ docs/
 ```
 
-Regra de dependência: `apps/desktop/src-tauri` → `core` → (`net`, `driver`, `mapping`, `storage`) → `protocol`. Nenhum crate de domínio depende de Tauri.
+Regra de dependência: `apps/desktop/src-tauri` → `server` (o `Core`) → (`net`, `storage`, `core`, `driver`, `mapping`) → `protocol`; `net` também usa `core` (slots) e `mapping`. O `storage` não conhece a rede (o `DeviceStore` do pareamento é implementado no `server`). Nenhum crate de domínio depende de Tauri.
 
 ## 3. Threading e hot path
 

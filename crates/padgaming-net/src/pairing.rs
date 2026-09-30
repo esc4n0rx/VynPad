@@ -82,6 +82,8 @@ pub struct DeviceRecord {
     pub name: String,
     /// Modelo do aparelho.
     pub model: String,
+    /// Versão do SO do aparelho.
+    pub os_version: String,
     /// SHA-256 do `device_token`.
     pub token_hash: [u8; 32],
     /// O usuário revogou o dispositivo.
@@ -390,6 +392,7 @@ impl<S: DeviceStore, C: Clock> PairingManager<S, C> {
             device_id: hello.device_id.clone(),
             name: hello.name.clone(),
             model: hello.model.clone(),
+            os_version: hello.os_ver.clone(),
             token_hash: Sha256::digest(token).into(),
             revoked: false,
         })?;

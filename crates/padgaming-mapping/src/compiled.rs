@@ -92,6 +92,11 @@ impl CompiledProfile {
         &self.name
     }
 
+    /// O gyro está ligado neste perfil (o server só pede pacotes com motion se estiver).
+    pub const fn gyro_enabled(&self) -> bool {
+        self.gyro.enabled
+    }
+
     /// Valida e compila um perfil.
     pub fn compile(profile: &Profile) -> Result<Self, ProfileError> {
         profile.validate()?;

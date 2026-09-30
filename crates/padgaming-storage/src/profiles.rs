@@ -66,6 +66,15 @@ pub struct ProfileInput {
     pub profile: Profile,
 }
 
+/// O perfil que acabou valendo para um controle.
+#[derive(Debug, Clone)]
+pub struct ResolvedProfile {
+    /// `id` do perfil (o padrão, se o pedido não existia ou estava inválido).
+    pub id: String,
+    /// O perfil compilado.
+    pub compiled: Arc<CompiledProfile>,
+}
+
 /// Quem aplica um perfil nos controles ativos (o `SlotManager`, na camada de composição).
 pub trait ProfileHost: Send + Sync {
     /// O perfil `id` mudou: todo controle que o usa passa a usar `compiled` na hora, sem
@@ -332,16 +341,31 @@ impl ProfileService {
     /// O perfil já compilado (o do `id`, ou o padrão se `id` for `None`, não existir ou estiver
     /// corrompido: o controle nunca fica sem perfil).
     pub async fn compiled_or_default(&self, id: Option<&str>) -> Arc<CompiledProfile> {
+        self.resolve_or_default(id).await.compiled
+    }
+
+    /// Como [`Self::compiled_or_default`], dizendo também qual perfil acabou valendo.
+    pub async fn resolve_or_default(&self, id: Option<&str>) -> ResolvedProfile {
         if let Some(id) = id {
             match self.get(id).await {
                 Ok(stored) => match CompiledProfile::compile(&stored.profile) {
-                    Ok(compiled) => return Arc::new(compiled),
+                    Ok(compiled) => {
+                        return ResolvedProfile {
+                            id: id.to_owned(),
+                            compiled: Arc::new(compiled),
+                        };
+                    }
                     Err(error) => tracing::warn!(id, %error, "perfil não compila: usando o padrão"),
                 },
                 Err(error) => tracing::warn!(id, %error, "perfil indisponível: usando o padrão"),
             }
         }
-        Arc::new(CompiledProfile::compile(&Profile::standard()).expect("perfil padrão é válido"))
+        ResolvedProfile {
+            id: BUILTIN_PROFILE_ID.to_owned(),
+            compiled: Arc::new(
+                CompiledProfile::compile(&Profile::standard()).expect("perfil padrão é válido"),
+            ),
+        }
     }
 
     /// Cria um perfil do usuário.

@@ -3247,6 +3247,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "padgaming-server"
+version = "0.1.0"
+dependencies = [
+ "crossbeam-channel",
+ "padgaming-core",
+ "padgaming-driver",
+ "padgaming-mapping",
+ "padgaming-net",
+ "padgaming-protocol",
+ "padgaming-sim",
+ "padgaming-storage",
+ "tempfile",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "padgaming-sim"
 version = "0.1.0"
 dependencies = [

@@ -18,15 +18,17 @@ mod connection;
 mod server;
 mod watchdog;
 
-pub use server::{ControlDeps, ControlServer};
+pub use server::{ControlDeps, ControlServer, StartError};
 
+use std::future::Future;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::pin::Pin;
 use std::sync::Arc;
 use std::time::Duration;
 
 use padgaming_driver::SlotId;
 use padgaming_mapping::{CompiledProfile, Profile, ProfileCell};
-use padgaming_protocol::control::{Config, Uuid};
+use padgaming_protocol::control::{Config, RejectReason, Uuid};
 use tokio::sync::oneshot;
 
 /// Porta TCP de controle (PROTOCOLO §2).
@@ -89,10 +91,22 @@ pub struct SlotSetup {
     pub config: Config,
 }
 
-/// Fornece o perfil e a configuração de cada slot (na T-403/T-604 vêm do SQLite).
+/// O futuro devolvido por [`SlotProfiles::preferred_slot`].
+pub type PreferredFuture<'a> = Pin<Box<dyn Future<Output = Option<SlotId>> + Send + 'a>>;
+
+/// O futuro devolvido por [`SlotProfiles::setup`].
+pub type SetupFuture<'a> = Pin<Box<dyn Future<Output = SlotSetup> + Send + 'a>>;
+
+/// Fornece o perfil e a configuração de cada slot (vêm do SQLite, então a consulta é assíncrona).
 pub trait SlotProfiles: Send + Sync {
-    /// Chamado a cada sessão nova do `device` no `slot`.
-    fn setup(&self, slot: SlotId, device: &Uuid) -> SlotSetup;
+    /// Slot em que o `device` prefere ficar (o `assign` o usa se estiver livre). O padrão é não ter
+    /// preferência.
+    fn preferred_slot<'a>(&'a self, _device: &'a Uuid) -> PreferredFuture<'a> {
+        Box::pin(async { None })
+    }
+
+    /// Chamado a cada sessão nova do `device` no `slot`, antes do `welcome`.
+    fn setup<'a>(&'a self, slot: SlotId, device: &'a Uuid) -> SetupFuture<'a>;
 }
 
 /// [`SlotProfiles`] com o perfil "Padrão" em cada slot e a configuração base.
@@ -137,11 +151,13 @@ impl Default for DefaultProfiles {
 }
 
 impl SlotProfiles for DefaultProfiles {
-    fn setup(&self, slot: SlotId, _device: &Uuid) -> SlotSetup {
-        SlotSetup {
-            profile: Arc::clone(self.cell(slot)),
-            config: self.base,
-        }
+    fn setup<'a>(&'a self, slot: SlotId, _device: &'a Uuid) -> SetupFuture<'a> {
+        Box::pin(async move {
+            SlotSetup {
+                profile: Arc::clone(self.cell(slot)),
+                config: self.base,
+            }
+        })
     }
 }
 
@@ -209,6 +225,18 @@ pub enum ControlEvent {
         slot: SlotId,
         /// Dispositivo.
         device_id: Uuid,
+        /// IP de origem da conexão.
+        peer: IpAddr,
+    },
+    /// Uma conexão foi recusada (`reject`).
+    Rejected {
+        /// IP de origem.
+        peer: IpAddr,
+        /// Dispositivo que se anunciou no `hello` (`None` se a conexão nem chegou a um `hello`
+        /// válido). Pode ser um dispositivo desconhecido do server: quem consulta deve conferir.
+        device_id: Option<Uuid>,
+        /// Motivo enviado ao client.
+        reason: RejectReason,
     },
     /// O fluxo de input da sessão mudou de estado.
     SessionState {
