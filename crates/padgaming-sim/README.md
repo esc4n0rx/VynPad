@@ -14,12 +14,17 @@ cargo run -p padgaming-sim -- connect --insecure-dev --pattern stress --loss 10%
 cargo run -p padgaming-sim -- bench --insecure-dev --clients 4 --rate 250 --duration 60s --json bench.json
 cargo run -p padgaming-sim --features gamepad -- connect --insecure-dev --gamepad   # controle físico local
 
+# descoberta (com `cargo run -p padgaming-net --example discovery_server` em outro terminal)
+cargo run -p padgaming-sim -- discover
+cargo run -p padgaming-sim -- announce --name "Pixel do Paulo" --duration 60s
+
 # 3) conferir o controle virtual sem abrir o joy.cpl
 cargo run -p padgaming-driver --example xinput_watch
 ```
 
-- `discover` e `pair` dependem da descoberta mDNS (T-303) e do canal TLS (T-302); por enquanto a
-  autenticação é só a sessão de desenvolvimento (`--insecure-dev`).
+- `discover` (mDNS + broadcast) e `announce` (client simulado em "dispositivos próximos") já existem;
+  `pair` ainda não está exposto na CLI, então a autenticação por linha de comando é só a sessão de
+  desenvolvimento (`--insecure-dev`). O canal TLS está em `padgaming_sim::control`.
 - `connect --interactive` (teclado → botões) ainda não existe.
 - As falhas simuladas valem para o sentido client → server. Reordenar (ou jitter alto) faz o
   server descartar pacotes como `replay`, que é o comportamento esperado do anti-replay.

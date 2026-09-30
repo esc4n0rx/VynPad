@@ -1,5 +1,6 @@
 //! A linha de comando do `padgaming-sim`.
 
+use std::fmt::Write as _;
 use std::net::{SocketAddr, ToSocketAddrs};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -9,7 +10,10 @@ use std::time::{Duration, Instant};
 use anyhow::{Context, bail};
 use clap::{Args, Parser, Subcommand};
 
+use padgaming_protocol::discovery::BROADCAST_PORT;
+
 use crate::client::{self, ClientConfig, ClientReport, Event};
+use crate::discover::{self, ClientAnnouncement, Found, Results, Via};
 use crate::link::FaultConfig;
 use crate::report::{BenchParams, BenchReport};
 use crate::source::{InputSource, Pattern, PatternKind, Script};
@@ -31,8 +35,10 @@ pub struct Cli {
 /// Subcomandos.
 #[derive(Debug, Subcommand)]
 pub enum Command {
-    /// Lista servers na rede (mDNS/broadcast). Requer a descoberta do server (T-303).
-    Discover,
+    /// Lista servers na rede, por mDNS e por broadcast `PGDISC1`.
+    Discover(DiscoverArgs),
+    /// Anuncia um client simulado por mDNS (aparece em "dispositivos próximos" do server).
+    Announce(AnnounceArgs),
     /// Pareia com um server e guarda o `device_token`. Requer o canal TLS (T-302).
     Pair {
         /// URI do QR code (`padgaming://pair?...`).
@@ -49,6 +55,46 @@ pub enum Command {
     Connect(ConnectArgs),
     /// Gera carga com vários clients e mede o RTT.
     Bench(BenchArgs),
+}
+
+/// Argumentos de `discover`.
+#[derive(Debug, Args)]
+pub struct DiscoverArgs {
+    /// Quanto tempo esperar as respostas.
+    #[arg(long, value_parser = parse_duration, default_value = "3s")]
+    pub wait: Duration,
+    /// Só mDNS.
+    #[arg(long, conflicts_with = "no_mdns")]
+    pub no_broadcast: bool,
+    /// Só broadcast (para redes que filtram multicast).
+    #[arg(long)]
+    pub no_mdns: bool,
+    /// Manda o `PGDISC1` para este endereço em vez do broadcast (`IP` ou `IP:porta`, porta 47802).
+    #[arg(long)]
+    pub broadcast_to: Option<String>,
+    /// Imprime em JSON.
+    #[arg(long)]
+    pub json: bool,
+}
+
+/// Argumentos de `announce`.
+#[derive(Debug, Args)]
+pub struct AnnounceArgs {
+    /// Nome exibido no server.
+    #[arg(long, default_value = "PadGaming Sim")]
+    pub name: String,
+    /// Modelo do aparelho.
+    #[arg(long, default_value = "padgaming-sim")]
+    pub model: String,
+    /// `device_id` (UUID minúsculo). Padrão: um novo.
+    #[arg(long)]
+    pub id: Option<String>,
+    /// IPv4 anunciado (padrão: o da LAN).
+    #[arg(long)]
+    pub ip: Option<std::net::Ipv4Addr>,
+    /// Anuncia por este tempo (padrão: até Ctrl+C).
+    #[arg(long, value_parser = parse_duration)]
+    pub duration: Option<Duration>,
 }
 
 /// Onde e como conectar.
@@ -345,10 +391,139 @@ fn bench(args: &BenchArgs) -> anyhow::Result<()> {
     Ok(())
 }
 
+fn discover(args: &DiscoverArgs) -> anyhow::Result<()> {
+    let targets = match &args.broadcast_to {
+        Some(target) => {
+            let addr = target
+                .parse::<SocketAddr>()
+                .or_else(|_| {
+                    target
+                        .parse::<std::net::IpAddr>()
+                        .map(|ip| SocketAddr::new(ip, BROADCAST_PORT))
+                })
+                .with_context(|| format!("`{target}` não é IP nem IP:porta"))?;
+            vec![addr]
+        }
+        None => discover::broadcast_targets(BROADCAST_PORT),
+    };
+    // As duas buscas rodam ao mesmo tempo: o tempo total é `--wait`, não o dobro.
+    let mdns = (!args.no_mdns).then(|| {
+        let wait = args.wait;
+        std::thread::spawn(move || discover::by_mdns(wait))
+    });
+    let mut results = Results::default();
+    if !args.no_broadcast {
+        for found in discover::by_broadcast(&targets, args.wait)? {
+            results.add(found);
+        }
+    }
+    if let Some(handle) = mdns {
+        match handle.join() {
+            Ok(Ok(list)) => list.into_iter().for_each(|f| results.add(f)),
+            Ok(Err(error)) => eprintln!("mDNS indisponível: {error:#}"),
+            Err(_) => eprintln!("a busca mDNS falhou"),
+        }
+    }
+    let list = results.into_list();
+    if args.json {
+        println!("{}", found_json(&list));
+    } else if list.is_empty() {
+        println!("nenhum server encontrado");
+    } else {
+        for f in &list {
+            let via: Vec<&str> = f
+                .via
+                .iter()
+                .map(|v| match v {
+                    Via::Mdns => "mdns",
+                    Via::Broadcast => "broadcast",
+                })
+                .collect();
+            let addrs: Vec<String> = f.addrs.iter().map(ToString::to_string).collect();
+            println!(
+                "{} [{}] {}:{} udp {} · {} · {} livre(s) · fp {} · via {}",
+                f.name,
+                f.os,
+                addrs.join(","),
+                f.tcp,
+                f.udp,
+                f.id,
+                f.free,
+                f.fp,
+                via.join("+")
+            );
+        }
+    }
+    if list.is_empty() {
+        bail!("nenhum server respondeu em {:?}", args.wait);
+    }
+    Ok(())
+}
+
+fn found_json(list: &[Found]) -> String {
+    let items: Vec<serde_json::Value> = list
+        .iter()
+        .map(|f| {
+            serde_json::json!({
+                "id": f.id, "name": f.name, "os": f.os, "free": f.free, "fp": f.fp,
+                "addrs": f.addrs.iter().map(ToString::to_string).collect::<Vec<_>>(),
+                "tcp": f.tcp, "udp": f.udp,
+                "via": f.via.iter().map(|v| match v { Via::Mdns => "mdns", Via::Broadcast => "broadcast" }).collect::<Vec<_>>(),
+            })
+        })
+        .collect();
+    serde_json::to_string_pretty(&items).unwrap_or_default()
+}
+
+fn announce(args: &AnnounceArgs) -> anyhow::Result<()> {
+    let id = args.id.clone().unwrap_or_else(random_uuid);
+    padgaming_protocol::control::Uuid::parse(&id).map_err(|e| anyhow::anyhow!("--id: {e}"))?;
+    let ip = args
+        .ip
+        .or_else(discover::guess_lan_ip)
+        .context("não achei um IPv4 de LAN; use --ip")?;
+    let stop = install_ctrlc();
+    let announcement = ClientAnnouncement::start(&id, &args.name, &args.model, ip, 50000)?;
+    println!(
+        "anunciando `{}` ({id}) em {ip} por mDNS; Ctrl+C para parar",
+        args.name
+    );
+    let start = Instant::now();
+    while !stop.load(Ordering::Relaxed) && args.duration.is_none_or(|d| start.elapsed() < d) {
+        std::thread::sleep(Duration::from_millis(100));
+    }
+    announcement.stop();
+    Ok(())
+}
+
+/// UUID v4 aleatório em texto minúsculo.
+fn random_uuid() -> String {
+    let mut rng = crate::units::Rng::new(random_seed());
+    let mut bytes = [0u8; 16];
+    for chunk in bytes.chunks_mut(8) {
+        chunk.copy_from_slice(&rng.next_u64().to_le_bytes());
+    }
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    let hex = bytes.iter().fold(String::new(), |mut out, b| {
+        let _ = write!(out, "{b:02x}");
+        out
+    });
+    format!(
+        "{}-{}-{}-{}-{}",
+        &hex[0..8],
+        &hex[8..12],
+        &hex[12..16],
+        &hex[16..20],
+        &hex[20..32]
+    )
+}
+
 /// Executa o comando.
 pub fn run(cli: &Cli) -> anyhow::Result<()> {
     match &cli.command {
-        Command::Discover => bail!("`discover` depende da descoberta mDNS do server (T-303)"),
+        Command::Discover(args) => discover(args),
+        Command::Announce(args) => announce(args),
         Command::Pair { .. } => bail!("`pair` depende do canal de controle TLS do server (T-302)"),
         Command::Connect(args) => connect(args),
         Command::Bench(args) => bench(args),
@@ -452,7 +627,6 @@ mod tests {
     #[test]
     fn commands_that_need_later_tasks_say_so() {
         let err = |args: &[&str]| format!("{:#}", run(&parse(args).unwrap()).unwrap_err());
-        assert!(err(&["discover"]).contains("T-303"));
         assert!(err(&["pair", "--pin", "123456"]).contains("T-302"));
         assert!(err(&["connect"]).contains("--insecure-dev"));
         assert!(err(&["bench", "--insecure-dev", "--clients", "9"]).contains("entre 1 e 4"));

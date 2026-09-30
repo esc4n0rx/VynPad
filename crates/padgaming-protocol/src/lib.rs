@@ -32,6 +32,8 @@ pub mod buttons;
 #[cfg(feature = "std")]
 pub mod control;
 pub mod crypto;
+#[cfg(feature = "std")]
+pub mod discovery;
 pub mod error;
 pub mod packet;
 #[cfg(feature = "std")]

@@ -43,6 +43,8 @@ O server anuncia `_padgaming._tcp.local.` na porta TCP de controle, com TXT (tod
 
 O client anuncia `_padgaming-client._tcp.local.` enquanto está na tela de conexão, com TXT `id` (device_id), `name`, `model`. A porta anunciada é a da socket UDP local do client e é **só informativa** (o server nunca se conecta a ela).
 
+> Nota: o nome `_padgaming-client` passa dos 15 caracteres que a RFC 6763 recomenda para o tipo de serviço. O server (`mdns-sd`) é configurado para aceitá-lo; o client Android deve conferir se o `NsdManager` também aceita (T-903).
+
 ### 3.2 Broadcast (fallback)
 
 - O client envia os 7 bytes ASCII `PGDISC1` para `255.255.255.255:47802`.
