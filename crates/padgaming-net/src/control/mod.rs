@@ -5,15 +5,18 @@
 //! [`InputServer`](crate::input::InputServer)) e responde `welcome`. Depois mantém o keepalive
 //! e distribui `config`/`bye`.
 //!
-//! O que fica de fora: o ciclo de vida completo da sessão (suspensão por silêncio do UDP e o
-//! `tick` da janela de reconexão, T-304), a UI de pareamento (T-603) e o rumble (T-204).
-//! Aqui, a queda do TLS suspende o slot ([`SlotManager::suspend`]) e o `bye` do client o libera.
+//! Ciclo de vida (T-304): a queda do TLS suspende o slot ([`SlotManager::suspend`], reserva de
+//! 30 s) e o `bye` do client o libera. Um watchdog de 50 ms cuida do silêncio do UDP (250 ms →
+//! controle neutro, 5 s → "reconectando") e libera as reservas vencidas (`SlotManager::tick`).
+//!
+//! O que fica de fora: a UI de pareamento (T-603) e o rumble (T-204).
 //!
 //! [`PairingService`]: crate::pairing::PairingService
 //! [`SlotManager::suspend`]: padgaming_core::SlotManager::suspend
 
 mod connection;
 mod server;
+mod watchdog;
 
 pub use server::{ControlDeps, ControlServer};
 
@@ -50,6 +53,14 @@ pub struct ControlConfig {
     pub approval_timeout: Duration,
     /// Prazo de cada escrita no socket (um client que não lê não trava a sessão).
     pub write_timeout: Duration,
+    /// Sem pacote UDP válido por este tempo, o controle vai para o estado neutro (PROTOCOLO §9).
+    pub neutral_after: Duration,
+    /// Sem pacote UDP válido por este tempo, a sessão aparece como "reconectando".
+    pub stalled_after: Duration,
+    /// Intervalo do watchdog.
+    pub watchdog_interval: Duration,
+    /// De quanto em quanto tempo o watchdog libera as reservas de slot vencidas.
+    pub reservation_check: Duration,
 }
 
 impl Default for ControlConfig {
@@ -62,6 +73,10 @@ impl Default for ControlConfig {
             dead_after: Duration::from_secs(15),
             approval_timeout: Duration::from_secs(30),
             write_timeout: Duration::from_secs(5),
+            neutral_after: Duration::from_millis(250),
+            stalled_after: Duration::from_secs(5),
+            watchdog_interval: Duration::from_millis(50),
+            reservation_check: Duration::from_secs(1),
         }
     }
 }
@@ -163,6 +178,17 @@ pub enum SessionEnd {
     Shutdown,
 }
 
+/// Saúde do fluxo de input UDP de uma sessão (`session:state` na UI).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SessionHealth {
+    /// Chegando pacotes.
+    Live,
+    /// 250 ms sem pacotes: o controle virtual foi solto (continua plugado).
+    Neutral,
+    /// 5 s sem pacotes: a UI mostra "Reconectando…". O slot continua da sessão.
+    Stalled,
+}
+
 /// Eventos para a UI (`devices:paired` e afins na T-506).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ControlEvent {
@@ -184,6 +210,22 @@ pub enum ControlEvent {
         /// Dispositivo.
         device_id: Uuid,
     },
+    /// O fluxo de input da sessão mudou de estado.
+    SessionState {
+        /// Sessão UDP.
+        session_id: u32,
+        /// Slot da sessão.
+        slot: SlotId,
+        /// Novo estado.
+        health: SessionHealth,
+    },
+    /// A reserva do slot venceu (o dispositivo não voltou em 30 s): controle desplugado.
+    ReservationExpired {
+        /// Slot liberado.
+        slot: SlotId,
+    },
+    /// O driver foi reavaliado depois de o sistema retomar da suspensão.
+    DriverRechecked(padgaming_driver::DriverStatus),
     /// A sessão terminou.
     SessionEnded {
         /// Sessão UDP.

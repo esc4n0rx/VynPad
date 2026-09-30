@@ -174,6 +174,24 @@ fn suspend_neutralizes_but_keeps_the_pad_plugged() {
 }
 
 #[test]
+fn neutralize_session_releases_the_buttons_and_keeps_the_pad_and_the_session() {
+    let f = fixture();
+    f.manager.assign(&device(1), 7, None).unwrap();
+    // Sem controle plugado ainda (nenhum input) e sessão desconhecida: nada a fazer.
+    assert!(!f.manager.neutralize_session(7));
+    f.manager.submit(7, &PRESSED).unwrap();
+    assert!(!f.manager.neutralize_session(99));
+
+    assert!(f.manager.neutralize_session(7));
+    assert_eq!(f.driver.last_report(slot(0)), Some(XReport::default()));
+    assert_eq!(f.driver.plugged_slots(), [slot(0)]);
+    assert_eq!(state(&f, 0), SlotView::Active);
+    // A sessão segue válida: o próximo input volta a mexer no controle.
+    f.manager.submit(7, &PRESSED).unwrap();
+    assert_eq!(f.driver.last_report(slot(0)), Some(PRESSED));
+}
+
+#[test]
 fn reconnect_within_the_window_returns_to_the_same_slot_without_replug() {
     let f = fixture();
     f.manager.assign(&device(1), 7, None).unwrap();

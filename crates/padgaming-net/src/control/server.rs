@@ -16,9 +16,9 @@ use tokio::task::JoinHandle;
 use tokio_rustls::TlsAcceptor;
 
 use super::connection;
-use super::{ApprovalRequest, ControlConfig, ControlEvent, SlotProfiles};
+use super::{ApprovalRequest, ControlConfig, ControlEvent, SessionHealth, SlotProfiles, watchdog};
 use crate::identity::{IdentityError, ServerIdentity};
-use crate::input::InputServer;
+use crate::input::{InputServer, SessionActivity};
 use crate::pairing::PairingService;
 
 /// Capacidade do canal de eventos; quem ficar para trás perde os mais antigos.
@@ -55,6 +55,10 @@ pub(super) struct Live {
     pub device: Uuid,
     pub slot: SlotId,
     pub commands: mpsc::UnboundedSender<Command>,
+    /// Quando chegou o último pacote UDP da sessão.
+    pub activity: Arc<SessionActivity>,
+    /// Último estado publicado pelo watchdog.
+    pub health: SessionHealth,
 }
 
 /// Estado compartilhado entre o listener e as conexões.
@@ -97,6 +101,7 @@ pub struct ControlServer {
     shared: Arc<Shared>,
     local_addr: SocketAddr,
     accept: Option<JoinHandle<()>>,
+    watchdog: Option<JoinHandle<()>>,
 }
 
 impl ControlServer {
@@ -128,11 +133,13 @@ impl ControlServer {
             Arc::clone(&shared),
             Arc::new(Semaphore::new(config.max_pending)),
         ));
+        let watchdog = tokio::spawn(watchdog::run(Arc::clone(&shared)));
         tracing::info!(%local_addr, "servidor de controle TLS iniciado");
         Ok(Self {
             shared,
             local_addr,
             accept: Some(accept),
+            watchdog: Some(watchdog),
         })
     }
 
@@ -183,6 +190,13 @@ impl ControlServer {
             .is_some_and(|l| l.commands.send(Command::Bye(reason)).is_ok())
     }
 
+    /// O sistema retomou da suspensão (o app avisa, T-607): solta todos os controles, pois
+    /// nada do que estava em andamento é confiável, e revalida o driver (evento
+    /// [`ControlEvent::DriverRechecked`]). As sessões que voltarem a mandar input retomam sozinhas.
+    pub fn system_resumed(&self) {
+        watchdog::resumed(&self.shared);
+    }
+
     /// Número de sessões vivas.
     pub fn session_count(&self) -> usize {
         self.shared.live().len()
@@ -191,8 +205,11 @@ impl ControlServer {
     /// Para de aceitar, manda `bye{shutdown}` às sessões e espera elas terminarem (até 2 s).
     pub async fn shutdown(mut self) {
         let _ = self.shared.shutdown.send(true);
-        if let Some(accept) = self.accept.take() {
-            let _ = accept.await;
+        for task in [self.accept.take(), self.watchdog.take()]
+            .into_iter()
+            .flatten()
+        {
+            let _ = task.await;
         }
         let deadline = tokio::time::Instant::now() + SHUTDOWN_GRACE;
         while self.session_count() > 0 && tokio::time::Instant::now() < deadline {

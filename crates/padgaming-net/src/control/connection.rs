@@ -21,7 +21,7 @@ use tokio_rustls::TlsAcceptor;
 use tokio_rustls::server::TlsStream;
 
 use super::server::{Command, Live, Shared};
-use super::{ApprovalRequest, ControlEvent, SUPPORTED_VERSIONS, SessionEnd};
+use super::{ApprovalRequest, ControlEvent, SUPPORTED_VERSIONS, SessionEnd, SessionHealth};
 use crate::input::SessionSpec;
 use crate::pairing::{AuthError, Authenticated};
 use crate::random_bytes;
@@ -219,7 +219,7 @@ async fn establish(
             }
         };
         let setup = shared.profiles.setup(slot, &device);
-        shared.input.add_session(SessionSpec {
+        let activity = shared.input.add_session(SessionSpec {
             session_id,
             key: Secret::new(key),
             profile: setup.profile,
@@ -230,6 +230,8 @@ async fn establish(
                 device: device.clone(),
                 slot,
                 commands: command_tx,
+                activity,
+                health: SessionHealth::Live,
             },
         );
         // Uma conexão anterior do mesmo dispositivo (que ainda não percebeu a queda) sai.

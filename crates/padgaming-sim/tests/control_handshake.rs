@@ -6,11 +6,11 @@ use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use padgaming_core::{SlotManager, SlotView};
+use padgaming_core::{Clock, SlotConfig, SlotManager, SlotView, SystemClock};
 use padgaming_driver::{MockDriver, SlotId};
 use padgaming_net::control::{
     ApprovalRequest, ControlConfig, ControlDeps, ControlEvent, ControlServer, DefaultProfiles,
-    SessionEnd,
+    SessionEnd, SessionHealth,
 };
 use padgaming_net::identity::ServerIdentity;
 use padgaming_net::input::{InputConfig, InputServer};
@@ -66,8 +66,41 @@ fn quick() -> ControlConfig {
 }
 
 async fn rig(config: ControlConfig) -> Rig {
+    rig_with_clock(config, Arc::new(SystemClock)).await
+}
+
+/// Relógio dos slots que só anda quando o teste manda (a janela de 30 s sem esperar 30 s).
+#[derive(Clone)]
+struct ManualClock {
+    base: std::time::Instant,
+    offset: Arc<Mutex<Duration>>,
+}
+
+impl ManualClock {
+    fn new() -> Self {
+        Self {
+            base: std::time::Instant::now(),
+            offset: Arc::default(),
+        }
+    }
+    fn advance(&self, by: Duration) {
+        *self.offset.lock().unwrap() += by;
+    }
+}
+
+impl Clock for ManualClock {
+    fn now(&self) -> std::time::Instant {
+        self.base + *self.offset.lock().unwrap()
+    }
+}
+
+async fn rig_with_clock(config: ControlConfig, clock: Arc<dyn Clock>) -> Rig {
     let driver = Arc::new(MockDriver::default());
-    let slots = Arc::new(SlotManager::new(driver.clone()));
+    let slots = Arc::new(SlotManager::with_clock(
+        driver.clone(),
+        SlotConfig::default(),
+        clock,
+    ));
     let input = Arc::new(
         InputServer::start(
             InputConfig {
@@ -594,7 +627,12 @@ async fn pending_connections_are_limited() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn shutdown_says_bye_to_everyone() {
-    let rig = rig(quick()).await;
+    // O client de teste não responde ao keepalive: o `timeout` não pode ganhar do shutdown.
+    let rig = rig(ControlConfig {
+        dead_after: Duration::from_secs(30),
+        ..quick()
+    })
+    .await;
     let addr = rig.control.local_addr();
     let session = welcomed(addr, Trust::FirstUse, device(1), token_auth(&rig)).await;
     let Rig { control, input, .. } = rig;
@@ -616,4 +654,207 @@ async fn shutdown_says_bye_to_everyone() {
         })
     ));
     drop(input);
+}
+
+// ------------------------------------------------------------------ T-304: ciclo de vida
+
+/// Segura o botão A a 250 Hz até `stop` ser ligado (é o "processo do client" do teste).
+fn hold_a(
+    server: SocketAddr,
+    session: &ControlSession,
+    stop: Arc<AtomicBool>,
+) -> std::thread::JoinHandle<()> {
+    let w = &session.welcome;
+    let config = ClientConfig {
+        server: SocketAddr::new(server.ip(), w.udp_port),
+        session_id: w.session_id,
+        key: w.udp_key.expose().0,
+        rate_hz: 250,
+        fault: FaultConfig::default(),
+        seed: 1,
+    };
+    std::thread::spawn(move || {
+        let mut script = padgaming_sim::source::Script::parse(
+            "[[step]]\nduration = \"60s\"\nbuttons = [\"a\"]\n",
+        )
+        .unwrap();
+        client::run(&config, &mut script, &stop, None, &mut |_| {}).unwrap();
+    })
+}
+
+fn buttons(rig: &Rig, slot: u8) -> u16 {
+    rig.driver
+        .last_report(SlotId::new(slot).unwrap())
+        .map_or(0, |r| r.buttons)
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn killing_the_client_releases_the_held_button_within_250ms_and_reports_the_states() {
+    let mut rig = rig(ControlConfig {
+        stalled_after: Duration::from_millis(700),
+        // O client de teste não responde ao keepalive do TLS; ele não pode expirar antes.
+        dead_after: Duration::from_secs(30),
+        ..quick()
+    })
+    .await;
+    let addr = rig.control.local_addr();
+    let session = welcomed(addr, Trust::FirstUse, device(1), token_auth(&rig)).await;
+    let session_id = session.welcome.session_id;
+    let stop = Arc::new(AtomicBool::new(false));
+    let client = hold_a(addr, &session, Arc::clone(&stop));
+
+    eventually("A apertado", || buttons(&rig, 0) != 0).await;
+    // Mata o client: nenhum pacote a partir daqui.
+    stop.store(true, std::sync::atomic::Ordering::Relaxed);
+    client.join().unwrap();
+    let killed = std::time::Instant::now();
+    eventually("A solto", || buttons(&rig, 0) == 0).await;
+    let released_after = killed.elapsed();
+    // 250 ms de silêncio + até um tick do watchdog (50 ms) + folga do agendador.
+    assert!(
+        released_after < Duration::from_millis(450),
+        "solto só depois de {released_after:?}"
+    );
+    assert_eq!(rig.driver.plugged_slots(), vec![SlotId::new(0).unwrap()]);
+
+    let mut states = Vec::new();
+    while states.len() < 2 {
+        let ev = next_event(&mut rig.events).await;
+        if let ControlEvent::SessionState {
+            session_id: id,
+            health,
+            ..
+        } = ev
+        {
+            assert_eq!(id, session_id);
+            states.push(health);
+        }
+    }
+    assert_eq!(states, [SessionHealth::Neutral, SessionHealth::Stalled]);
+    // O slot continua da sessão (só o TLS ou o `bye` a encerram).
+    assert_eq!(rig.control.session_count(), 1);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_10_second_outage_returns_to_the_same_slot_without_the_pad_ever_unplugging() {
+    let clock = ManualClock::new();
+    let rig = rig_with_clock(quick(), Arc::new(clock.clone())).await;
+    let addr = rig.control.local_addr();
+    let first = welcomed(addr, Trust::FirstUse, device(1), token_auth(&rig)).await;
+    let token = *first.welcome.device_token.clone().unwrap().expose();
+    let stop = Arc::new(AtomicBool::new(false));
+    let client = hold_a(addr, &first, Arc::clone(&stop));
+    eventually("pad plugado", || buttons(&rig, 0) != 0).await;
+    stop.store(true, std::sync::atomic::Ordering::Relaxed);
+    client.join().unwrap();
+
+    // O Wi-Fi cai.
+    first.drop_connection();
+    eventually("slot suspenso", || {
+        matches!(
+            rig.slots.snapshot().slots[0].state,
+            SlotView::Suspended { .. }
+        )
+    })
+    .await;
+    let slot0 = SlotId::new(0).unwrap();
+    assert_eq!(
+        rig.driver.plugged_slots(),
+        vec![slot0],
+        "o jogo ainda vê o controle"
+    );
+    assert_eq!(buttons(&rig, 0), 0, "e ele está solto");
+
+    // 10 s depois, volta com o device_token.
+    clock.advance(Duration::from_secs(10));
+    tokio::time::sleep(Duration::from_millis(120)).await; // o watchdog roda no meio
+    assert_eq!(rig.driver.plugged_slots(), vec![slot0]);
+    let auth = Auth::DeviceToken {
+        token: Secret::new(token),
+    };
+    let again = welcomed(addr, Trust::FirstUse, device(1), auth).await;
+    assert_eq!(again.welcome.config.slot, 0);
+    let stop = Arc::new(AtomicBool::new(false));
+    let client = hold_a(addr, &again, Arc::clone(&stop));
+    eventually("A no mesmo pad", || buttons(&rig, 0) != 0).await;
+    assert_eq!(rig.driver.plugged_slots(), vec![slot0], "sem replugar");
+    stop.store(true, std::sync::atomic::Ordering::Relaxed);
+    client.join().unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_reservation_expires_after_30_seconds_and_the_pad_is_unplugged() {
+    let clock = ManualClock::new();
+    let mut rig = rig_with_clock(
+        ControlConfig {
+            reservation_check: Duration::from_millis(50),
+            ..quick()
+        },
+        Arc::new(clock.clone()),
+    )
+    .await;
+    let addr = rig.control.local_addr();
+    let first = welcomed(addr, Trust::FirstUse, device(1), token_auth(&rig)).await;
+    let stop = Arc::new(AtomicBool::new(false));
+    let client = hold_a(addr, &first, Arc::clone(&stop));
+    eventually("pad plugado", || buttons(&rig, 0) != 0).await;
+    stop.store(true, std::sync::atomic::Ordering::Relaxed);
+    client.join().unwrap();
+    first.drop_connection();
+    eventually("slot suspenso", || {
+        matches!(
+            rig.slots.snapshot().slots[0].state,
+            SlotView::Suspended { .. }
+        )
+    })
+    .await;
+
+    clock.advance(Duration::from_secs(29));
+    tokio::time::sleep(Duration::from_millis(150)).await;
+    assert!(matches!(
+        rig.slots.snapshot().slots[0].state,
+        SlotView::Suspended { .. }
+    ));
+
+    clock.advance(Duration::from_secs(2));
+    loop {
+        if let ControlEvent::ReservationExpired { slot } = next_event(&mut rig.events).await {
+            assert_eq!(slot.index(), 0);
+            break;
+        }
+    }
+    assert!(
+        rig.driver.plugged_slots().is_empty(),
+        "o controle foi desplugado"
+    );
+    assert_eq!(rig.slots.snapshot().slots[0].state, SlotView::Free);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn resuming_from_sleep_releases_every_pad_and_rechecks_the_driver() {
+    let mut rig = rig(ControlConfig {
+        // O watchdog não interfere: quem solta aqui é o `system_resumed`.
+        neutral_after: Duration::from_secs(60),
+        stalled_after: Duration::from_secs(120),
+        ..quick()
+    })
+    .await;
+    let addr = rig.control.local_addr();
+    let session = welcomed(addr, Trust::FirstUse, device(1), token_auth(&rig)).await;
+    let stop = Arc::new(AtomicBool::new(false));
+    let client = hold_a(addr, &session, Arc::clone(&stop));
+    eventually("A apertado", || buttons(&rig, 0) != 0).await;
+    stop.store(true, std::sync::atomic::Ordering::Relaxed);
+    client.join().unwrap();
+    assert_ne!(buttons(&rig, 0), 0);
+
+    rig.control.system_resumed();
+    assert_eq!(buttons(&rig, 0), 0);
+    loop {
+        if let ControlEvent::DriverRechecked(status) = next_event(&mut rig.events).await {
+            assert_eq!(status, padgaming_driver::DriverStatus::Ready);
+            break;
+        }
+    }
+    assert_eq!(rig.control.session_count(), 1, "a sessão continua");
 }

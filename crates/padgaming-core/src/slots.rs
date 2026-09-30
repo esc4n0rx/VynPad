@@ -345,6 +345,27 @@ impl SlotManager {
         Ok(self.driver.update(&pad.handle, report)?)
     }
 
+    /// Solta todos os botões do controle da sessão sem tirá-lo do lugar (o pad continua
+    /// plugado). É o watchdog de "input mudo" (PROTOCOLO §9). Devolve `false` se a sessão não
+    /// tem controle plugado (ainda não mandou input, ou não existe).
+    pub fn neutralize_session(&self, session: u32) -> bool {
+        let table = self.hot.load();
+        let Some(pad) = table
+            .iter()
+            .flatten()
+            .find(|p| p.session.load(Ordering::Relaxed) == session)
+        else {
+            return false;
+        };
+        pad.neutralize(self.driver.as_ref());
+        true
+    }
+
+    /// Disponibilidade atual do driver (para revalidar depois de o Windows retomar).
+    pub fn driver_status(&self) -> padgaming_driver::DriverStatus {
+        self.driver.status()
+    }
+
     /// A sessão caiu (TLS fechou ou expirou): o slot fica reservado ao dispositivo.
     ///
     /// Devolve o slot afetado. O controle, se existir, vai a neutro e continua plugado.
