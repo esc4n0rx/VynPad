@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | T-002 |
-| Status | ⬜ A fazer |
+| Status | 🟨 Pronta; falta conferir o visual no Windows 11 e 10, o snap layouts e o fechar → bandeja (T-607) |
 
 ## Objetivo
 A janela deve parecer um app nativo do macOS Sonoma rodando no Windows.

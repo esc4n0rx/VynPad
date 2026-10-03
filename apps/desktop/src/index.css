@@ -43,6 +43,8 @@
   --color-traffic-close: var(--traffic-close);
   --color-traffic-minimize: var(--traffic-minimize);
   --color-traffic-maximize: var(--traffic-maximize);
+  --color-traffic-inactive: var(--traffic-inactive);
+  --color-traffic-glyph: var(--traffic-glyph);
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -77,6 +79,7 @@
   --traffic-close: #ff5f57;
   --traffic-minimize: #febc2e;
   --traffic-maximize: #28c840;
+  --traffic-glyph: rgb(0 0 0 / 0.6);
 
   --blur: 24px;
 
@@ -92,6 +95,7 @@
 
   --bg-window: rgb(28 28 30 / 0.72);
   --bg-window-solid: #1c1c1e;
+  --traffic-inactive: rgb(255 255 255 / 0.18);
   --bg-sidebar: rgb(44 44 46 / 0.45);
   --bg-elevated: rgb(58 58 60 / 0.55);
   --bg-control: rgb(118 118 128 / 0.24);
@@ -117,6 +121,7 @@
 
   --bg-window: rgb(246 246 246 / 0.78);
   --bg-window-solid: #f6f6f6;
+  --traffic-inactive: rgb(0 0 0 / 0.14);
   --bg-sidebar: rgb(232 232 237 / 0.55);
   --bg-elevated: rgb(255 255 255 / 0.7);
   --bg-control: rgb(118 118 128 / 0.12);
@@ -138,18 +143,43 @@
   --elev-popover: 0 1px 0 rgb(255 255 255 / 0.8) inset, 0 12px 32px rgb(0 0 0 / 0.18);
 }
 
-/* Fundo sólido provisório: a janela é transparente e o vidro (Mica/Acrylic) entra na T-502. */
+/*
+ * A janela é transparente: quem pinta é o `#root`. Com Mica/Acrylic ele usa `--bg-window`
+ * (translúcido, deixa o material aparecer); sem eles, o fundo sólido. `data-material` e
+ * `data-corners` vêm do backend (src/lib/windowChrome.ts).
+ */
 html,
 body,
 #root {
   height: 100%;
 }
 
+html,
+body {
+  background: transparent;
+}
+
 body {
   margin: 0;
-  background: var(--bg-window-solid);
   color: var(--text-primary);
   user-select: none;
+}
+
+#root {
+  --bg-shell: var(--bg-window-solid);
+  background: var(--bg-shell);
+}
+
+html[data-material="mica"] #root,
+html[data-material="acrylic"] #root {
+  --bg-shell: var(--bg-window);
+}
+
+/* Sem DWM para arredondar (Windows 10 sólido, Linux): o container raiz faz os cantos de 12 px. */
+html[data-corners="css"]:not([data-maximized="true"]) #root {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--separator);
 }
 
 /* Foco visível, na cor do accent, para quem navega por teclado. */

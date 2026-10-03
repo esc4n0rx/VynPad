@@ -13,6 +13,7 @@ mod events;
 mod live;
 mod logging;
 mod state;
+mod window;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -68,6 +69,7 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
             commands::subscribe_live_input,
             commands::unsubscribe_live_input,
             commands::reset_live_input,
+            window::window_chrome,
         ])
         .events(collect_events![
             events::SettingsChanged,
@@ -98,6 +100,15 @@ fn focus_main_window(app: &tauri::AppHandle) {
         let _ = window.show();
         let _ = window.set_focus();
     }
+}
+
+/// Aplica o material (Mica/Acrylic/sólido) na janela principal e guarda o resultado para a UI.
+fn setup_window(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    let window = app
+        .get_webview_window(MAIN_WINDOW)
+        .ok_or("a janela principal não existe")?;
+    app.manage(window::ChromeState(window::apply(&window)));
+    Ok(())
 }
 
 /// Sobe o `Core` e liga tudo o que depende dele à webview.
@@ -150,10 +161,15 @@ pub fn run() {
         focus_main_window(app);
     }));
 
+    // Lembra tamanho e posição da janela entre execuções.
+    #[cfg(desktop)]
+    let app_builder = app_builder.plugin(tauri_plugin_window_state::Builder::default().build());
+
     app_builder
         .invoke_handler(builder.invoke_handler())
         .setup(move |app| {
             builder.mount_events(app);
+            setup_window(app)?;
             start_core(app)
         })
         .plugin(tauri_plugin_opener::init())

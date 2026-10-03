@@ -65,6 +65,8 @@ export const commands = {
 	 *  perdeu as assinaturas locais, mas o backend ainda as conta.
 	 */
 	resetLiveInput: () => __TAURI_INVOKE<void>("reset_live_input"),
+	/**  Como a janela está pintada, para a UI escolher fundo e cantos. */
+	windowChrome: () => __TAURI_INVOKE<WindowChrome>("window_chrome"),
 };
 
 /** Events */
@@ -641,6 +643,27 @@ export type Turbo = {
 	/**  Pressionamentos por segundo (1–30). */
 	hz: number | null,
 };
+
+/**  O que a UI precisa saber para pintar a janela. */
+export type WindowChrome = {
+	material: WindowMaterial,
+	corners: WindowCorners,
+};
+
+/**  Quem arredonda os cantos da janela. */
+export type WindowCorners = 
+/**  O DWM do Windows 11. */
+"native" | 
+/**  O container raiz da UI (`border-radius`), sobre uma área transparente. */
+"css" | 
+/**
+ *  Sem arredondar: o acrylic do Windows 10 borra o retângulo inteiro, então um raio em CSS
+ *  deixaria cantos borrados para fora do desenho.
+ */
+"square";
+
+/**  O que fica atrás do conteúdo da janela. */
+export type WindowMaterial = "mica" | "acrylic" | "solid";
 
 export type XInputOccupantDto = "free" | "virtual" | "physical";
 
