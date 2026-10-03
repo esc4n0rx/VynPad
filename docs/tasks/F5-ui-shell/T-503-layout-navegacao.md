@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | T-501, T-502 |
-| Status | ⬜ A fazer |
+| Status | 🟨 Pronta; falta conferir no app (mouse, atalhos, sidebar recolhida) e o profiler dos 60 fps |
 
 ## Objetivo
 Estrutura de navegação do app no padrão macOS (sidebar + conteúdo).
