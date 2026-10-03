@@ -1,4 +1,5 @@
 import { Slider as SliderPrimitive } from "radix-ui";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface SliderProps {
@@ -30,6 +31,7 @@ export function Slider({
   disabled,
   className,
 }: SliderProps) {
+  const { t } = useTranslation();
   const markPercent =
     defaultValue === undefined ? undefined : ((defaultValue - min) / (max - min)) * 100;
 
@@ -63,7 +65,7 @@ export function Slider({
         />
       </SliderPrimitive.Root>
       <output
-        title={defaultValue === undefined ? undefined : "Duplo clique restaura o padrão"}
+        title={defaultValue === undefined ? undefined : t("ui.restoreDefault")}
         onDoubleClick={() => {
           if (defaultValue !== undefined && !disabled) onValueChange(defaultValue);
         }}

@@ -1,4 +1,5 @@
 import { Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface StepperProps {
@@ -11,8 +12,9 @@ interface StepperProps {
 
 /** Indicador de progresso do onboarding: passos concluídos, atual e pendentes. */
 export function Stepper({ steps, current, className }: StepperProps) {
+  const { t } = useTranslation();
   return (
-    <ol aria-label="Progresso" className={cn("flex items-center gap-2", className)}>
+    <ol aria-label={t("ui.progress")} className={cn("flex items-center gap-2", className)}>
       {steps.map((label, index) => {
         const done = index < current;
         const active = index === current;

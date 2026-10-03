@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
 import { NAV_ITEMS, SETTINGS_PATH, type NavItem } from "@/app/navigation";
 import { ServerStatus, SlotDots } from "@/components/shell/ServerStatus";
@@ -6,13 +7,15 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 function SidebarLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
+  const { t } = useTranslation();
   const Icon = item.icon;
+  const label = t(item.labelKey);
 
   const link = (
     <NavLink
       to={item.path}
       end={item.path === "/"}
-      aria-label={collapsed ? item.label : undefined}
+      aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
         cn(
           "relative flex h-8 items-center gap-2.5 rounded-md text-body font-medium focus-ring transition-colors",
@@ -31,14 +34,14 @@ function SidebarLink({ item, collapsed }: { item: NavItem; collapsed: boolean })
             />
           )}
           <Icon className="relative size-4 shrink-0" strokeWidth={1.75} />
-          {!collapsed && <span className="relative truncate">{item.label}</span>}
+          {!collapsed && <span className="relative truncate">{label}</span>}
         </>
       )}
     </NavLink>
   );
 
   return collapsed ? (
-    <Tooltip content={item.label} side="right">
+    <Tooltip content={label} side="right">
       {link}
     </Tooltip>
   ) : (
@@ -48,12 +51,13 @@ function SidebarLink({ item, collapsed }: { item: NavItem; collapsed: boolean })
 
 /** Sidebar translúcida: 220 px, ou só ícones (56 px) em janelas estreitas. */
 export function Sidebar({ collapsed }: { collapsed: boolean }) {
+  const { t } = useTranslation();
   const sections = NAV_ITEMS.filter((item) => item.path !== SETTINGS_PATH);
   const settings = NAV_ITEMS.filter((item) => item.path === SETTINGS_PATH);
 
   return (
     <nav
-      aria-label="Seções"
+      aria-label={t("nav.label")}
       className={cn(
         "flex shrink-0 flex-col bg-sidebar backdrop-blur-(--blur)",
         collapsed ? "w-14 items-center" : "w-[220px]",

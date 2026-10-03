@@ -1,27 +1,26 @@
 import { isAppError } from "@/lib/errors";
+import { i18n } from "./index";
+import type ptBR from "./pt-BR.json";
 
-/**
- * Mensagens dos erros do backend (chaves `errors.*`). Provisório: a T-504 (i18n PT-BR/EN) move
- * isto para os arquivos de idioma e passa a traduzir de verdade.
- */
-const PT_BR: Record<string, string> = {
-  "errors.internal": "Algo deu errado. Tente de novo; se continuar, envie o diagnóstico.",
-  "errors.invalid_input": "Um valor informado não é válido.",
-  "errors.unsupported": "Este recurso não está disponível neste sistema.",
-  "errors.not_found": "Não encontrei o item pedido. Ele pode ter sido removido.",
-  "errors.builtin_profile":
-    "O perfil Padrão é do app e não pode ser alterado nem apagado. Duplique-o para personalizar.",
-  "errors.profile_in_use": "Este perfil está em uso.",
-  "errors.import_invalid": "O arquivo não é um perfil válido do PadGaming.",
-  "errors.no_network": "Nenhuma rede local encontrada. Conecte o PC ao Wi-Fi ou à rede cabeada.",
-};
+type ErrorKey = keyof typeof ptBR.errors;
+
+/** `errors.not_found` (a chave que o backend manda) → `not_found` no namespace `errors`. */
+function errorKey(messageKey: string): string {
+  return messageKey.replace(/^errors\./, "");
+}
+
+function isErrorKey(key: string): key is ErrorKey {
+  return i18n.exists(key, { ns: "errors" });
+}
 
 /** Texto para o usuário: a mensagem traduzida e, quando houver, o detalhe do backend. */
 export function messageForError(error: unknown): string {
-  if (!isAppError(error)) {
-    return PT_BR["errors.internal"] ?? "Algo deu errado.";
-  }
-  const base = PT_BR[error.message_key] ?? PT_BR["errors.internal"] ?? "Algo deu errado.";
+  const generic = i18n.t("errors:internal");
+  if (!isAppError(error)) return generic;
+
+  const key = errorKey(error.message_key);
+  // O backend pode mandar uma chave que esta versão da UI ainda não conhece.
+  const base = isErrorKey(key) ? i18n.t(key, { ns: "errors" }) : generic;
   // Só as validações trazem um detalhe pensado para o usuário; nos outros ele é diagnóstico.
   return error.code === "invalid_input" && error.details ? `${base} ${error.details}` : base;
 }

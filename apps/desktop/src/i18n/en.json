@@ -1,0 +1,91 @@
+{
+  "common": {
+    "nav": {
+      "label": "Sections",
+      "controls": "Controllers",
+      "devices": "Devices",
+      "mapping": "Mapping",
+      "latency": "Latency",
+      "settings": "Settings"
+    },
+    "window": {
+      "close": "Close",
+      "minimize": "Minimize",
+      "maximize": "Maximize",
+      "restore": "Restore"
+    },
+    "server": {
+      "online": "Online",
+      "offline": "Offline",
+      "starting": "Starting…"
+    },
+    "driver": {
+      "loading": "Driver…",
+      "ready": "Driver OK",
+      "notInstalled": "Driver missing",
+      "outdated": "Driver outdated",
+      "stopped": "Driver stopped",
+      "error": "Driver error"
+    },
+    "slots": {
+      "label": "Controllers",
+      "title": "P{{slot}}: {{state}}",
+      "free": "free",
+      "reserved": "reserved",
+      "active": "connected",
+      "suspended": "reconnecting"
+    },
+    "comingSoon": {
+      "description": "This screen arrives in {{task}}."
+    },
+    "routeError": {
+      "title": "Something went wrong on this screen",
+      "description": "The rest of the app keeps working. You can go back home or copy the details for support.",
+      "copy": "Copy details",
+      "copied": "Copied",
+      "home": "Back to home"
+    },
+    "ui": {
+      "close": "Close",
+      "progress": "Progress",
+      "restoreDefault": "Double-click to restore the default"
+    },
+    "toast": {
+      "region": "Notifications"
+    }
+  },
+  "dashboard": {
+    "backendError": "Could not talk to the backend.",
+    "loading": "Loading…",
+    "version": "App {{app}} · Core {{core}}"
+  },
+  "devices": {
+    "title": "Devices"
+  },
+  "mapping": {
+    "title": "Mapping"
+  },
+  "latency": {
+    "title": "Latency"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "onboarding": {
+    "title": "Welcome"
+  },
+  "tray": {
+    "open": "Open PadGaming",
+    "quit": "Quit"
+  },
+  "errors": {
+    "internal": "Something went wrong. Try again; if it keeps happening, send the diagnostics.",
+    "invalid_input": "A value you entered is not valid.",
+    "unsupported": "This feature is not available on this system.",
+    "not_found": "I couldn't find the requested item. It may have been removed.",
+    "builtin_profile": "The Default profile belongs to the app and can't be edited or deleted. Duplicate it to customize.",
+    "profile_in_use": "This profile is in use.",
+    "import_invalid": "The file is not a valid PadGaming profile.",
+    "no_network": "No local network found. Connect the PC to Wi-Fi or a wired network."
+  }
+}

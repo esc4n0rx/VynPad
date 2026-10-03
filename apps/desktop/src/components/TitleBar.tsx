@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Maximize2, Minimize2, Minus, X } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useWindowState } from "@/lib/useWindowState";
@@ -17,12 +18,13 @@ interface TitleBarProps {
  * expõe isso a uma webview sem moldura.
  */
 export function TitleBar({ title }: TitleBarProps) {
+  const { t } = useTranslation();
   const { focused, maximized } = useWindowState();
   const appWindow = getCurrentWindow();
 
   const lights = [
     {
-      label: "Fechar",
+      label: t("window.close"),
       color: "bg-traffic-close",
       // Inativa fica cinza; o hover no grupo devolve a cor (classe literal para o Tailwind achar).
       hover: "group-hover:bg-traffic-close",
@@ -31,7 +33,7 @@ export function TitleBar({ title }: TitleBarProps) {
       action: () => void appWindow.close(),
     },
     {
-      label: "Minimizar",
+      label: t("window.minimize"),
       color: "bg-traffic-minimize",
       // Inativa fica cinza; o hover no grupo devolve a cor (classe literal para o Tailwind achar).
       hover: "group-hover:bg-traffic-minimize",
@@ -39,7 +41,7 @@ export function TitleBar({ title }: TitleBarProps) {
       action: () => void appWindow.minimize(),
     },
     {
-      label: maximized ? "Restaurar" : "Maximizar",
+      label: maximized ? t("window.restore") : t("window.maximize"),
       color: "bg-traffic-maximize",
       // Inativa fica cinza; o hover no grupo devolve a cor (classe literal para o Tailwind achar).
       hover: "group-hover:bg-traffic-maximize",

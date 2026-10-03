@@ -1,6 +1,8 @@
 import { Smartphone } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ComingSoon } from "@/components/shell/ComingSoon";
 
 export function DevicesPage() {
-  return <ComingSoon icon={Smartphone} title="Dispositivos" task="T-603" />;
+  const { t } = useTranslation("devices");
+  return <ComingSoon icon={Smartphone} title={t("title")} task="T-603" />;
 }

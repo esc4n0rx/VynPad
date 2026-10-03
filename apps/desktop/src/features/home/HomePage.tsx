@@ -1,9 +1,11 @@
 import { Gamepad2 } from "lucide-react";
 import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { useAppInfo } from "@/lib/api/app";
 
 // Tela provisória que valida a ponte React ↔ Rust. Substituída pelo dashboard (T-602).
 export function HomePage() {
+  const { t } = useTranslation("dashboard");
   const { data, error } = useAppInfo();
 
   return (
@@ -19,10 +21,10 @@ export function HomePage() {
       <h1 className="text-[28px] font-semibold tracking-tight">PadGaming</h1>
       <p className="text-fg-2 tabular-nums">
         {error
-          ? "Não foi possível falar com o backend."
+          ? t("backendError")
           : data
-            ? `App ${data.app_version} · Core ${data.core_version}`
-            : "Carregando…"}
+            ? t("version", { app: data.app_version, core: data.core_version })
+            : t("loading")}
       </p>
     </div>
   );

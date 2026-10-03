@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { TriangleAlert } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useRouteError } from "react-router";
 import { describeRouteError } from "@/components/shell/describeRouteError";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { log } from "@/lib/log";
 
+const HOME_HASH = "#/";
+
 /** Error boundary de rota: tela amigável no lugar da que quebrou, sem derrubar a sidebar. */
 export function RouteError() {
+  const { t } = useTranslation();
   const error = useRouteError();
   const [copied, setCopied] = useState(false);
   const details = describeRouteError(error);
@@ -27,20 +31,20 @@ export function RouteError() {
     <div role="alert" className="flex h-full items-center justify-center">
       <EmptyState
         icon={<TriangleAlert strokeWidth={1.75} />}
-        title="Algo deu errado nesta tela"
-        description="O restante do app continua funcionando. Você pode voltar ao início ou copiar os detalhes para o suporte."
+        title={t("routeError.title")}
+        description={t("routeError.description")}
         action={
           <div className="flex gap-2">
             <Button variant="primary" onClick={copy}>
-              {copied ? "Copiado" : "Copiar detalhes"}
+              {copied ? t("routeError.copied") : t("routeError.copy")}
             </Button>
             <Button
               onClick={() => {
-                window.location.hash = "#/";
+                window.location.hash = HOME_HASH;
                 window.location.reload();
               }}
             >
-              Voltar ao início
+              {t("routeError.home")}
             </Button>
           </div>
         }

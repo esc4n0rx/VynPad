@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { EmptyState } from "@/components/ui/empty-state";
 
 /** Tela ainda sem conteúdo (F6); marca o lugar e diz qual task a preenche. */
@@ -11,12 +12,13 @@ export function ComingSoon({
   title: string;
   task: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex h-full items-center justify-center">
       <EmptyState
         icon={<Icon strokeWidth={1.75} />}
         title={title}
-        description={`Esta tela chega na ${task}.`}
+        description={t("comingSoon.description", { task })}
       />
     </div>
   );

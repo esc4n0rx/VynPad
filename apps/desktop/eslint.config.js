@@ -1,5 +1,6 @@
 import js from "@eslint/js";
 import globals from "globals";
+import i18next from "eslint-plugin-i18next";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
@@ -46,6 +47,22 @@ export default tseslint.config(
           selector:
             "TemplateElement[value.raw=/#[0-9a-fA-F]{3,8}\\b|\\b(rgb|hsl|oklch|oklab)a?\\(/]",
           message: "Cor hardcoded: use um token do design system (index.css).",
+        },
+      ],
+    },
+  },
+  {
+    // Texto visível sai dos arquivos de idioma (`src/i18n`), não do JSX. A vitrine /dev/ui e os
+    // testes ficam de fora.
+    files: ["src/**/*.tsx"],
+    ignores: ["src/features/dev/**", "src/**/*.test.tsx"],
+    extends: [i18next.configs["flat/recommended"]],
+    rules: {
+      "i18next/no-literal-string": [
+        "error",
+        {
+          mode: "jsx-only",
+          words: { exclude: ["PadGaming", "[0-9\s.,:;·/|()+\-–—•…]*", "P[1-4]"] },
         },
       ],
     },

@@ -1,6 +1,8 @@
 import { Settings } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ComingSoon } from "@/components/shell/ComingSoon";
 
 export function SettingsPage() {
-  return <ComingSoon icon={Settings} title="Configurações" task="T-605" />;
+  const { t } = useTranslation("settings");
+  return <ComingSoon icon={Settings} title={t("title")} task="T-605" />;
 }

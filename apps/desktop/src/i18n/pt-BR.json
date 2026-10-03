@@ -1,0 +1,91 @@
+{
+  "common": {
+    "nav": {
+      "label": "Seções",
+      "controls": "Controles",
+      "devices": "Dispositivos",
+      "mapping": "Mapeamento",
+      "latency": "Latência",
+      "settings": "Configurações"
+    },
+    "window": {
+      "close": "Fechar",
+      "minimize": "Minimizar",
+      "maximize": "Maximizar",
+      "restore": "Restaurar"
+    },
+    "server": {
+      "online": "Online",
+      "offline": "Offline",
+      "starting": "Iniciando…"
+    },
+    "driver": {
+      "loading": "Driver…",
+      "ready": "Driver OK",
+      "notInstalled": "Driver ausente",
+      "outdated": "Driver desatualizado",
+      "stopped": "Driver parado",
+      "error": "Driver com erro"
+    },
+    "slots": {
+      "label": "Controles",
+      "title": "P{{slot}}: {{state}}",
+      "free": "livre",
+      "reserved": "reservado",
+      "active": "conectado",
+      "suspended": "reconectando"
+    },
+    "comingSoon": {
+      "description": "Esta tela chega na {{task}}."
+    },
+    "routeError": {
+      "title": "Algo deu errado nesta tela",
+      "description": "O restante do app continua funcionando. Você pode voltar ao início ou copiar os detalhes para o suporte.",
+      "copy": "Copiar detalhes",
+      "copied": "Copiado",
+      "home": "Voltar ao início"
+    },
+    "ui": {
+      "close": "Fechar",
+      "progress": "Progresso",
+      "restoreDefault": "Duplo clique restaura o padrão"
+    },
+    "toast": {
+      "region": "Avisos"
+    }
+  },
+  "dashboard": {
+    "backendError": "Não foi possível falar com o backend.",
+    "loading": "Carregando…",
+    "version": "App {{app}} · Core {{core}}"
+  },
+  "devices": {
+    "title": "Dispositivos"
+  },
+  "mapping": {
+    "title": "Mapeamento"
+  },
+  "latency": {
+    "title": "Latência"
+  },
+  "settings": {
+    "title": "Configurações"
+  },
+  "onboarding": {
+    "title": "Boas-vindas"
+  },
+  "tray": {
+    "open": "Abrir PadGaming",
+    "quit": "Sair"
+  },
+  "errors": {
+    "internal": "Algo deu errado. Tente de novo; se continuar, envie o diagnóstico.",
+    "invalid_input": "Um valor informado não é válido.",
+    "unsupported": "Este recurso não está disponível neste sistema.",
+    "not_found": "Não encontrei o item pedido. Ele pode ter sido removido.",
+    "builtin_profile": "O perfil Padrão é do app e não pode ser alterado nem apagado. Duplique-o para personalizar.",
+    "profile_in_use": "Este perfil está em uso.",
+    "import_invalid": "O arquivo não é um perfil válido do PadGaming.",
+    "no_network": "Nenhuma rede local encontrada. Conecte o PC ao Wi-Fi ou à rede cabeada."
+  }
+}

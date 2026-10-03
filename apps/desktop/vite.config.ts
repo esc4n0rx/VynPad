@@ -19,6 +19,8 @@ export default defineConfig(() => ({
   test: {
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}"],
+    // Inicializa o i18n (PT-BR) para os componentes que usam `useTranslation`.
+    setupFiles: ["src/test/setup.ts"],
     restoreMocks: true,
   },
 

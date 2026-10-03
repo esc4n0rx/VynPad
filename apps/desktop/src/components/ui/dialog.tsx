@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
@@ -32,17 +33,22 @@ type DialogContentProps = ComponentProps<typeof DialogPrimitive.Content> &
 export function DialogContent({
   className,
   placement,
-  closeLabel = "Fechar",
+  closeLabel,
   children,
   ...props
 }: DialogContentProps) {
+  const { t } = useTranslation();
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-overlay backdrop-blur-sm data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
       <DialogPrimitive.Content className={cn(contentVariants({ placement }), className)} {...props}>
         {children}
         <DialogPrimitive.Close asChild>
-          <IconButton label={closeLabel} size="sm" className="absolute top-3 right-3">
+          <IconButton
+            label={closeLabel ?? t("ui.close")}
+            size="sm"
+            className="absolute top-3 right-3"
+          >
             <X strokeWidth={1.75} />
           </IconButton>
         </DialogPrimitive.Close>

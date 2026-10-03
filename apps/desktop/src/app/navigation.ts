@@ -1,3 +1,4 @@
+import type { ParseKeys } from "i18next";
 import {
   Activity,
   Gamepad2,
@@ -9,21 +10,21 @@ import {
 
 export interface NavItem {
   path: string;
-  label: string;
+  /** Chave do rótulo no namespace `common`. */
+  labelKey: ParseKeys<"common">;
   icon: LucideIcon;
 }
 
 /**
  * Seções do app, na ordem da sidebar. A posição vale também para o atalho `Ctrl+<n>`
  * (Configurações é a 5ª; `Ctrl+,` também abre).
- * Os rótulos migram para os arquivos de idioma na T-504.
  */
 export const NAV_ITEMS: readonly NavItem[] = [
-  { path: "/", label: "Controles", icon: Gamepad2 },
-  { path: "/devices", label: "Dispositivos", icon: Smartphone },
-  { path: "/mapping", label: "Mapeamento", icon: SlidersHorizontal },
-  { path: "/latency", label: "Latência", icon: Activity },
-  { path: "/settings", label: "Configurações", icon: Settings },
+  { path: "/", labelKey: "nav.controls", icon: Gamepad2 },
+  { path: "/devices", labelKey: "nav.devices", icon: Smartphone },
+  { path: "/mapping", labelKey: "nav.mapping", icon: SlidersHorizontal },
+  { path: "/latency", labelKey: "nav.latency", icon: Activity },
+  { path: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 
 export const SETTINGS_PATH = "/settings";

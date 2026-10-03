@@ -1,19 +1,20 @@
+import type { ParseKeys } from "i18next";
 import type { DriverStatusDto } from "@/lib/bindings";
 
-/** Texto curto do driver de controles virtuais. */
-export function driverLabel(status: DriverStatusDto | undefined): string {
+/** Chave (namespace `common`) do texto curto do driver de controles virtuais. */
+export function driverLabelKey(status: DriverStatusDto | undefined): ParseKeys<"common"> {
   switch (status?.state) {
     case undefined:
-      return "Driver…";
+      return "driver.loading";
     case "ready":
-      return "Driver OK";
+      return "driver.ready";
     case "not_installed":
-      return "Driver ausente";
+      return "driver.notInstalled";
     case "outdated":
-      return "Driver desatualizado";
+      return "driver.outdated";
     case "service_stopped":
-      return "Driver parado";
+      return "driver.stopped";
     case "error":
-      return "Driver com erro";
+      return "driver.error";
   }
 }

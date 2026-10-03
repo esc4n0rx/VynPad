@@ -1,6 +1,8 @@
 import { SlidersHorizontal } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ComingSoon } from "@/components/shell/ComingSoon";
 
 export function MappingPage() {
-  return <ComingSoon icon={SlidersHorizontal} title="Mapeamento" task="T-604" />;
+  const { t } = useTranslation("mapping");
+  return <ComingSoon icon={SlidersHorizontal} title={t("title")} task="T-604" />;
 }
