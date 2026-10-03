@@ -58,10 +58,10 @@ export function resetLiveSubscriptions(): void {
 }
 
 /**
- * O estado ao vivo do controle do `slot`, enquanto o componente estiver montado. Sem nenhum
- * componente usando, o backend não amostra nem emite nada.
+ * Mantém o backend emitindo o input do `slot` enquanto o componente estiver montado, sem
+ * re-renderizar a cada relatório (quem desenha lê com `getLiveReport` num laço de animação).
  */
-export function useLiveReport(slot: number | null): InputReportDto | undefined {
+export function useLiveSubscription(slot: number | null): void {
   useEffect(() => {
     if (slot === null) return;
     acquire(slot);
@@ -69,5 +69,19 @@ export function useLiveReport(slot: number | null): InputReportDto | undefined {
       release(slot);
     };
   }, [slot]);
+}
+
+/** O último relatório do `slot`, lido do store sem assinar (não re-renderiza ninguém). */
+export function getLiveReport(slot: number): InputReportDto | undefined {
+  return useLiveInput.getState().reports[slot];
+}
+
+/**
+ * O estado ao vivo do controle do `slot`, enquanto o componente estiver montado. Sem nenhum
+ * componente usando, o backend não amostra nem emite nada. Re-renderiza a cada relatório: para
+ * desenhar a 60 Hz use `useLiveSubscription` + `getLiveReport` (como o `Gamepad`).
+ */
+export function useLiveReport(slot: number | null): InputReportDto | undefined {
+  useLiveSubscription(slot);
   return useLiveInput((s) => (slot === null ? undefined : s.reports[slot]));
 }

@@ -52,6 +52,15 @@
     },
     "toast": {
       "region": "Notifications"
+    },
+    "deviceStatus": {
+      "connected": "Connected",
+      "idle": "Idle",
+      "pairing": "Pairing",
+      "offline": "Offline"
+    },
+    "gamepad": {
+      "label": "X360 controller"
     }
   },
   "dashboard": {
@@ -63,7 +72,28 @@
     "title": "Devices"
   },
   "mapping": {
-    "title": "Mapping"
+    "title": "Mapping",
+    "elements": {
+      "btn-a": "A",
+      "btn-b": "B",
+      "btn-x": "X",
+      "btn-y": "Y",
+      "lb": "LB (left bumper)",
+      "rb": "RB (right bumper)",
+      "lt": "LT (left trigger)",
+      "rt": "RT (right trigger)",
+      "dpad-up": "D-pad up",
+      "dpad-down": "D-pad down",
+      "dpad-left": "D-pad left",
+      "dpad-right": "D-pad right",
+      "start": "Start",
+      "back": "Back",
+      "guide": "Guide",
+      "stick-left": "Left stick",
+      "stick-right": "Right stick",
+      "ls-click": "Left stick click (L3)",
+      "rs-click": "Right stick click (R3)"
+    }
   },
   "latency": {
     "title": "Latency"

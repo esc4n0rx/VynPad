@@ -1,5 +1,14 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Gamepad2, Plus, Settings, Trash2 } from "lucide-react";
+import { Gamepad } from "@/components/gamepad/Gamepad";
+import {
+  BUTTON_ELEMENTS,
+  BUTTON_MASKS,
+  slotColor,
+  type GamepadElement,
+} from "@/components/gamepad/elements";
+import { DeviceIcon, type DeviceStatus } from "@/components/icons/DeviceIcon";
+import { SlotBadge } from "@/components/icons/SlotBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button, IconButton } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
@@ -23,10 +32,12 @@ import { Stepper } from "@/components/ui/stepper";
 import { Toggle } from "@/components/ui/toggle";
 import { Tooltip } from "@/components/ui/tooltip";
 import { applyAccent, applyTheme, DEFAULT_ACCENT, type Theme } from "@/lib/theme";
+import { useLiveInput } from "@/lib/api/live";
 import { useToasts } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 const ACCENTS = [DEFAULT_ACCENT, "#30D158", "#FF9F0A", "#BF5AF2"] as const;
+const DEVICE_STATUSES: readonly DeviceStatus[] = ["connected", "idle", "pairing", "offline"];
 const STEPS = ["Boas-vindas", "Driver", "Firewall", "Parear", "Pronto"] as const;
 const LANGUAGES = [
   { value: "pt-BR", label: "Português (Brasil)" },
@@ -50,6 +61,7 @@ function Panel({ theme }: { theme: Theme }) {
   const [enabled, setEnabled] = useState(true);
   const [name, setName] = useState("");
   const push = useToasts((s) => s.push);
+  const [selected, setSelected] = useState<GamepadElement>("btn-a");
 
   return (
     <div
@@ -196,6 +208,31 @@ function Panel({ theme }: { theme: Theme }) {
         </Button>
       </Section>
 
+      <Section title="Gamepad ao vivo (use a simulação acima)">
+        {[0, 1, 2, 3].map((slot) => (
+          <div key={slot} className="w-[calc(50%-0.5rem)] min-w-40">
+            <Gamepad slot={slot} color={slotColor(slot)} />
+          </div>
+        ))}
+      </Section>
+
+      <Section title="Gamepad interativo e mini">
+        <div className="w-full max-w-md">
+          <Gamepad mode="interactive" selected={selected} onSelect={setSelected} />
+        </div>
+        <Gamepad mode="mini" className="w-32" slot={0} color={slotColor(0)} />
+      </Section>
+
+      <Section title="Ícones de dispositivo e slots">
+        {DEVICE_STATUSES.map((status) => (
+          <DeviceIcon key={status} status={status} />
+        ))}
+        {[0, 1, 2, 3].map((slot) => (
+          <SlotBadge key={slot} slot={slot} />
+        ))}
+        <SlotBadge slot={0} dim />
+      </Section>
+
       <Section title="Vazio e carregando">
         <Card className="flex-1">
           <EmptyState
@@ -222,6 +259,35 @@ function Panel({ theme }: { theme: Theme }) {
 export function UiGallery() {
   const [theme, setTheme] = useState<Theme>("dark");
   const [accent, setAccent] = useState<string>(DEFAULT_ACCENT);
+  const [simulating, setSimulating] = useState(false);
+
+  // Gera um padrão circular nos 4 slots (como `padgaming-sim --pattern circle`), direto no store.
+  useEffect(() => {
+    if (!simulating) return;
+    let frame = 0;
+    const loop = (now: number) => {
+      const set = useLiveInput.getState().set;
+      for (let slot = 0; slot < 4; slot++) {
+        const angle = now / 700 + slot * (Math.PI / 2);
+        const names = BUTTON_ELEMENTS;
+        const lit = names[Math.floor(now / 300 + slot * 3) % names.length];
+        set(slot, {
+          buttons: lit ? BUTTON_MASKS[lit] : 0,
+          lt: Math.round((Math.sin(angle) + 1) * 127.5),
+          rt: Math.round((Math.cos(angle) + 1) * 127.5),
+          lx: Math.round(Math.cos(angle) * 32767),
+          ly: Math.round(Math.sin(angle) * 32767),
+          rx: Math.round(Math.sin(angle * 1.5) * 32767),
+          ry: Math.round(Math.cos(angle * 1.5) * 32767),
+        });
+      }
+      frame = requestAnimationFrame(loop);
+    };
+    frame = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [simulating]);
 
   return (
     <div className="flex flex-col gap-4 p-6">
@@ -238,6 +304,14 @@ export function UiGallery() {
             { value: "light", label: "Light" },
           ]}
         />
+        <Button
+          variant={simulating ? "primary" : "secondary"}
+          onClick={() => {
+            setSimulating((v) => !v);
+          }}
+        >
+          {simulating ? "Parar simulação" : "Simular input (4 controles)"}
+        </Button>
         <div role="group" aria-label="Accent" className="flex gap-2">
           {ACCENTS.map((c) => (
             <button

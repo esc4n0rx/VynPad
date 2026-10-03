@@ -8,7 +8,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   // `bindings.ts` é gerado pelo tauri-specta (src-tauri/src/lib.rs) e não se edita à mão.
-  { ignores: ["dist", "src-tauri", "src/lib/bindings.ts"] },
+  { ignores: ["dist", "src-tauri", "scripts", "src/lib/bindings.ts"] },
   {
     files: ["**/*.{ts,tsx}"],
     extends: [

@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | G |
 | Depende de | T-501 |
-| Status | ⬜ A fazer |
+| Status | 🟨 Pronta; falta medir os 60 fps com 4 gamepads no app e ver os ícones da bandeja no Windows (a bandeja é a T-607) |
 
 ## Objetivo
 O coração visual do app: um controle X360 desenhado com carinho, que reage ao input em tempo real e serve de interface no editor de mapeamento.

@@ -52,6 +52,15 @@
     },
     "toast": {
       "region": "Avisos"
+    },
+    "deviceStatus": {
+      "connected": "Conectado",
+      "idle": "Ocioso",
+      "pairing": "Pareando",
+      "offline": "Offline"
+    },
+    "gamepad": {
+      "label": "Controle X360"
     }
   },
   "dashboard": {
@@ -63,7 +72,28 @@
     "title": "Dispositivos"
   },
   "mapping": {
-    "title": "Mapeamento"
+    "title": "Mapeamento",
+    "elements": {
+      "btn-a": "A",
+      "btn-b": "B",
+      "btn-x": "X",
+      "btn-y": "Y",
+      "lb": "LB (bumper esquerdo)",
+      "rb": "RB (bumper direito)",
+      "lt": "LT (gatilho esquerdo)",
+      "rt": "RT (gatilho direito)",
+      "dpad-up": "Direcional: cima",
+      "dpad-down": "Direcional: baixo",
+      "dpad-left": "Direcional: esquerda",
+      "dpad-right": "Direcional: direita",
+      "start": "Start",
+      "back": "Back",
+      "guide": "Guide",
+      "stick-left": "Analógico esquerdo",
+      "stick-right": "Analógico direito",
+      "ls-click": "Clique do analógico esquerdo (L3)",
+      "rs-click": "Clique do analógico direito (R3)"
+    }
   },
   "latency": {
     "title": "Latência"

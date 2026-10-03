@@ -96,6 +96,13 @@
   --bg-window: rgb(28 28 30 / 0.72);
   --bg-window-solid: #1c1c1e;
   --traffic-inactive: rgb(255 255 255 / 0.18);
+  --pad-top: rgb(86 86 92);
+  --pad-bottom: rgb(40 40 44);
+  --pad-edge: rgb(255 255 255 / 0.16);
+  --pad-surface: rgb(30 30 34);
+  --pad-well: rgb(20 20 24 / 0.75);
+  --pad-glyph: rgb(235 235 245 / 0.55);
+  --pad-shine: rgb(255 255 255 / 0.14);
   --bg-sidebar: rgb(44 44 46 / 0.45);
   --bg-elevated: rgb(58 58 60 / 0.55);
   --bg-control: rgb(118 118 128 / 0.24);
@@ -122,6 +129,13 @@
   --bg-window: rgb(246 246 246 / 0.78);
   --bg-window-solid: #f6f6f6;
   --traffic-inactive: rgb(0 0 0 / 0.14);
+  --pad-top: rgb(252 252 253);
+  --pad-bottom: rgb(214 214 222);
+  --pad-edge: rgb(0 0 0 / 0.18);
+  --pad-surface: rgb(236 236 242);
+  --pad-well: rgb(60 60 67 / 0.2);
+  --pad-glyph: rgb(60 60 67 / 0.6);
+  --pad-shine: rgb(255 255 255 / 0.8);
   --bg-sidebar: rgb(232 232 237 / 0.55);
   --bg-elevated: rgb(255 255 255 / 0.7);
   --bg-control: rgb(118 118 128 / 0.12);
@@ -207,4 +221,108 @@ html[data-corners="css"]:not([data-maximized="true"]) #root {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/*
+ * Controle X360 (components/gamepad). A cor do slot entra por `--pad-color`; o renderer liga
+ * `data-pressed` nos botões e `--v` (0–1) nos gatilhos, e a aparência sai só daqui.
+ */
+.gamepad {
+  --pad-color: var(--accent);
+}
+
+.gamepad .pad-stop-top {
+  stop-color: var(--pad-top);
+}
+.gamepad .pad-stop-bottom {
+  stop-color: var(--pad-bottom);
+}
+.gamepad .pad-stop-shine {
+  stop-color: var(--pad-shine);
+}
+.gamepad .pad-stop-clear {
+  stop-color: var(--pad-shine);
+  stop-opacity: 0;
+}
+
+.gamepad .pad-body {
+  stroke: var(--pad-edge);
+  stroke-width: 1.5;
+}
+.gamepad .pad-well {
+  fill: var(--pad-well);
+}
+.gamepad .pad-ring {
+  fill: none;
+  stroke: var(--pad-edge);
+  stroke-width: 1.5;
+}
+.gamepad .pad-shape {
+  fill: var(--pad-surface);
+  stroke: var(--pad-edge);
+  stroke-width: 1.5;
+  transition: fill 80ms ease-out;
+}
+.gamepad .pad-glyph {
+  fill: var(--pad-glyph);
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+}
+.gamepad .pad-fill {
+  fill: var(--pad-color);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scaleY(var(--v, 0));
+}
+.gamepad [data-cap] {
+  transition: transform 40ms linear;
+}
+
+/* Botão apertado: acende na cor do slot. */
+.gamepad [data-pressed="true"] > .pad-shape,
+.gamepad [data-pressed="true"] > .pad-ring {
+  fill: var(--pad-color);
+}
+.gamepad [data-pressed="true"] > .pad-ring {
+  fill: none;
+  stroke: var(--on-accent);
+}
+.gamepad [data-pressed="true"] > .pad-glyph {
+  fill: var(--on-accent);
+}
+/* O gatilho acende só pelo preenchimento; o contorno continua neutro. */
+.gamepad [data-el="lt"][data-pressed="true"] > .pad-shape,
+.gamepad [data-el="rt"][data-pressed="true"] > .pad-shape {
+  fill: var(--pad-surface);
+}
+
+/* Modo interativo: hover, foco e seleção. */
+.gamepad [role="button"] {
+  cursor: pointer;
+  outline: none;
+}
+.gamepad [role="button"]:hover > .pad-shape,
+.gamepad [role="button"]:hover > .pad-well {
+  fill: var(--accent-soft);
+}
+.gamepad [role="button"]:focus-visible > .pad-shape,
+.gamepad [role="button"]:focus-visible > .pad-well {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+.gamepad [data-selected="true"] > .pad-shape,
+.gamepad [data-selected="true"] > .pad-well {
+  fill: var(--accent-soft);
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+
+/* Versão compacta: sem letras nem detalhes finos. */
+.gamepad[data-mode="mini"] [data-detail] {
+  display: none;
+}
+.gamepad[data-mode="mini"] .pad-shape,
+.gamepad[data-mode="mini"] .pad-body {
+  stroke-width: 3;
 }
