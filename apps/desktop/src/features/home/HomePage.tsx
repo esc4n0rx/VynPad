@@ -12,12 +12,12 @@ export function HomePage() {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: "spring", stiffness: 380, damping: 32 }}
-        className="flex size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#0A84FF] to-[#5E5CE6] shadow-lg"
+        className="flex size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-accent to-indigo shadow-lg"
       >
-        <Gamepad2 className="size-10 text-white" strokeWidth={1.75} />
+        <Gamepad2 className="size-10 text-on-accent" strokeWidth={1.75} />
       </motion.div>
       <h1 className="text-[28px] font-semibold tracking-tight">PadGaming</h1>
-      <p className="text-white/60 tabular-nums">
+      <p className="text-fg-2 tabular-nums">
         {error
           ? "Não foi possível falar com o backend."
           : data

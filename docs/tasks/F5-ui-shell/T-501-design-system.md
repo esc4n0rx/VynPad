@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | G |
 | Depende de | T-002 |
-| Status | ⬜ A fazer |
+| Status | 🟨 Pronta; falta conferir `/dev/ui` visualmente no app (dark e light) |
 
 ## Objetivo
 Implementar a linguagem visual de [DESIGN-SYSTEM.md](../../00-visao-geral/DESIGN-SYSTEM.md) como tokens e componentes reutilizáveis.

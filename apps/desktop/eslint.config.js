@@ -31,6 +31,26 @@ export default tseslint.config(
     },
   },
   {
+    // Cor só vem dos tokens (`index.css`): sem hex/rgb/hsl nos componentes. Exceções: a lógica de
+    // tema (accent padrão), a vitrine `/dev/ui` (amostras de accent) e os testes.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/lib/theme.ts", "src/features/dev/**", "src/**/*.test.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "Literal[value=/#[0-9a-fA-F]{3,8}\\b|\\b(rgb|hsl|oklch|oklab)a?\\(/]",
+          message: "Cor hardcoded: use um token do design system (index.css).",
+        },
+        {
+          selector:
+            "TemplateElement[value.raw=/#[0-9a-fA-F]{3,8}\\b|\\b(rgb|hsl|oklch|oklab)a?\\(/]",
+          message: "Cor hardcoded: use um token do design system (index.css).",
+        },
+      ],
+    },
+  },
+  {
     // Arquivos de configuração rodam no Node e ficam fora do projeto TS do app.
     files: ["*.config.{js,ts}"],
     extends: [tseslint.configs.disableTypeChecked],

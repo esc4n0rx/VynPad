@@ -3,9 +3,13 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 const appWindow = getCurrentWindow();
 
 const buttons = [
-  { label: "Fechar", color: "bg-[#FF5F57]", action: () => void appWindow.close() },
-  { label: "Minimizar", color: "bg-[#FEBC2E]", action: () => void appWindow.minimize() },
-  { label: "Maximizar", color: "bg-[#28C840]", action: () => void appWindow.toggleMaximize() },
+  { label: "Fechar", color: "bg-traffic-close", action: () => void appWindow.close() },
+  { label: "Minimizar", color: "bg-traffic-minimize", action: () => void appWindow.minimize() },
+  {
+    label: "Maximizar",
+    color: "bg-traffic-maximize",
+    action: () => void appWindow.toggleMaximize(),
+  },
 ];
 
 /**

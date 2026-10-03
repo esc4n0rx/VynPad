@@ -1,16 +1,141 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-/* Tokens completos do design system chegam na T-501. */
-@theme {
+/*
+ * Tokens do design system (docs/00-visao-geral/DESIGN-SYSTEM.md).
+ * Os valores vivem em variáveis CSS por tema (`data-theme` no <html>); o `@theme inline` as expõe
+ * como utilitários do Tailwind (`bg-elevated`, `text-fg-2`, `rounded-md`...). Cor só entra por
+ * aqui: fora deste arquivo, nada de hex/rgb nos componentes.
+ */
+
+@theme inline {
   --font-sans: "Inter Variable", "Segoe UI Variable", system-ui, sans-serif;
-  --color-accent: #0a84ff;
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-knob: var(--knob);
+  --color-indigo: var(--indigo);
+
+  --color-window: var(--bg-window);
+  --color-sidebar: var(--bg-sidebar);
+  --color-elevated: var(--bg-elevated);
+  --color-control: var(--bg-control);
+  --color-control-hover: var(--bg-control-hover);
+  --color-separator: var(--separator);
+  --color-overlay: var(--bg-overlay);
+
+  --color-fg: var(--text-primary);
+  --color-fg-2: var(--text-secondary);
+  --color-fg-3: var(--text-tertiary);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+
+  --color-slot-1: var(--slot-1);
+  --color-slot-2: var(--slot-2);
+  --color-slot-3: var(--slot-3);
+  --color-slot-4: var(--slot-4);
+
+  --color-traffic-close: var(--traffic-close);
+  --color-traffic-minimize: var(--traffic-minimize);
+  --color-traffic-maximize: var(--traffic-maximize);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-card: var(--elev-card);
+  --shadow-popover: var(--elev-popover);
+
+  --text-caption: 11px;
+  --text-body: 13px;
+  --text-subtitle: 15px;
+  --text-title: 20px;
+  --text-hero: 28px;
 }
 
 :root {
-  color-scheme: dark;
+  /* Accent: troque só `--accent`; hover e soft derivam dele (Configurações → Aparência). */
+  --accent: #0a84ff;
+  --accent-hover: color-mix(in srgb, var(--accent) 78%, white);
+  --accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
+  --on-accent: #ffffff;
+  --knob: #ffffff;
+
+  --indigo: #5e5ce6;
+
+  --slot-1: #0a84ff;
+  --slot-2: #30d158;
+  --slot-3: #ff9f0a;
+  --slot-4: #bf5af2;
+
+  --traffic-close: #ff5f57;
+  --traffic-minimize: #febc2e;
+  --traffic-maximize: #28c840;
+
+  --blur: 24px;
+
   font-size: 13px;
   font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
+}
+
+/* Dark é o padrão (também vale antes de o tema ser aplicado). */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-window: rgb(28 28 30 / 0.72);
+  --bg-window-solid: #1c1c1e;
+  --bg-sidebar: rgb(44 44 46 / 0.45);
+  --bg-elevated: rgb(58 58 60 / 0.55);
+  --bg-control: rgb(118 118 128 / 0.24);
+  --bg-control-hover: rgb(118 118 128 / 0.36);
+  --bg-overlay: rgb(0 0 0 / 0.4);
+  --separator: rgb(84 84 88 / 0.45);
+
+  --text-primary: rgb(255 255 255 / 0.92);
+  --text-secondary: rgb(235 235 245 / 0.6);
+  --text-tertiary: rgb(235 235 245 / 0.3);
+
+  --success: #30d158;
+  --warning: #ffd60a;
+  --danger: #ff453a;
+  --info: #64d2ff;
+
+  --elev-card: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 8px 24px rgb(0 0 0 / 0.35);
+  --elev-popover: 0 1px 0 rgb(255 255 255 / 0.08) inset, 0 12px 32px rgb(0 0 0 / 0.5);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-window: rgb(246 246 246 / 0.78);
+  --bg-window-solid: #f6f6f6;
+  --bg-sidebar: rgb(232 232 237 / 0.55);
+  --bg-elevated: rgb(255 255 255 / 0.7);
+  --bg-control: rgb(118 118 128 / 0.12);
+  --bg-control-hover: rgb(118 118 128 / 0.2);
+  --bg-overlay: rgb(0 0 0 / 0.25);
+  --separator: rgb(60 60 67 / 0.2);
+
+  --text-primary: rgb(0 0 0 / 0.88);
+  --text-secondary: rgb(60 60 67 / 0.65);
+  --text-tertiary: rgb(60 60 67 / 0.35);
+
+  /* Versões mais escuras: as de dark não passam em contraste AA sobre fundo claro. */
+  --success: #1f8a3a;
+  --warning: #9a6700;
+  --danger: #d70015;
+  --info: #0071a4;
+
+  --elev-card: 0 1px 0 rgb(255 255 255 / 0.8) inset, 0 8px 24px rgb(0 0 0 / 0.1);
+  --elev-popover: 0 1px 0 rgb(255 255 255 / 0.8) inset, 0 12px 32px rgb(0 0 0 / 0.18);
 }
 
 /* Fundo sólido provisório: a janela é transparente e o vidro (Mica/Acrylic) entra na T-502. */
@@ -22,7 +147,34 @@ body,
 
 body {
   margin: 0;
-  background: #1c1c1e;
-  color: rgb(255 255 255 / 0.92);
+  background: var(--bg-window-solid);
+  color: var(--text-primary);
   user-select: none;
+}
+
+/* Foco visível, na cor do accent, para quem navega por teclado. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Superfície de vidro (cards, popovers, sheets). */
+@utility glass {
+  background: var(--bg-elevated);
+  box-shadow: var(--elev-card);
+  backdrop-filter: blur(var(--blur)) saturate(1.4);
+}
+
+/* Sem deslocamento nem animação longa para quem pediu menos movimento. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

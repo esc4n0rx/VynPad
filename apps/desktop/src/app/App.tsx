@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { MotionConfig } from "motion/react";
 import { RouterProvider } from "react-router";
 import { Toaster } from "@/components/feedback/Toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { registerEventListeners } from "@/lib/api/events";
 import { log } from "@/lib/log";
 import { createQueryClient } from "./queryClient";
@@ -21,8 +23,13 @@ export function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <Toaster />
+      {/* `reducedMotion="user"`: respeita prefers-reduced-motion (sem deslocamento, só fade). */}
+      <MotionConfig reducedMotion="user">
+        <TooltipProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </TooltipProvider>
+      </MotionConfig>
     </QueryClientProvider>
   );
 }
