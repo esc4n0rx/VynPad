@@ -1,0 +1,38 @@
+name: E2E debug
+
+# Diagnóstico manual do WebView2 no runner do Windows (por que o msedgedriver não abre a sessão).
+# Não faz parte do CI; rode em Actions > E2E debug > Run workflow.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  webview2:
+    name: WebView2 no runner
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.98.1"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: e2e
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @vynpad/desktop build
+      - run: cargo build --release --locked -p vynpad-desktop --features tauri/custom-protocol
+      - name: Depuração remota do WebView2 com o app
+        shell: pwsh
+        continue-on-error: true
+        run: ./e2e/scripts/diagnose-webview2.ps1
