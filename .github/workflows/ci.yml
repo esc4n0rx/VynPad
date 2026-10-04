@@ -171,15 +171,19 @@ jobs:
           Get-ChildItem "$env:LOCALAPPDATA\VynPad\logs" -ErrorAction SilentlyContinue | ForEach-Object { "--- $($_.Name)"; Get-Content $_.FullName -Tail 25 }
       - run: pnpm --filter @vynpad/e2e e2e
         env:
-          E2E_DRIVER_LOG: ${{ runner.temp }}\msedgedriver.log
+          E2E_DRIVER_LOG: ${{ github.workspace }}\e2e\logs\msedgedriver.log
+      # O upload-artifact só aceita caminhos dentro do workspace: traz os logs do app para cá.
+      - name: Junta os logs do app
+        if: failure()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force e2e/logs/app | Out-Null
+          Copy-Item "$env:LOCALAPPDATA\VynPad\logs\*" e2e/logs/app -ErrorAction SilentlyContinue
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: e2e-diagnostico
-          path: |
-            e2e/logs
-            ${{ runner.temp }}/msedgedriver.log
-            C:/Users/runneradmin/AppData/Local/VynPad/logs
+          path: e2e/logs
           if-no-files-found: ignore
           retention-days: 7
 

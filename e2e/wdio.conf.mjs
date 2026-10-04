@@ -36,6 +36,8 @@ const tauriDriver =
 function nativeDriverCommand() {
   const log = process.env.E2E_DRIVER_LOG;
   if (!log || process.platform !== "win32") return nativeDriver;
+  mkdirSync(dirname(log), { recursive: true });
+  mkdirSync(join(here, ".drivers"), { recursive: true });
   const wrapper = join(here, ".drivers", "msedgedriver-verbose.cmd");
   writeFileSync(wrapper, `@echo off
 "${nativeDriver}" %* --verbose --log-path="${log}"
