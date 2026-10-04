@@ -275,6 +275,34 @@ pub fn set_slot_paused(state: State<'_, AppState>, slot: u8, paused: bool) -> Re
         .map_err(|e| AppError::not_found(&e.to_string()))
 }
 
+/// Troca dois slots de lugar, com o controle e o perfil de cada um.
+#[tauri::command]
+#[specta::specta]
+pub fn swap_slots(state: State<'_, AppState>, a: u8, b: u8) -> Result<()> {
+    Ok(state.core.swap_slots(slot_id(a)?, slot_id(b)?)?)
+}
+
+/// O perfil de cada slot (`id`), na ordem P1–P4; `null` onde não houve dispositivo ainda.
+#[tauri::command]
+#[specta::specta]
+pub fn get_slot_profiles(state: State<'_, AppState>) -> Vec<Option<String>> {
+    state.core.slot_profiles().to_vec()
+}
+
+/// Troca o perfil do slot na hora (vale só até o dispositivo desconectar). Devolve o `id` aplicado.
+#[tauri::command]
+#[specta::specta]
+pub async fn set_slot_profile(
+    state: State<'_, AppState>,
+    slot: u8,
+    profile_id: String,
+) -> Result<String> {
+    Ok(state
+        .core
+        .set_slot_profile(slot_id(slot)?, &profile_id)
+        .await?)
+}
+
 // ------------------------------------------------------------------ pareamento e rede
 
 /// Gera QR code e PIN. Cada chamada invalida o PIN anterior.

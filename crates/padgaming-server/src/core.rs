@@ -101,6 +101,7 @@ pub struct Core {
     settings: Arc<SettingsService>,
     profiles: Arc<ProfileService>,
     slots: Arc<SlotManager>,
+    registry: Arc<SlotRegistry>,
     driver: Arc<dyn VirtualPadDriver>,
     input: Arc<InputServer>,
     control: Arc<ControlServer>,
@@ -242,6 +243,7 @@ impl Core {
             settings: Arc::clone(&settings),
             profiles,
             slots: Arc::clone(&slots),
+            registry,
             driver,
             input,
             control: Arc::clone(&control),
@@ -488,6 +490,31 @@ impl Core {
             self.control.end_session(session, ByeReason::Kicked);
         }
         Ok(())
+    }
+
+    /// Troca dois slots de lugar, com o perfil de cada um (arrastar um card no dashboard).
+    pub fn swap_slots(&self, a: SlotId, b: SlotId) -> Result<(), CoreError> {
+        self.slots
+            .swap(a, b)
+            .map_err(|_| CoreError::Data(padgaming_storage::DataError::NotFound("slot")))?;
+        self.registry.swap(a, b);
+        Ok(())
+    }
+
+    /// O perfil que cada slot está usando agora.
+    #[must_use]
+    pub fn slot_profiles(&self) -> [Option<String>; 4] {
+        self.registry.assigned_profiles()
+    }
+
+    /// Troca o perfil do slot na hora. Devolve o `id` aplicado.
+    pub async fn set_slot_profile(&self, slot: SlotId, id: &str) -> Result<String, CoreError> {
+        self.registry
+            .set_slot_profile(slot, id)
+            .await
+            .ok_or(CoreError::Data(padgaming_storage::DataError::NotFound(
+                "perfil",
+            )))
     }
 
     /// Libera o slot de `id` e encerra a sessão dele, se houver.

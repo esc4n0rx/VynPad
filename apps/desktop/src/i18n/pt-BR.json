@@ -64,9 +64,49 @@
     }
   },
   "dashboard": {
-    "backendError": "Não foi possível falar com o backend.",
-    "loading": "Carregando…",
-    "version": "App {{app}} · Core {{core}}"
+    "title": "Controles",
+    "server": {
+      "online": "Server online",
+      "offline": "Server offline",
+      "starting": "Iniciando o server…",
+      "address": "{{ip}}:{{port}}",
+      "noAddress": "Sem rede local"
+    },
+    "pairNew": "Parear novo",
+    "grid": "Controles P1 a P4",
+    "slot": {
+      "empty": {
+        "title": "Aguardando conexão",
+        "hint": "Nenhum celular neste controle.",
+        "pair": "Parear dispositivo"
+      },
+      "reconnecting": {
+        "title": "Reconectando…",
+        "countdown": "Reserva termina em {{seconds}} s"
+      },
+      "stalled": "Sem sinal do celular",
+      "physical": {
+        "title": "Controle físico",
+        "hint": "Um controle físico está usando o índice {{slot}} do Windows. Ele não é do PadGaming."
+      },
+      "paused": "Pausado",
+      "gyro": "Gyro",
+      "unknownDevice": "Dispositivo",
+      "profile": "Perfil de P{{slot}}",
+      "profilePlaceholder": "Perfil",
+      "menu": "Ações de P{{slot}}",
+      "dragHint": "Arraste para trocar de slot",
+      "group": "Controle P{{slot}}"
+    },
+    "actions": {
+      "swap": "Trocar de slot",
+      "swapWith": "Trocar com P{{slot}}",
+      "pause": "Pausar",
+      "resume": "Retomar",
+      "disconnect": "Desconectar",
+      "latency": "Ver latência"
+    },
+    "swapped": "P{{from}} e P{{to}} trocaram de lugar."
   },
   "devices": {
     "title": "Dispositivos"

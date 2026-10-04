@@ -29,6 +29,7 @@ async function register(queryClient: QueryClient): Promise<() => void> {
     }),
     events.slotsChanged.listen((e) => {
       useSlots.getState().setSlots(e.payload.state);
+      invalidate(keys.slotProfiles);
     }),
     events.devicesChanged.listen(() => {
       invalidate(keys.devices);

@@ -629,6 +629,77 @@ async fn disconnecting_a_slot_from_the_ui_says_bye_kicked() {
     .await;
 }
 
+#[tokio::test(flavor = "multi_thread")]
+async fn changing_the_profile_of_a_slot_applies_at_once() {
+    let rig = rig().await;
+    let session = welcomed(&rig, 1).await;
+    let stop = Arc::new(AtomicBool::new(false));
+    let client = hold(&rig, &session, 0.5, Arc::clone(&stop));
+    eventually("perfil padrão", || lx(&rig, 0) > 5_000).await;
+
+    let mirrored = rig
+        .core
+        .profiles()
+        .create(profile_input("Espelhado", |p| {
+            p.sticks.left.invert_x = true;
+        }))
+        .await
+        .unwrap();
+    let slot = SlotId::new(0).unwrap();
+    let applied = rig
+        .core
+        .set_slot_profile(slot, &mirrored.summary.id)
+        .await
+        .unwrap();
+    assert_eq!(applied, mirrored.summary.id);
+    assert_eq!(
+        rig.core.slot_profiles()[0].as_deref(),
+        Some(mirrored.summary.id.as_str())
+    );
+    eventually("analógico espelhado", || lx(&rig, 0) < -5_000).await;
+
+    stop.store(true, Ordering::Relaxed);
+    client.join().unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn swapping_two_slots_moves_the_controller_and_its_profile() {
+    let rig = rig().await;
+    let session = welcomed(&rig, 1).await;
+    let mirrored = rig
+        .core
+        .profiles()
+        .create(profile_input("Espelhado", |p| {
+            p.sticks.left.invert_x = true;
+        }))
+        .await
+        .unwrap();
+    let (p1, p3) = (SlotId::new(0).unwrap(), SlotId::new(2).unwrap());
+    rig.core
+        .set_slot_profile(p1, &mirrored.summary.id)
+        .await
+        .unwrap();
+    let stop = Arc::new(AtomicBool::new(false));
+    let client = hold(&rig, &session, 0.5, Arc::clone(&stop));
+    eventually("analógico espelhado no P1", || lx(&rig, 0) < -5_000).await;
+
+    rig.core.swap_slots(p1, p3).unwrap();
+
+    // O controle e o perfil foram para o P3, e o input da mesma sessão continua chegando.
+    eventually("input no P3 com o perfil", || lx(&rig, 2) < -5_000).await;
+    let profiles = rig.core.slot_profiles();
+    assert_eq!(profiles[2].as_deref(), Some(mirrored.summary.id.as_str()));
+    assert_ne!(profiles[0].as_deref(), Some(mirrored.summary.id.as_str()));
+    let snapshot = rig.core.slots().snapshot();
+    assert!(snapshot.slots[0].device.is_none());
+    assert!(snapshot.slots[2].device.is_some());
+
+    stop.store(true, Ordering::Relaxed);
+    client.join().unwrap();
+    // Dois slots vazios: nada a trocar.
+    assert!(rig.core.swap_slots(p1, SlotId::new(1).unwrap()).is_err());
+}
+
 // ------------------------------------------------------------------ confirmação e configurações
 
 #[tokio::test(flavor = "multi_thread")]

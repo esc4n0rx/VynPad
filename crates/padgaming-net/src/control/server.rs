@@ -190,6 +190,18 @@ impl ControlServer {
             .is_some_and(|l| l.commands.send(Command::Config(config)).is_ok())
     }
 
+    /// Troca o slot das sessões vivas de `a` e `b` (a UI trocou os controles de lugar). Quem
+    /// chama manda o `config` novo com [`Self::send_config`].
+    pub fn relocate(&self, a: SlotId, b: SlotId) {
+        for live in self.shared.live().values_mut() {
+            if live.slot == a {
+                live.slot = b;
+            } else if live.slot == b {
+                live.slot = a;
+            }
+        }
+    }
+
     /// Encerra a sessão com `bye` (`kicked`, `revoked`...). O slot é liberado.
     /// Devolve `false` se a sessão não existe.
     pub fn end_session(&self, session_id: u32, reason: ByeReason) -> bool {

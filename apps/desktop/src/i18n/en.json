@@ -64,9 +64,49 @@
     }
   },
   "dashboard": {
-    "backendError": "Could not talk to the backend.",
-    "loading": "Loading…",
-    "version": "App {{app}} · Core {{core}}"
+    "title": "Controllers",
+    "server": {
+      "online": "Server online",
+      "offline": "Server offline",
+      "starting": "Starting the server…",
+      "address": "{{ip}}:{{port}}",
+      "noAddress": "No local network"
+    },
+    "pairNew": "Pair new",
+    "grid": "Controllers P1 to P4",
+    "slot": {
+      "empty": {
+        "title": "Waiting for a connection",
+        "hint": "No phone on this controller.",
+        "pair": "Pair a device"
+      },
+      "reconnecting": {
+        "title": "Reconnecting…",
+        "countdown": "Reservation ends in {{seconds}} s"
+      },
+      "stalled": "No signal from the phone",
+      "physical": {
+        "title": "Physical controller",
+        "hint": "A physical controller is using Windows index {{slot}}. It is not from PadGaming."
+      },
+      "paused": "Paused",
+      "gyro": "Gyro",
+      "unknownDevice": "Device",
+      "profile": "Profile for P{{slot}}",
+      "profilePlaceholder": "Profile",
+      "menu": "Actions for P{{slot}}",
+      "dragHint": "Drag to swap slots",
+      "group": "Controller P{{slot}}"
+    },
+    "actions": {
+      "swap": "Swap slot",
+      "swapWith": "Swap with P{{slot}}",
+      "pause": "Pause",
+      "resume": "Resume",
+      "disconnect": "Disconnect",
+      "latency": "View latency"
+    },
+    "swapped": "P{{from}} and P{{to}} swapped places."
   },
   "devices": {
     "title": "Devices"

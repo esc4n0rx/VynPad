@@ -47,6 +47,12 @@ export const commands = {
 	disconnectSlot: (slot: number) => __TAURI_INVOKE<null>("disconnect_slot", { slot }),
 	/**  Pausa ou retoma o slot: pausado, o input é ignorado e o controle fica neutro. */
 	setSlotPaused: (slot: number, paused: boolean) => __TAURI_INVOKE<null>("set_slot_paused", { slot, paused }),
+	/**  Troca dois slots de lugar, com o controle e o perfil de cada um. */
+	swapSlots: (a: number, b: number) => __TAURI_INVOKE<null>("swap_slots", { a, b }),
+	/**  O perfil de cada slot (`id`), na ordem P1–P4; `null` onde não houve dispositivo ainda. */
+	getSlotProfiles: () => __TAURI_INVOKE<(string | null)[]>("get_slot_profiles"),
+	/**  Troca o perfil do slot na hora (vale só até o dispositivo desconectar). Devolve o `id` aplicado. */
+	setSlotProfile: (slot: number, profileId: string) => __TAURI_INVOKE<string>("set_slot_profile", { slot, profileId }),
 	/**  Gera QR code e PIN. Cada chamada invalida o PIN anterior. */
 	startPairing: () => __TAURI_INVOKE<PairingOfferDto>("start_pairing"),
 	cancelPairing: () => __TAURI_INVOKE<void>("cancel_pairing"),

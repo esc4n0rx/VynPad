@@ -19,7 +19,7 @@ const SEND_RATE_HZ: u16 = 250;
 
 /// Os 4 `ProfileCell`s (um por slot) e qual perfil cada slot está usando.
 pub struct SlotRegistry {
-    cells: [Arc<ProfileCell>; 4],
+    cells: Mutex<[Arc<ProfileCell>; 4]>,
     assigned: Mutex<[Option<String>; 4]>,
     slots: Arc<SlotManager>,
     devices: DeviceRepo,
@@ -31,7 +31,7 @@ impl SlotRegistry {
     pub(crate) fn new(slots: Arc<SlotManager>, devices: DeviceRepo) -> Self {
         let cell = || Arc::new(ProfileCell::new(CompiledProfile::standard()));
         Self {
-            cells: [cell(), cell(), cell(), cell()],
+            cells: Mutex::new([cell(), cell(), cell(), cell()]),
             assigned: Mutex::new(Default::default()),
             slots,
             devices,
@@ -48,6 +48,10 @@ impl SlotRegistry {
     /// Liga o servidor de controle (para reenviar `config` quando o gyro liga ou desliga).
     pub(crate) fn connect_control(&self, control: &Arc<ControlServer>) {
         let _ = self.control.set(Arc::downgrade(control));
+    }
+
+    fn cells(&self) -> std::sync::MutexGuard<'_, [Arc<ProfileCell>; 4]> {
+        self.cells.lock().unwrap_or_else(PoisonError::into_inner)
     }
 
     fn assigned(&self) -> std::sync::MutexGuard<'_, [Option<String>; 4]> {
@@ -79,6 +83,42 @@ impl SlotRegistry {
     }
 }
 
+impl SlotRegistry {
+    /// O perfil que cada slot está usando (`None` onde nunca houve um dispositivo).
+    pub(crate) fn assigned_profiles(&self) -> [Option<String>; 4] {
+        self.assigned().clone()
+    }
+
+    /// Troca o perfil do `slot` na hora, sem mexer no que o dispositivo tem como padrão.
+    /// Devolve o `id` realmente aplicado (o padrão, se o pedido estava inválido).
+    pub(crate) async fn set_slot_profile(&self, slot: SlotId, id: &str) -> Option<String> {
+        let profiles = self.profiles.get().and_then(Weak::upgrade)?;
+        let resolved = profiles.resolve_or_default(Some(id)).await;
+        let index = usize::from(slot.index());
+        self.cells()[index].store(Arc::clone(&resolved.compiled));
+        self.assigned()[index] = Some(resolved.id.clone());
+        if let Some(control) = self.control.get().and_then(Weak::upgrade) {
+            control.send_config(slot, Self::config_for(&resolved.compiled, slot));
+        }
+        Some(resolved.id)
+    }
+
+    /// Acompanha a troca de dois slots: o perfil (e a célula que a sessão segura) vai junto.
+    pub(crate) fn swap(&self, a: SlotId, b: SlotId) {
+        let (ia, ib) = (usize::from(a.index()), usize::from(b.index()));
+        self.cells().swap(ia, ib);
+        self.assigned().swap(ia, ib);
+        if let Some(control) = self.control.get().and_then(Weak::upgrade) {
+            control.relocate(a, b);
+            let cells = self.cells();
+            for slot in [a, b] {
+                let compiled = cells[usize::from(slot.index())].load();
+                control.send_config(slot, Self::config_for(&compiled, slot));
+            }
+        }
+    }
+}
+
 impl SlotProfiles for SlotRegistry {
     fn preferred_slot<'a>(&'a self, device: &'a Uuid) -> PreferredFuture<'a> {
         Box::pin(async move {
@@ -107,7 +147,7 @@ impl SlotProfiles for SlotRegistry {
                 ),
             };
             let index = usize::from(slot.index());
-            let cell = Arc::clone(&self.cells[index]);
+            let cell = Arc::clone(&self.cells()[index]);
             cell.store(Arc::clone(&compiled));
             self.assigned()[index] = Some(id);
             SlotSetup {
@@ -121,7 +161,7 @@ impl SlotProfiles for SlotRegistry {
 impl ProfileHost for SlotRegistry {
     fn apply(&self, id: &str, compiled: Arc<CompiledProfile>) {
         for slot in self.slots_with(id) {
-            self.cells[usize::from(slot.index())].store(Arc::clone(&compiled));
+            self.cells()[usize::from(slot.index())].store(Arc::clone(&compiled));
             // O gyro pode ter ligado ou desligado: o client passa a mandar (ou parar de mandar)
             // pacotes com motion.
             if let Some(control) = self.control.get().and_then(Weak::upgrade) {
@@ -137,7 +177,7 @@ impl ProfileHost for SlotRegistry {
     fn removed(&self, id: &str, fallback: Arc<CompiledProfile>) {
         for slot in self.slots_with(id) {
             let index = usize::from(slot.index());
-            self.cells[index].store(Arc::clone(&fallback));
+            self.cells()[index].store(Arc::clone(&fallback));
             self.assigned()[index] = Some(BUILTIN_PROFILE_ID.to_owned());
             if let Some(control) = self.control.get().and_then(Weak::upgrade) {
                 control.send_config(slot, Self::config_for(&fallback, slot));

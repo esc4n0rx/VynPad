@@ -60,6 +60,9 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
             commands::get_slots,
             commands::disconnect_slot,
             commands::set_slot_paused,
+            commands::swap_slots,
+            commands::get_slot_profiles,
+            commands::set_slot_profile,
             commands::start_pairing,
             commands::cancel_pairing,
             commands::answer_approval,
@@ -498,6 +501,19 @@ mod tests {
         assert_eq!(
             h.err_code("set_slot_paused", json!({ "slot": 9, "paused": true })),
             "invalid_input"
+        );
+        assert_eq!(
+            h.err_code("swap_slots", json!({ "a": 0, "b": 7 })),
+            "invalid_input"
+        );
+        // Dois slots vazios: nada a trocar.
+        assert_eq!(
+            h.err_code("swap_slots", json!({ "a": 0, "b": 2 })),
+            "not_found"
+        );
+        assert_eq!(
+            h.ok("get_slot_profiles", json!({})),
+            json!([null, null, null, null])
         );
         // Slot vazio: nada a desconectar.
         assert_eq!(

@@ -9,6 +9,7 @@ export const keys = {
   nearby: ["nearby"] as const,
   serverInfo: ["server_info"] as const,
   driver: ["driver"] as const,
+  slotProfiles: ["slot_profiles"] as const,
   xinput: ["xinput"] as const,
   networkInterfaces: ["network_interfaces"] as const,
 };

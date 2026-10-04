@@ -439,7 +439,11 @@ fn bye(reason: ByeReason) -> ControlMessage {
 /// Encerra a sessão: tira do UDP, do registro e resolve o slot.
 fn finish(shared: &Shared, session_id: u32, slot: SlotId, device: &Uuid, end: SessionEnd) {
     shared.input.remove_session(session_id);
-    shared.live().remove(&session_id);
+    // O slot pode ter mudado de lugar (`relocate`) desde o início da sessão.
+    let slot = shared
+        .live()
+        .remove(&session_id)
+        .map_or(slot, |live| live.slot);
     match end {
         // O TLS caiu ou ficou mudo: o slot espera a reconexão (30 s).
         SessionEnd::Dropped | SessionEnd::Timeout => {

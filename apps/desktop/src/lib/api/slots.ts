@@ -1,6 +1,7 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { create } from "zustand";
 import { commands, type SessionHealthDto, type SlotsDto } from "@/lib/bindings";
+import { keys } from "./keys";
 
 interface SlotsState {
   /** Os 4 slots como o backend os enviou por último (`null` até a primeira leitura). */
@@ -48,5 +49,33 @@ export function useSetSlotPaused() {
   return useMutation({
     mutationFn: (args: { slot: number; paused: boolean }) =>
       commands.setSlotPaused(args.slot, args.paused),
+  });
+}
+
+/** Troca dois slots de lugar (o controle, a sessão e o perfil vão juntos). */
+export function useSwapSlots() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (args: { a: number; b: number }) => commands.swapSlots(args.a, args.b),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: keys.slotProfiles });
+    },
+  });
+}
+
+/** O `id` do perfil de cada slot, na ordem P1–P4 (`null` onde nunca houve dispositivo). */
+export function useSlotProfiles() {
+  return useQuery({ queryKey: keys.slotProfiles, queryFn: () => commands.getSlotProfiles() });
+}
+
+/** Troca o perfil do slot na hora; vale até o dispositivo desconectar. */
+export function useSetSlotProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (args: { slot: number; profileId: string }) =>
+      commands.setSlotProfile(args.slot, args.profileId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: keys.slotProfiles });
+    },
   });
 }

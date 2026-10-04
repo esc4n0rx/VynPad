@@ -26,7 +26,10 @@ export const routes: RouteObject[] = [
           {
             errorElement: <RouteError />,
             children: [
-              { index: true, ...lazyPage(() => import("@/features/home/HomePage"), "HomePage") },
+              {
+                index: true,
+                ...lazyPage(() => import("@/features/dashboard/DashboardPage"), "DashboardPage"),
+              },
               {
                 path: "devices",
                 ...lazyPage(() => import("@/features/devices/DevicesPage"), "DevicesPage"),
