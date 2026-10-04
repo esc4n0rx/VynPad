@@ -25,6 +25,15 @@ impl XInputProbe {
     pub fn connected(&self) -> [bool; MAX_SLOTS as usize] {
         std::array::from_fn(|i| self.handle.get_state(u32::try_from(i).unwrap_or(0)).is_ok())
     }
+
+    /// O botão A do controle do índice `XInput` está apertado (`None` se não há controle ali).
+    /// Serve para medir a latência até o `XInput` (T-702).
+    pub fn a_pressed(&self, index: u8) -> Option<bool> {
+        self.handle
+            .get_state(u32::from(index))
+            .ok()
+            .map(|state| state.south_button())
+    }
 }
 
 impl std::fmt::Debug for XInputProbe {

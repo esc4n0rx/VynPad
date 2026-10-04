@@ -116,14 +116,17 @@ pub const WINDOW_SECS: usize = 60;
 /// segundo (fora do hot path), o que descarta o segundo mais antigo.
 #[derive(Debug)]
 pub struct RollingHistogram {
-    slices: [LatencyHistogram; WINDOW_SECS],
+    /// No heap: são 60 histogramas, e na pilha eles estouravam a de threads pequenas em debug.
+    slices: Box<[LatencyHistogram]>,
     cursor: AtomicUsize,
 }
 
 impl Default for RollingHistogram {
     fn default() -> Self {
         Self {
-            slices: std::array::from_fn(|_| LatencyHistogram::default()),
+            slices: (0..WINDOW_SECS)
+                .map(|_| LatencyHistogram::default())
+                .collect(),
             cursor: AtomicUsize::new(0),
         }
     }

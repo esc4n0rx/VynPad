@@ -1,0 +1,125 @@
+{
+  "params": {
+    "server": "127.0.0.1:47801",
+    "clients": 4,
+    "rate_hz": 250,
+    "duration_s": 60.0,
+    "loss_percent": 0.0,
+    "delay_ms": 0.0,
+    "jitter_ms": 0.0,
+    "reorder": false
+  },
+  "elapsed_s": 60.0818782,
+  "clients": [
+    {
+      "inputs_sent": 14999,
+      "lost_by_fault": 0,
+      "pings_sent": 240,
+      "pongs": 240,
+      "ping_loss_percent": 0.0,
+      "rtt_us": {
+        "count": 240,
+        "p50": 428,
+        "p95": 927,
+        "p99": 1587,
+        "max": 2668
+      },
+      "server_proc_us": {
+        "count": 240,
+        "p50": 26,
+        "p95": 32,
+        "p99": 39,
+        "max": 51
+      },
+      "rumbles": 0
+    },
+    {
+      "inputs_sent": 14999,
+      "lost_by_fault": 0,
+      "pings_sent": 240,
+      "pongs": 240,
+      "ping_loss_percent": 0.0,
+      "rtt_us": {
+        "count": 240,
+        "p50": 428,
+        "p95": 890,
+        "p99": 1009,
+        "max": 1181
+      },
+      "server_proc_us": {
+        "count": 240,
+        "p50": 26,
+        "p95": 31,
+        "p99": 40,
+        "max": 92
+      },
+      "rumbles": 0
+    },
+    {
+      "inputs_sent": 14999,
+      "lost_by_fault": 0,
+      "pings_sent": 240,
+      "pongs": 240,
+      "ping_loss_percent": 0.0,
+      "rtt_us": {
+        "count": 240,
+        "p50": 445,
+        "p95": 883,
+        "p99": 1148,
+        "max": 1358
+      },
+      "server_proc_us": {
+        "count": 240,
+        "p50": 26,
+        "p95": 30,
+        "p99": 36,
+        "max": 40
+      },
+      "rumbles": 0
+    },
+    {
+      "inputs_sent": 14999,
+      "lost_by_fault": 0,
+      "pings_sent": 240,
+      "pongs": 240,
+      "ping_loss_percent": 0.0,
+      "rtt_us": {
+        "count": 240,
+        "p50": 423,
+        "p95": 869,
+        "p99": 1350,
+        "max": 2055
+      },
+      "server_proc_us": {
+        "count": 240,
+        "p50": 27,
+        "p95": 32,
+        "p99": 40,
+        "max": 49
+      },
+      "rumbles": 0
+    }
+  ],
+  "total": {
+    "inputs_sent": 59996,
+    "lost_by_fault": 0,
+    "pings_sent": 960,
+    "pongs": 960,
+    "ping_loss_percent": 0.0,
+    "rtt_us": {
+      "count": 960,
+      "p50": 435,
+      "p95": 907,
+      "p99": 1181,
+      "max": 2668
+    },
+    "server_proc_us": {
+      "count": 960,
+      "p50": 26,
+      "p95": 32,
+      "p99": 39,
+      "max": 92
+    },
+    "rumbles": 0
+  }
+}

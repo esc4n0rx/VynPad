@@ -81,6 +81,41 @@ jobs:
       - run: cargo test --workspace --exclude padgaming-desktop --locked
       - run: cargo test -p padgaming-desktop --locked
 
+  bench:
+    name: Benchmark do server (gate de regressão)
+    needs: [rust]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependências de sistema do Tauri
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev patchelf
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.98.1"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: bench
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # O dev_server só existe em debug; com --mock não toca no sistema.
+      - run: cargo build --locked -p padgaming-net --example dev_server -p padgaming-sim
+      - name: Bench de 20 s com 4 clients a 250 Hz
+        run: |
+          target/debug/examples/dev_server --mock > dev_server.log 2>&1 &
+          sleep 2
+          target/debug/padgaming-sim bench --insecure-dev --clients 4 --rate 250 --duration 20s --json bench.json
+      - run: node scripts/bench-gate.mjs bench.json docs/benchmarks/baseline.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bench
+          path: bench.json
+          if-no-files-found: ignore
+          retention-days: 14
+
   bundle:
     name: Build do app (${{ matrix.os }})
     needs: [lint, rust]

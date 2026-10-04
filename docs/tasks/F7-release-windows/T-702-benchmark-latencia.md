@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | T-305, T-307 |
-| Status | ⬜ A fazer |
+| Status | 🟨 Em andamento |
 
 ## Objetivo
 Provar as metas de RNF-01 a RNF-04 com números reproduzíveis.
@@ -19,8 +19,8 @@ Provar as metas de RNF-01 a RNF-04 com números reproduzíveis.
 - Relatório versionado em `docs/benchmarks/AAAA-MM-DD.md`; o CI roda o bench do server e falha em regressão > 20%.
 
 ## Critérios de aceite
-- [ ] Todas as metas do SPEC §5 medidas e documentadas.
-- [ ] Gate de regressão ativo no CI.
+- [ ] Todas as metas do SPEC §5 medidas e documentadas. (server, UDP→XInput e CPU feitos em `docs/benchmarks/2026-10-04.md`; faltam RAM, tempo de abertura e celular, pós-F9.)
+- [x] Gate de regressão ativo no CI (job `bench`, `scripts/bench-gate.mjs`).
 
 ## Fora de escopo
 - Otimizações (abrir tasks específicas se alguma meta falhar).

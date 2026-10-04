@@ -141,7 +141,7 @@ flowchart TD
 | ID | Task | Prio | Est. | Depende de | Status |
 |---|---|---|---|---|---|
 | [T-701](../tasks/F7-release-windows/T-701-testes.md) | Estratégia e suíte de testes | P0 | G | T-307 | ⬜ |
-| [T-702](../tasks/F7-release-windows/T-702-benchmark-latencia.md) | Benchmark de latência e performance | P0 | M | T-305, T-307 | ⬜ |
+| [T-702](../tasks/F7-release-windows/T-702-benchmark-latencia.md) | Benchmark de latência e performance | P0 | M | T-305, T-307 | 🟨 |
 | [T-703](../tasks/F7-release-windows/T-703-instalador-windows.md) | Instalador NSIS + ViGEmBus + assinatura | P0 | M | T-205, T-306 | ⬜ |
 | [T-704](../tasks/F7-release-windows/T-704-auto-update.md) | Auto-update | P1 | M | T-703 | ⬜ |
 | [T-705](../tasks/F7-release-windows/T-705-docs-diagnostico.md) | Docs do usuário e pacote de diagnóstico | P1 | M | T-004 | 🟨 |
