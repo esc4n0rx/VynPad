@@ -1,13 +1,21 @@
 import type { ParseKeys } from "i18next";
 
 export type SectionId =
-  "general" | "network" | "controls" | "appearance" | "language" | "privacy" | "about";
+  | "general"
+  | "network"
+  | "controls"
+  | "appearance"
+  | "notifications"
+  | "language"
+  | "privacy"
+  | "about";
 
 export const SECTIONS: readonly SectionId[] = [
   "general",
   "network",
   "controls",
   "appearance",
+  "notifications",
   "language",
   "privacy",
   "about",
@@ -32,6 +40,10 @@ export type ItemId =
   | "accent"
   | "transparency"
   | "reduceMotion"
+  | "notifyConnections"
+  | "notifyPairing"
+  | "notifyDriver"
+  | "notifySkipFullscreen"
   | "language"
   | "clearHistory"
   | "regenerateIdentity"
@@ -66,6 +78,10 @@ export const ITEMS: readonly IndexedItem[] = [
   { id: "accent", section: "appearance" },
   { id: "transparency", section: "appearance" },
   { id: "reduceMotion", section: "appearance" },
+  { id: "notifyConnections", section: "notifications" },
+  { id: "notifyPairing", section: "notifications" },
+  { id: "notifyDriver", section: "notifications" },
+  { id: "notifySkipFullscreen", section: "notifications" },
   { id: "language", section: "language" },
   { id: "clearHistory", section: "privacy" },
   { id: "regenerateIdentity", section: "privacy" },

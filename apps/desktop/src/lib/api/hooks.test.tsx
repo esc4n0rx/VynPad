@@ -28,6 +28,10 @@ const defaults: Settings = {
   transparency: true,
   reduce_motion: false,
   tray_hint_shown: false,
+  notify_connections: true,
+  notify_pairing: true,
+  notify_driver: true,
+  notify_skip_fullscreen: true,
 };
 
 function error(code: AppError["code"], extra: Partial<AppError> = {}): AppError {

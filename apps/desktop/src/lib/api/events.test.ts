@@ -12,7 +12,7 @@ import { useSlots } from "./slots";
 
 vi.mock("@/lib/bindings", async () => (await import("@/test/bindings-mock")).bindingsMock);
 
-const EVENT_COUNT = 17;
+const EVENT_COUNT = 18;
 
 const slots: SlotsDto = {
   free_count: 3,
@@ -99,6 +99,15 @@ describe("registerEventListeners", () => {
     expect(useToasts.getState().toasts.at(-1)?.message).toBe(
       "O PadGaming continua rodando na bandeja.",
     );
+  });
+
+  it("os avisos do backend viram toasts com o tom certo", () => {
+    useToasts.setState({ toasts: [] });
+    emit("noticeEvent", { level: "success", message: "Galaxy conectado como P1" });
+    emit("noticeEvent", { level: "error", message: "O driver parou" });
+    const [first, second] = useToasts.getState().toasts;
+    expect(first).toMatchObject({ kind: "success", message: "Galaxy conectado como P1" });
+    expect(second).toMatchObject({ kind: "error", message: "O driver parou" });
   });
 
   it("desfaz tudo e permite registrar de novo", async () => {

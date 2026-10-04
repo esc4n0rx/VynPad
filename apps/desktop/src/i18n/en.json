@@ -438,6 +438,7 @@
       "network": "Network",
       "controls": "Controllers",
       "appearance": "Appearance",
+      "notifications": "Notifications",
       "language": "Language",
       "privacy": "Privacy and security",
       "about": "About"
@@ -546,6 +547,22 @@
       "licenses": {
         "label": "Third-party licenses",
         "hint": "Third-party components PadGaming uses, including ViGEmBus."
+      },
+      "notifyConnections": {
+        "label": "Phone connections",
+        "hint": "Tells you when a phone connects, reconnects or disconnects. A burst of reconnections becomes a single notice."
+      },
+      "notifyPairing": {
+        "label": "Pairing",
+        "hint": "Tells you about pairings, approval requests and refused connections."
+      },
+      "notifyDriver": {
+        "label": "Virtual controller driver",
+        "hint": "Tells you when the driver stops working and when it’s back."
+      },
+      "notifySkipFullscreen": {
+        "label": "Quiet during full-screen games",
+        "hint": "No notice appears while a game fills the whole screen."
       }
     },
     "general": {

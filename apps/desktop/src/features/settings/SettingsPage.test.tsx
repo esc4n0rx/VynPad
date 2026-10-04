@@ -28,6 +28,10 @@ const defaults: Settings = {
   transparency: true,
   reduce_motion: false,
   tray_hint_shown: false,
+  notify_connections: true,
+  notify_pairing: true,
+  notify_driver: true,
+  notify_skip_fullscreen: true,
 };
 
 const firewall = (patch: Partial<FirewallStatusDto> = {}): FirewallStatusDto => ({
@@ -431,6 +435,49 @@ describe("aparência e idioma", () => {
     await waitFor(() => {
       expect(lastSaved()?.language).toBe("en");
     });
+  });
+});
+
+describe("notificações", () => {
+  it("cada tipo de aviso tem o seu interruptor", async () => {
+    setup();
+    goTo("Notificações");
+    const connections = await screen.findByRole("switch", { name: "Conexões dos celulares" });
+    expect(connections.getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(connections);
+    await waitFor(() => {
+      expect(lastSaved()?.notify_connections).toBe(false);
+    });
+    fireEvent.click(screen.getByRole("switch", { name: "Pareamento" }));
+    await waitFor(() => {
+      expect(lastSaved()?.notify_pairing).toBe(false);
+    });
+    fireEvent.click(screen.getByRole("switch", { name: "Driver de controle virtual" }));
+    await waitFor(() => {
+      expect(lastSaved()?.notify_driver).toBe(false);
+    });
+  });
+
+  it("o silêncio em tela cheia vem ligado e se desliga", async () => {
+    setup();
+    goTo("Notificações");
+    const quiet = await screen.findByRole("switch", {
+      name: "Silêncio durante jogos em tela cheia",
+    });
+    expect(quiet.getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(quiet);
+    await waitFor(() => {
+      expect(lastSaved()?.notify_skip_fullscreen).toBe(false);
+    });
+  });
+
+  it("a busca acha as notificações", async () => {
+    setup();
+    await screen.findByRole("switch", { name: "Iniciar com o Windows" });
+    fireEvent.change(screen.getByRole("searchbox", { name: "Buscar nas configurações" }), {
+      target: { value: "tela cheia" },
+    });
+    expect(await screen.findByText("Silêncio durante jogos em tela cheia")).toBeTruthy();
   });
 });
 

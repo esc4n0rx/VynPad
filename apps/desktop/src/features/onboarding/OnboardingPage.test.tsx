@@ -30,6 +30,10 @@ const settings: Settings = {
   transparency: true,
   reduce_motion: false,
   tray_hint_shown: false,
+  notify_connections: true,
+  notify_pairing: true,
+  notify_driver: true,
+  notify_skip_fullscreen: true,
 };
 
 const firewall = (patch: Partial<FirewallStatusDto> = {}): FirewallStatusDto => ({

@@ -135,7 +135,7 @@ flowchart TD
 | [T-605](../tasks/F6-features/T-605-configuracoes.md) | Configurações | P1 | M | T-403, T-504 | 🟨 |
 | [T-606](../tasks/F6-features/T-606-monitor-latencia.md) | Monitor de latência | P1 | M | T-305, T-503 | 🟨 |
 | [T-607](../tasks/F6-features/T-607-tray-autostart.md) | Tray, autostart, iniciar minimizado | P1 | M | T-503 | 🟨 |
-| [T-608](../tasks/F6-features/T-608-notificacoes.md) | Notificações e toasts | P2 | P | T-602 | ⬜ |
+| [T-608](../tasks/F6-features/T-608-notificacoes.md) | Notificações e toasts | P2 | P | T-602 | 🟨 |
 
 ### F7 — Qualidade e release Windows
 | ID | Task | Prio | Est. | Depende de | Status |

@@ -71,6 +71,10 @@ async function register(queryClient: QueryClient): Promise<() => void> {
     events.driverChanged.listen((e) => {
       queryClient.setQueryData(keys.driver, e.payload.status);
     }),
+    events.noticeEvent.listen((e) => {
+      // O backend já agrupou e traduziu (`notify.rs`): aqui só aparece.
+      useToasts.getState().push(e.payload.level, e.payload.message);
+    }),
     events.trayHint.listen(() => {
       // O app vai para a bandeja em instantes: o aviso aparece na janela que está fechando.
       useToasts.getState().push("info", i18n.t("hint", { ns: "tray" }));

@@ -438,6 +438,7 @@
       "network": "Rede",
       "controls": "Controles",
       "appearance": "Aparência",
+      "notifications": "Notificações",
       "language": "Idioma",
       "privacy": "Privacidade e segurança",
       "about": "Sobre"
@@ -546,6 +547,22 @@
       "licenses": {
         "label": "Licenças de terceiros",
         "hint": "Componentes de terceiros usados pelo PadGaming, incluindo o ViGEmBus."
+      },
+      "notifyConnections": {
+        "label": "Conexões dos celulares",
+        "hint": "Avisa quando um celular conecta, reconecta ou desconecta. Reconexões em rajada viram um aviso só."
+      },
+      "notifyPairing": {
+        "label": "Pareamento",
+        "hint": "Avisa sobre pareamentos, pedidos de aprovação e conexões recusadas."
+      },
+      "notifyDriver": {
+        "label": "Driver de controle virtual",
+        "hint": "Avisa quando o driver para de funcionar e quando volta."
+      },
+      "notifySkipFullscreen": {
+        "label": "Silêncio durante jogos em tela cheia",
+        "hint": "Nenhum aviso aparece enquanto um jogo ocupa a tela toda."
       }
     },
     "general": {

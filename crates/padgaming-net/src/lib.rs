@@ -17,6 +17,7 @@ pub mod identity;
 pub mod input;
 pub mod pairing;
 pub mod qr;
+pub mod user_state;
 
 /// `N` bytes aleatórios do gerador do sistema operacional.
 pub(crate) fn random_bytes<const N: usize>() -> [u8; N] {

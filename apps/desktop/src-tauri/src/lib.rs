@@ -13,6 +13,7 @@ mod error;
 mod events;
 mod live;
 mod logging;
+mod notify;
 mod shell;
 mod state;
 mod system;
@@ -94,6 +95,7 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
             events::MetricsTick,
             window::WindowChromeChanged,
             shell::TrayHint,
+            notify::NoticeEvent,
             shell::TrayNavigate,
             events::SlotsChanged,
             events::DevicesChanged,
@@ -128,6 +130,7 @@ fn start_core(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let settings = core.settings().get();
     autostart::apply(app.handle(), settings.autostart);
     events::spawn_pump(app.handle().clone(), &core);
+    notify::spawn(app.handle().clone(), Arc::clone(&core));
     match tray::install(app.handle(), &core) {
         Ok(icon) => tray::spawn_updater(app.handle().clone(), Arc::clone(&core), icon),
         Err(error) => tracing::warn!(%error, "não consegui criar o ícone da bandeja"),
@@ -190,6 +193,7 @@ pub fn run() {
             start_core(app)
         })
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             None::<Vec<&str>>,

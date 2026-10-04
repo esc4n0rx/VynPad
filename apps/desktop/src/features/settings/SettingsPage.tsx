@@ -9,6 +9,7 @@ import { AppearanceSection } from "./AppearanceSection";
 import { ControlsSection } from "./ControlsSection";
 import { GeneralSection } from "./GeneralSection";
 import { NetworkSection } from "./NetworkSection";
+import { NotificationsSection } from "./NotificationsSection";
 import { AboutSection, LanguageSection, PrivacySection } from "./PrivacyAndAboutSections";
 import {
   ITEMS,
@@ -35,6 +36,8 @@ function renderSection(id: SectionId, props: SectionProps): ReactNode {
       return <ControlsSection {...props} />;
     case "appearance":
       return <AppearanceSection {...props} />;
+    case "notifications":
+      return <NotificationsSection {...props} />;
     case "language":
       return <LanguageSection {...props} />;
     case "privacy":

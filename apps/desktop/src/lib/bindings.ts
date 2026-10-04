@@ -120,6 +120,7 @@ export const events = {
 	driverChanged: makeEvent<DriverChanged>("driver-changed"),
 	inputLive: makeEvent<InputLive>("input-live"),
 	metricsTick: makeEvent<MetricsTick>("metrics-tick"),
+	noticeEvent: makeEvent<NoticeEvent>("notice-event"),
 	reservationExpired: makeEvent<ReservationExpired>("reservation-expired"),
 	sessionEnded: makeEvent<SessionEnded>("session-ended"),
 	sessionStarted: makeEvent<SessionStarted>("session-started"),
@@ -195,6 +196,14 @@ export type AppSettings = {
 	reduce_motion?: boolean,
 	/**  O aviso "continua rodando na bandeja" já foi mostrado. */
 	tray_hint_shown?: boolean,
+	/**  Avisar quando um celular conecta, reconecta ou desconecta. */
+	notify_connections?: boolean,
+	/**  Avisar sobre pareamentos, pedidos de aprovação e conexões recusadas. */
+	notify_pairing?: boolean,
+	/**  Avisar quando o driver de controle virtual falha. */
+	notify_driver?: boolean,
+	/**  Não avisar enquanto um jogo ocupa a tela cheia. */
+	notify_skip_fullscreen?: boolean,
 };
 
 export type ApprovalPromptDto = {
@@ -470,6 +479,9 @@ export type Language =
 /**  Inglês. */
 "en";
 
+/**  O tom do aviso (a cor do toast). */
+export type Level = "info" | "success" | "error";
+
 export type LogEntryDto = {
 	id: number,
 	device_id: string | null,
@@ -507,6 +519,12 @@ export type NearbyDto = {
 	seen_ago_ms: number,
 	/**  O aparelho já está pareado neste server. */
 	paired: boolean,
+};
+
+/**  O aviso para a UI mostrar como toast (`notice`). */
+export type NoticeEvent = {
+	level: Level,
+	message: string,
 };
 
 export type PairingOfferDto = {

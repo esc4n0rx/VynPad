@@ -88,6 +88,14 @@ pub struct AppSettings {
     pub reduce_motion: bool,
     /// O aviso "continua rodando na bandeja" já foi mostrado.
     pub tray_hint_shown: bool,
+    /// Avisar quando um celular conecta, reconecta ou desconecta.
+    pub notify_connections: bool,
+    /// Avisar sobre pareamentos, pedidos de aprovação e conexões recusadas.
+    pub notify_pairing: bool,
+    /// Avisar quando o driver de controle virtual falha.
+    pub notify_driver: bool,
+    /// Não avisar enquanto um jogo ocupa a tela cheia.
+    pub notify_skip_fullscreen: bool,
 }
 
 impl Default for AppSettings {
@@ -114,6 +122,10 @@ impl Default for AppSettings {
             transparency: true,
             reduce_motion: false,
             tray_hint_shown: false,
+            notify_connections: true,
+            notify_pairing: true,
+            notify_driver: true,
+            notify_skip_fullscreen: true,
         }
     }
 }
@@ -165,7 +177,7 @@ impl AppSettings {
     }
 
     /// Cada campo como `(chave, JSON)`.
-    fn entries(&self) -> Result<[(&'static str, String); 16], serde_json::Error> {
+    fn entries(&self) -> Result<[(&'static str, String); 20], serde_json::Error> {
         Ok([
             ("language", serde_json::to_string(&self.language)?),
             ("theme", serde_json::to_string(&self.theme)?),
@@ -201,6 +213,19 @@ impl AppSettings {
                 "tray_hint_shown",
                 serde_json::to_string(&self.tray_hint_shown)?,
             ),
+            (
+                "notify_connections",
+                serde_json::to_string(&self.notify_connections)?,
+            ),
+            (
+                "notify_pairing",
+                serde_json::to_string(&self.notify_pairing)?,
+            ),
+            ("notify_driver", serde_json::to_string(&self.notify_driver)?),
+            (
+                "notify_skip_fullscreen",
+                serde_json::to_string(&self.notify_skip_fullscreen)?,
+            ),
         ])
     }
 
@@ -224,6 +249,12 @@ impl AppSettings {
             "transparency" => self.transparency = serde_json::from_str(json)?,
             "reduce_motion" => self.reduce_motion = serde_json::from_str(json)?,
             "tray_hint_shown" => self.tray_hint_shown = serde_json::from_str(json)?,
+            "notify_connections" => self.notify_connections = serde_json::from_str(json)?,
+            "notify_pairing" => self.notify_pairing = serde_json::from_str(json)?,
+            "notify_driver" => self.notify_driver = serde_json::from_str(json)?,
+            "notify_skip_fullscreen" => {
+                self.notify_skip_fullscreen = serde_json::from_str(json)?;
+            }
             _ => {}
         }
         Ok(())
