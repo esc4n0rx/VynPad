@@ -574,8 +574,16 @@ fn the_motor_never_stays_on_when_packets_are_lost() {
     let off = client.recv_rumble(Duration::from_secs(1)).unwrap();
     assert_eq!((off.large, off.small), (0, 0));
     client.ack(off.rumble_id);
-    let snap = rig.server.stats().snapshot();
-    assert!(snap.rumble_sent >= 8, "{}", snap.rumble_sent);
+    // O contador sobe um instante depois do envio do pacote: espera em vez de ler na hora.
+    let mut sent = 0;
+    for _ in 0..100 {
+        sent = rig.server.stats().snapshot().rumble_sent;
+        if sent >= 8 {
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    assert!(sent >= 8, "{sent}");
 }
 
 #[test]
