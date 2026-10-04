@@ -8,6 +8,8 @@
 | Depende de | T-101, T-901 |
 | Status | ⬜ A fazer |
 
+> **Atualização (D-26, 2026-10-04):** o protocolo **não será reescrito em Kotlin**. O client usa o `vynpad-protocol` em Rust por UniFFI, então esta task vira "bindings UniFFI do núcleo + test vectors rodando nos dois lados": o Kotlin chama o mesmo código do server, e os `protocol/test-vectors/*.json` continuam como contrato. O escopo e os critérios abaixo ficam como referência do plano antigo e serão reescritos depois da prova de conceito do T-901.
+
 ## Objetivo
 Implementação Kotlin do protocolo, binariamente idêntica à do Rust.
 

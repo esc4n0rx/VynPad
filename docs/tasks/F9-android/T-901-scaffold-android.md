@@ -8,6 +8,8 @@
 | Depende de | — (iniciar após o M4, conforme o roadmap) |
 | Status | ⬜ A fazer |
 
+> **Atualização (D-26, 2026-10-04):** o client passa a ser **Compose Multiplatform** (Android primeiro, iOS depois), com o núcleo de rede e protocolo em **Rust via UniFFI**. Esta task começa por uma **prova de conceito** que valida a arquitetura antes do scaffold final; os módulos abaixo viram `shared/` (commonMain) + `androidApp/`, e `core:protocol` e `core:network` passam a ser o crate Rust. Ver "Prova de conceito" no fim.
+
 ## Objetivo
 Base do app Android alinhada à identidade visual do server.
 
@@ -25,3 +27,14 @@ Base do app Android alinhada à identidade visual do server.
 
 ## Fora de escopo
 - Lógica de rede (T-902+).
+
+## Prova de conceito (primeira entrega, 2–3 dias)
+Decide a arquitetura com números. Só vale seguir com Compose Multiplatform + Rust se tudo abaixo passar; senão, plano B: Flutter.
+1. **UI:** uma tela de gamepad em Compose a 120 fps, com as animações do server (glow na cor do slot, molas equivalentes a stiffness 380 / damping 32, vidro e tema dark com os tokens do design system).
+2. **Núcleo Rust via UniFFI:** crate `vynpad-client-core` (reaproveitando `vynpad-protocol`) enviando input a 250 Hz para o `dev_server`, com build integrado ao Gradle (`cargo-ndk`) e checagem dos test vectors.
+3. **Medição:** toque até pacote UDP (`vynpad-sim bench` e câmera de 240 fps, como no T-702), com `requestUnbufferedDispatch`, e fluidez num celular de gama média. Meta: p95 < 10 ms de ponta a ponta.
+4. **Veredito** registrado no `DECISOES.md` (confirma D-26 ou aciona o plano B).
+
+## Perguntas abertas para o início
+- "Multiplataforma" = Android + iOS (assumido) ou também tablets, Chromebooks ou PC?
+- Há Mac e iPhone para testar o iOS? Sem eles, o iOS fica só desenhado (conta Apple de US$ 99/ano).
