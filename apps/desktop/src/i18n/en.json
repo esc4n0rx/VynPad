@@ -665,7 +665,85 @@
     }
   },
   "onboarding": {
-    "title": "Welcome"
+    "title": "Introduction",
+    "stepper": {
+      "label": "Introduction steps",
+      "current": "Step {{n}} of {{total}}: {{name}}",
+      "steps": {
+        "welcome": "Welcome",
+        "driver": "Driver",
+        "network": "Network",
+        "connect": "Phone",
+        "done": "Done"
+      }
+    },
+    "nav": {
+      "back": "Back",
+      "next": "Continue",
+      "skip": "Skip for now",
+      "finish": "Get started",
+      "withoutDriver": "Continue without the driver"
+    },
+    "welcome": {
+      "title": "Your phone is the controller",
+      "description": "PadGaming turns your phone into an Xbox 360 controller for Windows games. Let’s get everything ready in a few steps.",
+      "language": "Language"
+    },
+    "driver": {
+      "title": "Virtual controller driver",
+      "what": "Games only see real controllers. ViGEmBus is a free driver that creates virtual Xbox 360 controllers, and it’s how PadGaming delivers what the phone sends.",
+      "checking": "Checking…",
+      "ready": "Driver installed and working.",
+      "missing": "The driver isn’t installed yet.",
+      "outdated": "The installed driver is old ({{found}}). It needs version {{required}} or newer.",
+      "stopped": "The driver is installed but stopped. Restart the PC or the ViGEmBus service.",
+      "error": "I couldn’t check the driver: {{message}}",
+      "download": "Download ViGEmBus",
+      "afterInstall": "After installing, come back here: PadGaming notices on its own.",
+      "warning": "Without the driver, PadGaming can’t create controllers for games."
+    },
+    "network": {
+      "title": "Network",
+      "description": "The phone needs to reach this PC over the local network (Wi-Fi).",
+      "name": "Name",
+      "address": "Address",
+      "noAddress": "No local network. Connect the PC to Wi-Fi or a wired network.",
+      "firewallOk": "The firewall lets the phone connect.",
+      "firewallBlocked": "The Windows Firewall is blocking PadGaming.",
+      "firewallOff": "The firewall is off.",
+      "notApplicable": "This system doesn’t use the Windows Firewall.",
+      "allow": "Allow connections",
+      "allowing": "Allowing…",
+      "allowed": "Done, connections allowed.",
+      "cancelled": "The administrator permission was declined. You can try again.",
+      "public": "One of your networks is set to public, and the phone can’t connect on it.",
+      "openNetwork": "Open network settings",
+      "recheck": "Check again",
+      "failed": "I couldn’t check the firewall."
+    },
+    "connect": {
+      "title": "Connect your phone",
+      "description": "Open PadGaming on your phone, on the same Wi-Fi network, and scan the code or type the PIN.",
+      "getApp": "Don’t have the app yet? It’s coming soon to the Play Store.",
+      "nearby": "Phones nearby",
+      "nearbyEmpty": "No phone with PadGaming open nearby yet.",
+      "successHint": "Controller P1 is already responding. Press a button on the phone."
+    },
+    "done": {
+      "title": "All set",
+      "summary": "Summary",
+      "driver": "Driver",
+      "network": "Firewall",
+      "devices": "Paired phones",
+      "ok": "ok",
+      "pending": "pending",
+      "tipsTitle": "Tips",
+      "tipWifi": "Use 5 GHz Wi-Fi for less delay.",
+      "tipTray": "Closing the window leaves PadGaming in the tray; right-click the icon to see the controllers.",
+      "tipShortcuts": "Ctrl+1 to Ctrl+5 switch sections.",
+      "autostart": "Start with Windows",
+      "startMinimized": "Start minimized to the tray"
+    }
   },
   "tray": {
     "hint": "PadGaming keeps running in the tray."

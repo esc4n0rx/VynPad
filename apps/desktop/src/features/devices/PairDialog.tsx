@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
@@ -30,7 +30,7 @@ export function PairDialog({ open, onOpenChange, target }: PairDialogProps) {
         <DialogDescription>
           {target ? t("pair.forDevice", { name: target }) : t("pair.description")}
         </DialogDescription>
-        <PairBody
+        <PairingPanel
           onClose={() => {
             onOpenChange(false);
           }}
@@ -40,7 +40,30 @@ export function PairDialog({ open, onOpenChange, target }: PairDialogProps) {
   );
 }
 
-function PairBody({ onClose }: { onClose: () => void }) {
+interface PairingPanelProps {
+  /** Pedido para fechar (o botão "Concluir" e, com `autoClose`, o fim da animação de sucesso). */
+  onClose: () => void;
+  /** Fecha sozinho depois do sucesso (o modal); a introdução segue pelo próprio botão. */
+  autoClose?: boolean;
+  /** Algo a mais embaixo da mensagem de sucesso (na introdução, o controle acendendo). */
+  successExtra?: ReactNode;
+  /** Sem o botão "Concluir" no sucesso. */
+  hideDone?: boolean;
+  /** Chamado uma vez quando um aparelho novo termina de parear. */
+  onPaired?: (device: { device_id: string; name: string; model: string }) => void;
+}
+
+/**
+ * O código de pareamento (QR e PIN) que se renova ao vencer, com a animação de sucesso quando um
+ * aparelho novo conclui. O código só existe enquanto o painel está montado.
+ */
+export function PairingPanel({
+  onClose,
+  autoClose = true,
+  successExtra,
+  hideDone,
+  onPaired,
+}: PairingPanelProps) {
   const { t } = useTranslation("devices");
   const start = useStartPairing();
   const cancel = useCancelPairing();
@@ -87,14 +110,20 @@ function PairBody({ onClose }: { onClose: () => void }) {
     if (offer && left === 0 && !start.isPending && paired === null) renewRef.current?.();
   }, [offer, left, start.isPending, paired]);
 
-  // Concluído: mostra o sucesso e fecha sozinho.
+  // Concluído: avisa quem quiser saber e, no modal, fecha sozinho depois do sucesso.
+  const notified = useRef(false);
   useEffect(() => {
     if (paired === null) return;
+    if (!notified.current) {
+      notified.current = true;
+      onPaired?.(paired);
+    }
+    if (!autoClose) return;
     const timer = window.setTimeout(onClose, SUCCESS_MS);
     return () => {
       window.clearTimeout(timer);
     };
-  }, [paired, onClose]);
+  }, [paired, onClose, autoClose, onPaired]);
 
   if (paired) {
     return (
@@ -110,9 +139,12 @@ function PairBody({ onClose }: { onClose: () => void }) {
         <p className="text-subtitle font-semibold text-fg">
           {t("pair.success", { name: paired.name })}
         </p>
-        <Button variant="secondary" onClick={onClose}>
-          {t("pair.done")}
-        </Button>
+        {successExtra}
+        {!hideDone && (
+          <Button variant="secondary" onClick={onClose}>
+            {t("pair.done")}
+          </Button>
+        )}
       </div>
     );
   }

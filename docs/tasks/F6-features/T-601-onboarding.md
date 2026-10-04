@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | G |
 | Depende de | T-205, T-306, T-603 |
-| Status | ⬜ A fazer |
+| Status | 🟨 Pronta; falta o fluxo numa VM Windows limpa com o simulador como celular, e ver o fundo animado e o visual no app |
 
 ## Objetivo
 Levar um usuário leigo do "acabei de instalar" ao "estou jogando com o celular" em menos de 2 minutos.
@@ -31,3 +31,9 @@ Tela cheia, sem sidebar, com stepper e fundo com gradiente animado sutil sobre o
 
 ## Fora de escopo
 - Onboarding Linux (T-802).
+
+## Fechamento
+- `features/onboarding`: tela cheia com indicador de etapas, fundo de manchas de cor que derivam devagar (`.onboarding-bg`, sem animação com "reduzir movimento") e cinco passos. `steps.ts` guarda a ordem, quais passos se pulam (rede e celular) e onde o usuário parou (`localStorage`, que pode falhar sem derrubar nada); `OnboardingSteps.tsx` tem os passos.
+- 1 Boas-vindas com o idioma; 2 Driver (estado do ViGEmBus, por que ele existe, "Baixar o ViGEmBus" e a verificação segue sozinha pelo evento `driver:changed`; sem o driver só há "Continuar sem driver", com aviso); 3 Rede (nome e endereço do server, status do firewall, "Permitir conexões" com UAC e tratamento de recusa, aviso de rede pública); 4 Celular (o mesmo `PairingPanel` do modal de dispositivos, QR e PIN que se renovam, lista de celulares por perto ao vivo e, ao parear, o controle de P1 aceso); 5 Pronto (resumo do que ficou pendente, dicas, "Iniciar com o Windows" e "Iniciar minimizado").
+- `onboarding_completed` é gravado ao final; a primeira abertura leva à introdução (`useOnboardingRedirect`, só na leitura inicial das configurações) e Configurações → Geral → "Refazer introdução" a reabre.
+- O "Instalar driver (UAC) com progresso" da spec virou "Baixar o ViGEmBus" (página oficial) com detecção automática: o app não redistribui o driver (licença e assinatura), como já decidido na T-205. O QR da Play Store não existe ainda: a tela avisa que o app chega em breve.

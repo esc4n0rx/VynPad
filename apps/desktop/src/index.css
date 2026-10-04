@@ -335,3 +335,34 @@ html[data-corners="css"]:not([data-maximized="true"]) #root {
 .gamepad[data-mode="mini"] .pad-body {
   stroke-width: 3;
 }
+
+/* Fundo da introdução: manchas de cor que derivam devagar sobre o vidro. */
+.onboarding-bg {
+  background:
+    radial-gradient(
+      40% 45% at 20% 25%,
+      color-mix(in srgb, var(--accent) 38%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      38% 42% at 82% 30%,
+      color-mix(in srgb, var(--slot-4) 30%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      45% 40% at 55% 88%,
+      color-mix(in srgb, var(--slot-2) 24%, transparent),
+      transparent
+    );
+  background-size: 140% 140%;
+  animation: onboarding-drift 28s ease-in-out infinite alternate;
+}
+
+@keyframes onboarding-drift {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 100% 100%;
+  }
+}

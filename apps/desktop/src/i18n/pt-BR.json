@@ -665,7 +665,85 @@
     }
   },
   "onboarding": {
-    "title": "Boas-vindas"
+    "title": "Introdução",
+    "stepper": {
+      "label": "Etapas da introdução",
+      "current": "Etapa {{n}} de {{total}}: {{name}}",
+      "steps": {
+        "welcome": "Boas-vindas",
+        "driver": "Driver",
+        "network": "Rede",
+        "connect": "Celular",
+        "done": "Pronto"
+      }
+    },
+    "nav": {
+      "back": "Voltar",
+      "next": "Continuar",
+      "skip": "Pular por enquanto",
+      "finish": "Começar",
+      "withoutDriver": "Continuar sem driver"
+    },
+    "welcome": {
+      "title": "Seu celular é o controle",
+      "description": "O PadGaming transforma o celular em um controle de Xbox 360 para os jogos do Windows. Vamos deixar tudo pronto em poucos passos.",
+      "language": "Idioma"
+    },
+    "driver": {
+      "title": "Driver de controle virtual",
+      "what": "Os jogos só enxergam controles de verdade. O ViGEmBus é um driver gratuito que cria controles de Xbox 360 virtuais, e é por ele que o PadGaming entrega o que o celular manda.",
+      "checking": "Verificando…",
+      "ready": "Driver instalado e funcionando.",
+      "missing": "O driver ainda não está instalado.",
+      "outdated": "O driver instalado é antigo ({{found}}). Precisa da versão {{required}} ou mais nova.",
+      "stopped": "O driver está instalado, mas parado. Reinicie o PC ou o serviço ViGEmBus.",
+      "error": "Não consegui verificar o driver: {{message}}",
+      "download": "Baixar o ViGEmBus",
+      "afterInstall": "Depois de instalar, volte aqui: o PadGaming percebe sozinho.",
+      "warning": "Sem o driver, o PadGaming não cria controles para os jogos."
+    },
+    "network": {
+      "title": "Rede",
+      "description": "O celular precisa alcançar este PC pela rede local (Wi-Fi).",
+      "name": "Nome",
+      "address": "Endereço",
+      "noAddress": "Sem rede local. Conecte o PC ao Wi-Fi ou à rede cabeada.",
+      "firewallOk": "O firewall deixa o celular conectar.",
+      "firewallBlocked": "O firewall do Windows está bloqueando o PadGaming.",
+      "firewallOff": "O firewall está desligado.",
+      "notApplicable": "Este sistema não usa o firewall do Windows.",
+      "allow": "Permitir conexões",
+      "allowing": "Permitindo…",
+      "allowed": "Pronto, conexões permitidas.",
+      "cancelled": "A permissão de administrador foi recusada. Dá para tentar de novo.",
+      "public": "Uma das suas redes está como pública, e nela o celular não conecta.",
+      "openNetwork": "Abrir configurações de rede",
+      "recheck": "Verificar de novo",
+      "failed": "Não consegui verificar o firewall."
+    },
+    "connect": {
+      "title": "Conecte o celular",
+      "description": "Abra o PadGaming no celular, na mesma rede Wi-Fi, e escaneie o código ou digite o PIN.",
+      "getApp": "Ainda não tem o app? Ele chega em breve à Play Store.",
+      "nearby": "Celulares por perto",
+      "nearbyEmpty": "Nenhum celular com o PadGaming aberto por perto ainda.",
+      "successHint": "O controle P1 já está respondendo. Aperte um botão no celular."
+    },
+    "done": {
+      "title": "Tudo pronto",
+      "summary": "Resumo",
+      "driver": "Driver",
+      "network": "Firewall",
+      "devices": "Celulares pareados",
+      "ok": "ok",
+      "pending": "pendente",
+      "tipsTitle": "Dicas",
+      "tipWifi": "Use o Wi-Fi de 5 GHz para menos atraso.",
+      "tipTray": "Fechar a janela deixa o PadGaming na bandeja; o clique direito no ícone mostra os controles.",
+      "tipShortcuts": "Ctrl+1 a Ctrl+5 trocam de seção.",
+      "autostart": "Iniciar com o Windows",
+      "startMinimized": "Iniciar minimizado na bandeja"
+    }
   },
   "tray": {
     "hint": "O PadGaming continua rodando na bandeja."

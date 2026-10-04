@@ -116,7 +116,7 @@ describe("shell", () => {
 
   it("o onboarding é tela cheia, sem sidebar", async () => {
     renderAt("/onboarding");
-    await screen.findByText("Esta tela chega na T-601.");
+    expect(await screen.findByRole("navigation", { name: "Etapas da introdução" })).toBeTruthy();
     expect(screen.queryByRole("navigation", { name: "Seções" })).toBeNull();
   });
 });
