@@ -6,6 +6,17 @@ $data = Join-Path $env:RUNNER_TEMP "vynpad-diag-data"
 $udf = Join-Path $env:RUNNER_TEMP "vynpad-diag-webview"
 New-Item -ItemType Directory -Force $data, $udf | Out-Null
 
+"== versões"
+(Get-ItemProperty 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}' -ErrorAction SilentlyContinue).pv
+Get-ChildItem "${env:ProgramFiles(x86)}\Microsoft\EdgeWebView\Application" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
+
+"== políticas do Edge e do WebView2 (registro)"
+foreach ($key in 'HKLM:\SOFTWARE\Policies\Microsoft\Edge', 'HKLM:\SOFTWARE\Policies\Microsoft\EdgeWebView', 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2', 'HKCU:\SOFTWARE\Policies\Microsoft\Edge', 'HKLM:\SOFTWARE\Policies\Google\Chrome') {
+  if (Test-Path $key) { "[$key]"; Get-ItemProperty $key | Format-List | Out-String } else { "(sem $key)" }
+}
+"== variáveis WEBVIEW2 / EDGE do ambiente"
+Get-ChildItem Env: | Where-Object { $_.Name -match 'WEBVIEW2|EDGE|CHROME' } | Format-Table -AutoSize | Out-String
+
 "== processos do WebView2 ANTES"
 Get-Process msedgewebview2 -ErrorAction SilentlyContinue | Select-Object Id, StartTime | Format-Table | Out-String
 
