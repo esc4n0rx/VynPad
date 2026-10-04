@@ -2,6 +2,7 @@
 //! controle. Implementa [`SlotProfiles`] (o que um dispositivo recebe ao conectar) e
 //! [`ProfileHost`] (a troca a quente quando um perfil é editado).
 
+use std::sync::atomic::{AtomicU16, Ordering};
 use std::sync::{Arc, Mutex, OnceLock, PoisonError, Weak};
 
 use padgaming_core::SlotManager;
@@ -12,15 +13,16 @@ use padgaming_net::control::{
 };
 use padgaming_protocol::control::{Config, Uuid};
 use padgaming_storage::seed::BUILTIN_PROFILE_ID;
-use padgaming_storage::{DeviceRepo, ProfileHost, ProfileService};
-
-/// Taxa máxima de envio sugerida ao client (Hz).
-const SEND_RATE_HZ: u16 = 250;
+use padgaming_storage::{AppSettings, DeviceRepo, ProfileHost, ProfileService};
 
 /// Os 4 `ProfileCell`s (um por slot) e qual perfil cada slot está usando.
 pub struct SlotRegistry {
     cells: Mutex<[Arc<ProfileCell>; 4]>,
     assigned: Mutex<[Option<String>; 4]>,
+    /// Taxa máxima de envio sugerida aos clients (Hz), das configurações.
+    send_rate_hz: AtomicU16,
+    /// Perfil dos dispositivos que não têm um padrão próprio (das configurações).
+    default_profile: Mutex<Option<String>>,
     slots: Arc<SlotManager>,
     devices: DeviceRepo,
     profiles: OnceLock<Weak<ProfileService>>,
@@ -33,6 +35,8 @@ impl SlotRegistry {
         Self {
             cells: Mutex::new([cell(), cell(), cell(), cell()]),
             assigned: Mutex::new(Default::default()),
+            send_rate_hz: AtomicU16::new(AppSettings::default().send_rate_hz),
+            default_profile: Mutex::new(None),
             slots,
             devices,
             profiles: OnceLock::new(),
@@ -58,10 +62,10 @@ impl SlotRegistry {
         self.assigned.lock().unwrap_or_else(PoisonError::into_inner)
     }
 
-    fn config_for(compiled: &CompiledProfile, slot: SlotId) -> Config {
+    fn config_for(&self, compiled: &CompiledProfile, slot: SlotId) -> Config {
         Config {
             slot: slot.index(),
-            send_rate_hz: SEND_RATE_HZ,
+            send_rate_hz: self.send_rate_hz.load(Ordering::Relaxed),
             gyro_enabled: compiled.gyro_enabled(),
             // O rumble chega com a T-204.
             rumble_enabled: false,
@@ -84,6 +88,32 @@ impl SlotRegistry {
 }
 
 impl SlotRegistry {
+    /// Aplica as configurações que mexem nos slots: o perfil dos dispositivos sem padrão próprio
+    /// e a taxa de envio (que, ao mudar, é reenviada na hora aos controles conectados).
+    pub(crate) fn apply_settings(&self, settings: &AppSettings) {
+        self.default_profile
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone_from(&settings.default_profile_id);
+        let previous = self
+            .send_rate_hz
+            .swap(settings.send_rate_hz, Ordering::Relaxed);
+        if previous != settings.send_rate_hz
+            && let Some(control) = self.control.get().and_then(Weak::upgrade)
+        {
+            for slot in self
+                .slots
+                .snapshot()
+                .slots
+                .iter()
+                .filter(|s| s.device.is_some())
+            {
+                let compiled = self.cells()[usize::from(slot.slot.index())].load();
+                control.send_config(slot.slot, self.config_for(&compiled, slot.slot));
+            }
+        }
+    }
+
     /// O perfil que cada slot está usando (`None` onde nunca houve um dispositivo).
     pub(crate) fn assigned_profiles(&self) -> [Option<String>; 4] {
         self.assigned().clone()
@@ -98,7 +128,7 @@ impl SlotRegistry {
         self.cells()[index].store(Arc::clone(&resolved.compiled));
         self.assigned()[index] = Some(resolved.id.clone());
         if let Some(control) = self.control.get().and_then(Weak::upgrade) {
-            control.send_config(slot, Self::config_for(&resolved.compiled, slot));
+            control.send_config(slot, self.config_for(&resolved.compiled, slot));
         }
         Some(resolved.id)
     }
@@ -113,7 +143,7 @@ impl SlotRegistry {
             let cells = self.cells();
             for slot in [a, b] {
                 let compiled = cells[usize::from(slot.index())].load();
-                control.send_config(slot, Self::config_for(&compiled, slot));
+                control.send_config(slot, self.config_for(&compiled, slot));
             }
         }
     }
@@ -135,7 +165,14 @@ impl SlotProfiles for SlotRegistry {
                 .await
                 .ok()
                 .flatten()
-                .and_then(|d| d.default_profile_id);
+                .and_then(|d| d.default_profile_id)
+                // Sem perfil próprio, vale o das configurações (Controles → perfil padrão).
+                .or_else(|| {
+                    self.default_profile
+                        .lock()
+                        .unwrap_or_else(PoisonError::into_inner)
+                        .clone()
+                });
             let (id, compiled) = match self.profiles.get().and_then(Weak::upgrade) {
                 Some(profiles) => {
                     let resolved = profiles.resolve_or_default(default_id.as_deref()).await;
@@ -151,7 +188,7 @@ impl SlotProfiles for SlotRegistry {
             cell.store(Arc::clone(&compiled));
             self.assigned()[index] = Some(id);
             SlotSetup {
-                config: Self::config_for(&compiled, slot),
+                config: self.config_for(&compiled, slot),
                 profile: cell,
             }
         })
@@ -165,7 +202,7 @@ impl ProfileHost for SlotRegistry {
             // O gyro pode ter ligado ou desligado: o client passa a mandar (ou parar de mandar)
             // pacotes com motion.
             if let Some(control) = self.control.get().and_then(Weak::upgrade) {
-                control.send_config(slot, Self::config_for(&compiled, slot));
+                control.send_config(slot, self.config_for(&compiled, slot));
             }
         }
     }
@@ -180,7 +217,7 @@ impl ProfileHost for SlotRegistry {
             self.cells()[index].store(Arc::clone(&fallback));
             self.assigned()[index] = Some(BUILTIN_PROFILE_ID.to_owned());
             if let Some(control) = self.control.get().and_then(Weak::upgrade) {
-                control.send_config(slot, Self::config_for(&fallback, slot));
+                control.send_config(slot, self.config_for(&fallback, slot));
             }
         }
     }

@@ -11,7 +11,7 @@ import { useSlots } from "./slots";
 
 vi.mock("@/lib/bindings", async () => (await import("@/test/bindings-mock")).bindingsMock);
 
-const EVENT_COUNT = 15;
+const EVENT_COUNT = 16;
 
 const slots: SlotsDto = {
   free_count: 3,

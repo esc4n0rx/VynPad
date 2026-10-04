@@ -28,6 +28,8 @@ pub enum ErrorCode {
     ImportInvalid,
     /// Sem rede local para o QR code.
     NoNetwork,
+    /// O usuário recusou o pedido de permissão do Windows (UAC).
+    Cancelled,
 }
 
 impl ErrorCode {
@@ -41,6 +43,7 @@ impl ErrorCode {
             Self::ProfileInUse => "errors.profile_in_use",
             Self::ImportInvalid => "errors.import_invalid",
             Self::NoNetwork => "errors.no_network",
+            Self::Cancelled => "errors.cancelled",
         }
     }
 }

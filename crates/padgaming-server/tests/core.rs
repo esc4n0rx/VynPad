@@ -782,6 +782,137 @@ async fn hidden_window_gets_far_fewer_metric_events() {
     assert!(ticks <= 1, "{ticks} eventos com a janela escondida");
 }
 
+#[tokio::test(flavor = "multi_thread")]
+async fn the_default_profile_from_the_settings_goes_to_devices_without_one() {
+    let rig = rig().await;
+    let mirrored = rig
+        .core
+        .profiles()
+        .create(profile_input("Espelhado", |p| {
+            p.sticks.left.invert_x = true;
+        }))
+        .await
+        .unwrap();
+    rig.core
+        .settings()
+        .modify(|s| s.default_profile_id = Some(mirrored.summary.id.clone()))
+        .await
+        .unwrap();
+    // O pump das configurações aplica de forma assíncrona.
+    tokio::time::sleep(Duration::from_millis(100)).await;
+
+    let session = welcomed(&rig, 1).await;
+    assert_eq!(
+        rig.core.slot_profiles()[0].as_deref(),
+        Some(mirrored.summary.id.as_str())
+    );
+    let stop = Arc::new(AtomicBool::new(false));
+    let client = hold(&rig, &session, 0.5, Arc::clone(&stop));
+    eventually("analógico espelhado", || lx(&rig, 0) < -5_000).await;
+    stop.store(true, Ordering::Relaxed);
+    client.join().unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn changing_the_send_rate_in_the_settings_reaches_the_connected_client() {
+    let rig = rig().await;
+    let session = welcomed(&rig, 1).await;
+    assert_eq!(session.welcome.config.send_rate_hz, 250);
+
+    rig.core
+        .settings()
+        .modify(|s| s.send_rate_hz = 125)
+        .await
+        .unwrap();
+    let config = tokio::task::spawn_blocking(move || {
+        let mut session = session;
+        loop {
+            if let ControlMessage::Config(config) = session.recv(Duration::from_secs(3)).unwrap() {
+                return config;
+            }
+        }
+    })
+    .await
+    .unwrap();
+    assert_eq!(config.send_rate_hz, 125);
+    assert_eq!(config.slot, 0);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_reservation_time_from_the_settings_reaches_the_slots() {
+    let rig = rig().await;
+    assert_eq!(rig.core.slots().reconnect_window(), Duration::from_secs(30));
+    rig.core
+        .settings()
+        .modify(|s| s.reservation_secs = 45)
+        .await
+        .unwrap();
+    eventually("prazo novo", || {
+        rig.core.slots().reconnect_window() == Duration::from_secs(45)
+    })
+    .await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn clearing_the_history_erases_every_event() {
+    let mut rig = rig().await;
+    let session = welcomed(&rig, 1).await;
+    next_matching(&mut rig.events, |e| {
+        matches!(e, CoreEvent::Control(ControlEvent::SessionStarted { .. })).then_some(())
+    })
+    .await;
+    eventually_async("evento no histórico", || async {
+        !rig.core
+            .log()
+            .list(&LogQuery::default())
+            .await
+            .unwrap()
+            .is_empty()
+    })
+    .await;
+
+    assert!(rig.core.clear_history().await.unwrap() > 0);
+    assert!(
+        rig.core
+            .log()
+            .list(&LogQuery::default())
+            .await
+            .unwrap()
+            .is_empty()
+    );
+    drop(session);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn regenerating_the_identity_forgets_every_device_and_ends_their_sessions() {
+    let rig = rig().await;
+    let session = welcomed(&rig, 1).await;
+    assert_eq!(rig.core.devices().list().await.unwrap().len(), 1);
+    let before = std::fs::read(rig.dir.path().join("server.crt")).unwrap();
+
+    rig.core.regenerate_identity().await.unwrap();
+
+    assert!(rig.core.devices().list().await.unwrap().is_empty());
+    let after = std::fs::read(rig.dir.path().join("server.crt")).unwrap();
+    assert_ne!(before, after, "o certificado mudou");
+    let message = tokio::task::spawn_blocking(move || {
+        let mut session = session;
+        loop {
+            match session.recv(Duration::from_secs(3)).unwrap() {
+                ControlMessage::Ping => {}
+                other => return other,
+            }
+        }
+    })
+    .await
+    .unwrap();
+    assert!(matches!(message, ControlMessage::Bye(b) if b.reason == ByeReason::Revoked));
+    eventually("slots livres", || {
+        rig.core.slots().snapshot().free_count() == 4
+    })
+    .await;
+}
+
 // ------------------------------------------------------------------ confirmação e configurações
 
 #[tokio::test(flavor = "multi_thread")]

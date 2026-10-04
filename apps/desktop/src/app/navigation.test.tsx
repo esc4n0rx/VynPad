@@ -96,8 +96,12 @@ describe("shell", () => {
     expect(await screen.findByRole("complementary", { name: "Lista de perfis" })).toBeTruthy();
 
     fireEvent.keyDown(window, { key: ",", ctrlKey: true });
-    await screen.findByText("Esta tela chega na T-605.");
-    expect(router.state.location.pathname).toBe("/settings");
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe("/settings");
+    });
+    expect(
+      await screen.findByRole("navigation", { name: "Seções das configurações" }),
+    ).toBeTruthy();
   });
 
   it("recolhe a sidebar para só ícones em janelas estreitas", async () => {

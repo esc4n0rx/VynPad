@@ -132,7 +132,7 @@ flowchart TD
 | [T-602](../tasks/F6-features/T-602-dashboard.md) | Dashboard dos 4 slots | P0 | M | T-203, T-505, T-506 | 🟨 |
 | [T-603](../tasks/F6-features/T-603-dispositivos-pareamento.md) | Dispositivos: próximos, pareados, parear | P0 | G | T-103, T-303, T-403 | 🟨 |
 | [T-604](../tasks/F6-features/T-604-editor-mapeamento.md) | Editor de mapeamento e perfis | P0 | G | T-206, T-403, T-505 | 🟨 |
-| [T-605](../tasks/F6-features/T-605-configuracoes.md) | Configurações | P1 | M | T-403, T-504 | ⬜ |
+| [T-605](../tasks/F6-features/T-605-configuracoes.md) | Configurações | P1 | M | T-403, T-504 | 🟨 |
 | [T-606](../tasks/F6-features/T-606-monitor-latencia.md) | Monitor de latência | P1 | M | T-305, T-503 | 🟨 |
 | [T-607](../tasks/F6-features/T-607-tray-autostart.md) | Tray, autostart, iniciar minimizado | P1 | M | T-503 | ⬜ |
 | [T-608](../tasks/F6-features/T-608-notificacoes.md) | Notificações e toasts | P2 | P | T-602 | ⬜ |

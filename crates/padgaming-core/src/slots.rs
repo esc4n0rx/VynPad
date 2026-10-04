@@ -234,11 +234,16 @@ struct Inner {
 pub struct SlotManager {
     driver: Arc<dyn VirtualPadDriver>,
     clock: Arc<dyn Clock>,
-    config: SlotConfig,
+    /// Janela de reconexão em ms (muda em tempo de execução, pelas configurações).
+    reconnect_ms: AtomicU64,
     inner: Mutex<Inner>,
     hot: ArcSwap<HotTable>,
     snapshot: ArcSwap<SlotsSnapshot>,
     subscribers: Mutex<Vec<Sender<Arc<SlotsSnapshot>>>>,
+}
+
+fn duration_ms(d: Duration) -> u64 {
+    u64::try_from(d.as_millis()).unwrap_or(u64::MAX)
 }
 
 fn slot_id(index: usize) -> SlotId {
@@ -264,12 +269,27 @@ impl SlotManager {
         Self {
             driver,
             clock,
-            config,
+            reconnect_ms: AtomicU64::new(duration_ms(config.reconnect_window)),
             inner: Mutex::new(empty),
             hot: ArcSwap::from_pointee(Default::default()),
             snapshot: ArcSwap::from_pointee(snapshot),
             subscribers: Mutex::new(Vec::new()),
         }
+    }
+
+    /// Quanto tempo o slot fica reservado depois da queda da sessão.
+    pub fn reconnect_window(&self) -> Duration {
+        Duration::from_millis(self.reconnect_ms.load(Ordering::Relaxed))
+    }
+
+    /// Muda a janela de reconexão. Vale para as próximas quedas e para as reservas em andamento
+    /// (o prazo de cada uma é contado a partir da queda).
+    pub fn set_reconnect_window(&self, window: Duration) {
+        self.reconnect_ms
+            .store(duration_ms(window), Ordering::Relaxed);
+        // As contagens regressivas da UI dependem do prazo: publica uma foto nova.
+        let inner = self.lock();
+        self.publish(&inner);
     }
 
     fn lock(&self) -> MutexGuard<'_, Inner> {
@@ -469,7 +489,7 @@ impl SlotManager {
 
     fn expire_locked(&self, inner: &mut Inner) -> Vec<SlotId> {
         let now = self.clock.now();
-        let window = self.config.reconnect_window;
+        let window = self.reconnect_window();
         let expired: Vec<usize> = (0..N)
             .filter(|i| {
                 matches!(
@@ -609,7 +629,7 @@ impl SlotManager {
         let snapshot = Arc::new(build_snapshot(
             inner,
             self.driver.as_ref(),
-            self.config.reconnect_window,
+            self.reconnect_window(),
         ));
         self.snapshot.store(Arc::clone(&snapshot));
         self.subscribers

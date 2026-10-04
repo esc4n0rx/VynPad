@@ -99,6 +99,15 @@ impl ConnectionLog {
         Ok(())
     }
 
+    /// Apaga todo o histórico. Devolve quantas linhas saíram.
+    pub async fn clear(&self) -> Result<u64, DataError> {
+        // Sem `query!`: o `.sqlx` offline não precisa de uma entrada para uma consulta fixa.
+        let done = sqlx::query("DELETE FROM connection_log")
+            .execute(&self.pool)
+            .await?;
+        Ok(done.rows_affected())
+    }
+
     /// As linhas mais recentes primeiro.
     pub async fn list(&self, query: &LogQuery) -> Result<Vec<LogEntry>, DataError> {
         let limit = i64::from(match query.limit {

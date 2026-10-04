@@ -244,6 +244,14 @@ impl DeviceRepo {
         Ok(())
     }
 
+    /// Esquece todos os dispositivos (e o histórico deles). Devolve quantos saíram.
+    pub async fn forget_all(&self) -> Result<u64, DataError> {
+        let done = sqlx::query("DELETE FROM devices")
+            .execute(&self.pool)
+            .await?;
+        Ok(done.rows_affected())
+    }
+
     /// Define slot preferido, perfil padrão e cor.
     pub async fn set_defaults(&self, id: &str, defaults: &DeviceDefaults) -> Result<(), DataError> {
         if let Some(slot) = defaults.preferred_slot

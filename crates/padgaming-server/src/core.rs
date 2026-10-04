@@ -114,6 +114,7 @@ pub struct Core {
     identity: ServerIdentity,
     config_pairing: padgaming_net::pairing::PairingConfig,
     ports: BoundPorts,
+    data_dir: std::path::PathBuf,
     stop: Arc<AtomicBool>,
     tasks: Vec<JoinHandle<()>>,
     threads: Vec<ThreadHandle<()>>,
@@ -155,6 +156,8 @@ impl Core {
         let registry = Arc::new(SlotRegistry::new(Arc::clone(&slots), devices.clone()));
         let profiles = Arc::new(ProfileService::new(pool.clone(), registry.clone()));
         registry.connect_profiles(&profiles);
+        registry.apply_settings(&current);
+        slots.set_reconnect_window(Duration::from_secs(u64::from(current.reservation_secs)));
 
         let ports = config.ports_override.unwrap_or(current.ports);
         let input = Arc::new(InputServer::start(
@@ -172,7 +175,12 @@ impl Core {
         );
         let pairing = Arc::new(PairingManager::new(adapter, config.pairing));
 
-        let server_name = config.server_name.clone().unwrap_or_else(computer_name);
+        // O nome das configurações vale ao abrir o app; vazio, o nome do computador.
+        let server_name = config
+            .server_name
+            .clone()
+            .or_else(|| Some(current.server_name.trim().to_owned()).filter(|n| !n.is_empty()))
+            .unwrap_or_else(computer_name);
         let control = Arc::new(
             ControlServer::start(
                 padgaming_net::control::ControlConfig {
@@ -261,6 +269,7 @@ impl Core {
             identity,
             config_pairing: config.pairing,
             ports: bound,
+            data_dir: config.data_dir.clone(),
             stop: Arc::clone(&stop),
             tasks: Vec::new(),
             threads: vec![follower],
@@ -280,6 +289,8 @@ impl Core {
         self.tasks.push(tokio::spawn(settings_pump(
             Arc::clone(&self.shared),
             Arc::clone(&self.control),
+            Arc::clone(&self.registry),
+            Arc::clone(&self.slots),
             self.settings.subscribe(),
         )));
         // Métricas de latência dos slots.
@@ -542,6 +553,29 @@ impl Core {
             )))
     }
 
+    /// Apaga o histórico de conexões. Devolve quantas linhas saíram.
+    pub async fn clear_history(&self) -> Result<u64, CoreError> {
+        Ok(self.shared.log.clear().await?)
+    }
+
+    /// Gera uma identidade nova (certificado e id do server) e esquece todos os dispositivos
+    /// pareados: nenhum celular reconhece mais este PC, então todos precisam parear de novo.
+    ///
+    /// A identidade antiga continua valendo na memória até o app reabrir (o TLS já está de pé),
+    /// por isso a UI oferece reiniciar. As sessões em andamento são encerradas.
+    pub async fn regenerate_identity(&self) -> Result<(), CoreError> {
+        ServerIdentity::regenerate(&self.data_dir)?;
+        self.shared.devices.forget_all().await?;
+        self.shared.paired.replace(std::iter::empty::<String>());
+        for slot in &self.slots.snapshot().slots {
+            if let Ok(Some(session)) = self.slots.disconnect_slot(slot.slot) {
+                self.control.end_session(session, ByeReason::Revoked);
+            }
+        }
+        self.shared.emit(CoreEvent::DevicesChanged);
+        Ok(())
+    }
+
     /// Libera o slot de `id` e encerra a sessão dele, se houver.
     fn drop_device_sessions(&self, id: &str, reason: ByeReason) {
         for slot in &self.slots.snapshot().slots {
@@ -708,12 +742,18 @@ const fn end_reason(reason: SessionEnd) -> &'static str {
 async fn settings_pump(
     shared: Arc<Shared>,
     control: Arc<ControlServer>,
+    registry: Arc<SlotRegistry>,
+    slots: Arc<SlotManager>,
     mut changes: broadcast::Receiver<Arc<padgaming_storage::AppSettings>>,
 ) {
     loop {
         match changes.recv().await {
             Ok(settings) => {
                 control.set_require_approval(settings.require_approval);
+                registry.apply_settings(&settings);
+                slots.set_reconnect_window(Duration::from_secs(u64::from(
+                    settings.reservation_secs,
+                )));
                 shared.emit(CoreEvent::Settings(settings));
             }
             Err(broadcast::error::RecvError::Lagged(_)) => {}

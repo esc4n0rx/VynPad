@@ -211,7 +211,16 @@ html[data-corners="css"]:not([data-maximized="true"]) #root {
   backdrop-filter: blur(var(--blur)) saturate(1.4);
 }
 
-/* Sem deslocamento nem animação longa para quem pediu menos movimento. */
+/* Sem deslocamento nem animação longa para quem pediu menos movimento (no sistema ou no app). */
+:root[data-reduce-motion="true"] *,
+:root[data-reduce-motion="true"] *::before,
+:root[data-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

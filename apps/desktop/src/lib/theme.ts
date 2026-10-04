@@ -18,3 +18,15 @@ export function applyAccent(color: string, root: HTMLElement = document.document
   root.style.setProperty("--accent", accent);
   return accent;
 }
+
+/** A paleta de destaque do macOS (valores do tema escuro): `id` é a chave do nome no i18n. */
+export const ACCENT_PALETTE = [
+  { id: "blue", color: DEFAULT_ACCENT },
+  { id: "purple", color: "#BF5AF2" },
+  { id: "pink", color: "#FF375F" },
+  { id: "red", color: "#FF453A" },
+  { id: "orange", color: "#FF9F0A" },
+  { id: "yellow", color: "#FFD60A" },
+  { id: "green", color: "#30D158" },
+  { id: "graphite", color: "#8E8E93" },
+] as const;

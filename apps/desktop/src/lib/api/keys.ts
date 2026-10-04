@@ -10,6 +10,8 @@ export const keys = {
   serverInfo: ["server_info"] as const,
   driver: ["driver"] as const,
   slotProfiles: ["slot_profiles"] as const,
+  firewall: ["firewall"] as const,
+  logsDir: ["logs_dir"] as const,
   xinput: ["xinput"] as const,
   networkInterfaces: ["network_interfaces"] as const,
 };

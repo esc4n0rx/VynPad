@@ -13,7 +13,7 @@ pub const BUILTIN_PROFILE_NAME: &str = "Padrão";
 
 /// Configurações iniciais: chave e valor em JSON. Só são gravadas se a chave não existir: o que
 /// o usuário mudou nunca é sobrescrito.
-pub const DEFAULT_SETTINGS: [(&str, &str); 8] = [
+pub const DEFAULT_SETTINGS: [(&str, &str); 15] = [
     ("language", r#""pt-BR""#),
     ("theme", r#""dark""#),
     ("accent", r##""#0A84FF""##),
@@ -25,6 +25,13 @@ pub const DEFAULT_SETTINGS: [(&str, &str); 8] = [
     ("start_minimized", "false"),
     ("onboarding_completed", "false"),
     ("require_approval", "false"),
+    ("server_name", r#""""#),
+    ("close_to_tray", "true"),
+    ("default_profile_id", "null"),
+    ("send_rate_hz", "250"),
+    ("reservation_secs", "30"),
+    ("transparency", "true"),
+    ("reduce_motion", "false"),
 ];
 
 /// Quanto tempo o `connection_log` guarda (30 dias).

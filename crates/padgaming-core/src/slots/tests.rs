@@ -521,3 +521,23 @@ fn live_report_mirrors_the_last_state_sent_to_the_pad() {
     f.manager.release(7);
     assert_eq!(f.manager.live_report(slot(0)), None);
 }
+
+#[test]
+fn the_reconnect_window_can_change_while_running() {
+    let f = fixture();
+    assert_eq!(f.manager.reconnect_window(), Duration::from_secs(30));
+    f.manager.assign(&device(1), 1, None).unwrap();
+    f.manager.submit(1, &PRESSED).unwrap();
+    f.manager.suspend(1);
+
+    // Com 60 s a reserva de 30 s ainda vale; a foto já mostra o prazo novo.
+    f.manager.set_reconnect_window(Duration::from_secs(60));
+    f.clock.advance(Duration::from_secs(40));
+    assert!(f.manager.tick().is_empty());
+    assert!(matches!(state(&f, 0), SlotView::Suspended { .. }));
+
+    // Voltando para 10 s, a reserva (que já tem 40 s) vence na próxima conferência.
+    f.manager.set_reconnect_window(Duration::from_secs(10));
+    assert_eq!(f.manager.tick(), [slot(0)]);
+    assert_eq!(state(&f, 0), SlotView::Free);
+}

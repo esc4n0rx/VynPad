@@ -426,7 +426,243 @@
     }
   },
   "settings": {
-    "title": "Settings"
+    "title": "Settings",
+    "search": {
+      "label": "Search settings",
+      "placeholder": "Search",
+      "empty": "Nothing found for “{{query}}”."
+    },
+    "nav": "Settings sections",
+    "sections": {
+      "general": "General",
+      "network": "Network",
+      "controls": "Controllers",
+      "appearance": "Appearance",
+      "language": "Language",
+      "privacy": "Privacy and security",
+      "about": "About"
+    },
+    "items": {
+      "serverName": {
+        "label": "Server name",
+        "hint": "The name the phone shows. Empty uses the computer name. Takes effect the next time the app opens."
+      },
+      "autostart": {
+        "label": "Start with Windows",
+        "hint": "Opens PadGaming when you sign in to Windows."
+      },
+      "startMinimized": {
+        "label": "Start minimized",
+        "hint": "Opens straight to the tray, without showing the window."
+      },
+      "closeToTray": {
+        "label": "Closing goes to the tray",
+        "hint": "When you close the window the app keeps running so phones stay connected."
+      },
+      "requireApproval": {
+        "label": "Ask before accepting new devices",
+        "hint": "A new phone only joins after you allow it."
+      },
+      "redoIntro": {
+        "label": "Redo the introduction",
+        "hint": "Shows the first-run walkthrough again."
+      },
+      "ports": {
+        "label": "Ports",
+        "hint": "Control channel (TCP), input (UDP) and discovery (UDP). New ports take effect after the app restarts."
+      },
+      "interfaces": {
+        "label": "Network interfaces",
+        "hint": "This PC’s addresses on the local network, to connect a phone manually."
+      },
+      "testConnection": {
+        "label": "Test connection",
+        "hint": "Checks that the control channel and discovery answer on the local network."
+      },
+      "firewall": {
+        "label": "Windows Firewall",
+        "hint": "PadGaming needs inbound rules so the phone can reach the PC."
+      },
+      "driver": {
+        "label": "Virtual controller driver (ViGEmBus)",
+        "hint": "Creates the Xbox 360 controllers that games see."
+      },
+      "defaultProfile": {
+        "label": "Default profile for new devices",
+        "hint": "The mapping a new phone gets until you pick another for it."
+      },
+      "sendRate": {
+        "label": "Suggested send rate",
+        "hint": "How many times per second the phone sends the controller state. 250 Hz is more precise; 125 Hz saves battery and network."
+      },
+      "reservation": {
+        "label": "Slot reservation time",
+        "hint": "How long the controller waits for the phone to come back after a drop."
+      },
+      "theme": {
+        "label": "Theme",
+        "hint": "Dark, light or the same as the system."
+      },
+      "accent": {
+        "label": "Accent color",
+        "hint": "The color of buttons, selections and focus."
+      },
+      "transparency": {
+        "label": "Transparency",
+        "hint": "Glass effect (Mica or Acrylic) on the window."
+      },
+      "reduceMotion": {
+        "label": "Reduce motion",
+        "hint": "Fewer animations in the interface."
+      },
+      "language": {
+        "label": "Language",
+        "hint": "The app language."
+      },
+      "clearHistory": {
+        "label": "Clear history",
+        "hint": "Erases the list of connections, disconnections and refusals."
+      },
+      "regenerateIdentity": {
+        "label": "Regenerate the server identity",
+        "hint": "Creates a new certificate. Every paired phone stops recognizing this PC and must pair again."
+      },
+      "version": {
+        "label": "Version",
+        "hint": "App and core versions."
+      },
+      "logs": {
+        "label": "Logs folder",
+        "hint": "Where the diagnostic records are kept."
+      },
+      "updates": {
+        "label": "Updates",
+        "hint": "Look for a new PadGaming version."
+      },
+      "diagnostic": {
+        "label": "Export diagnostics",
+        "hint": "Bundles logs and system info into a file for support."
+      },
+      "licenses": {
+        "label": "Third-party licenses",
+        "hint": "Third-party components PadGaming uses, including ViGEmBus."
+      }
+    },
+    "general": {
+      "serverNamePlaceholder": "Computer name",
+      "redoIntroButton": "Redo"
+    },
+    "network": {
+      "ports": {
+        "control": "Control (TCP)",
+        "input": "Input (UDP)",
+        "discovery": "Discovery (UDP)",
+        "apply": "Apply ports",
+        "invalidRange": "Use ports from 1024 to 65535.",
+        "duplicate": "The three ports must be different.",
+        "mdns": "Port 5353 is used by mDNS.",
+        "pending": "The new ports take effect after the app restarts.",
+        "restart": "Restart now"
+      },
+      "interfaces": {
+        "empty": "No local network found.",
+        "auto": "In use",
+        "virtual": "Virtual",
+        "copy": "Copy {{ip}}",
+        "copied": "Copied"
+      },
+      "test": {
+        "run": "Test",
+        "running": "Testing…",
+        "ok": "Answered",
+        "fail": "No answer",
+        "noNetwork": "No local network to test."
+      },
+      "firewall": {
+        "ok": "The firewall does not block PadGaming.",
+        "off": "The firewall is off.",
+        "blocked": "Some ports are blocked.",
+        "notApplicable": "This system doesn’t use the Windows Firewall.",
+        "fix": "Fix",
+        "fixing": "Fixing…",
+        "fixed": "Rules created.",
+        "port": "{{protocol}} {{port}}",
+        "allowed": "allowed",
+        "blockedPort": "blocked",
+        "public": "One of your networks is set to public, and the firewall blocks the phone on it.",
+        "openNetwork": "Open network settings",
+        "cancelled": "The administrator permission was declined."
+      }
+    },
+    "controls": {
+      "driver": {
+        "ready": "Installed and working",
+        "download": "Download ViGEmBus",
+        "reinstall": "Reinstall"
+      },
+      "defaultProfile": {
+        "appDefault": "App default"
+      },
+      "sendRate": {
+        "hz": "{{hz}} Hz"
+      },
+      "reservation": {
+        "seconds": "{{seconds}} s"
+      }
+    },
+    "appearance": {
+      "theme": {
+        "dark": "Dark",
+        "light": "Light",
+        "system": "System"
+      },
+      "accent": {
+        "blue": "Blue",
+        "purple": "Purple",
+        "pink": "Pink",
+        "red": "Red",
+        "orange": "Orange",
+        "yellow": "Yellow",
+        "green": "Green",
+        "graphite": "Graphite",
+        "custom": "Custom",
+        "customLabel": "Custom color",
+        "group": "Accent color"
+      }
+    },
+    "language": {
+      "pt-BR": "Português (Brasil)",
+      "en": "English"
+    },
+    "privacy": {
+      "clear": {
+        "button": "Clear history",
+        "title": "Clear the history?",
+        "body": "The connection list is erased for good.",
+        "confirm": "Clear",
+        "done": "History cleared ({{count}} records)."
+      },
+      "regenerate": {
+        "button": "Regenerate identity",
+        "title": "Regenerate the server identity?",
+        "body": "Every paired phone is forgotten and must pair again, and the app must restart. This can’t be undone.",
+        "confirm": "Regenerate",
+        "done": "New identity created.",
+        "restartTitle": "Restart the app?",
+        "restartBody": "The new identity only applies after a restart. The phones were disconnected.",
+        "restartNow": "Restart now",
+        "later": "Later"
+      },
+      "cancel": "Cancel"
+    },
+    "about": {
+      "version": "App {{app}} · Core {{core}}",
+      "openLogs": "Open logs folder",
+      "logsPath": "Folder: {{path}}",
+      "soon": "Coming soon",
+      "licensesShow": "Show licenses",
+      "licensesHide": "Hide licenses"
+    }
   },
   "onboarding": {
     "title": "Welcome"
@@ -443,6 +679,7 @@
     "builtin_profile": "The Default profile belongs to the app and can't be edited or deleted. Duplicate it to customize.",
     "profile_in_use": "This profile is in use.",
     "import_invalid": "The file is not a valid PadGaming profile.",
-    "no_network": "No local network found. Connect the PC to Wi-Fi or a wired network."
+    "no_network": "No local network found. Connect the PC to Wi-Fi or a wired network.",
+    "cancelled": "The Windows permission was declined."
   }
 }

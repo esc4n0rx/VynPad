@@ -57,6 +57,34 @@ export const commands = {
 	getMetrics: () => __TAURI_INVOKE<MetricsDto>("get_metrics"),
 	/**  A janela está à vista ou escondida: escondida, as métricas saem a 0,2 Hz em vez de 4 Hz. */
 	setUiVisible: (visible: boolean) => __TAURI_INVOKE<void>("set_ui_visible", { visible }),
+	/**  Lê o estado do firewall (COM no Windows; em outros sistemas, "não se aplica"). */
+	firewallStatus: () => __TAURI_INVOKE<FirewallStatusDto>("firewall_status"),
+	/**
+	 *  Cria as regras do app no firewall, pedindo permissão de administrador (UAC) uma vez, e
+	 *  devolve o estado depois. Recusar o UAC devolve `cancelled`.
+	 */
+	fixFirewall: () => __TAURI_INVOKE<FirewallStatusDto>("fix_firewall"),
+	/**
+	 *  "Testar conexão": confere, pela interface de LAN, se o canal de controle e o respondedor de
+	 *  descoberta estão de pé. Não prova que o firewall deixa um celular entrar (isso só um aparelho
+	 *  externo prova).
+	 */
+	testConnection: () => __TAURI_INVOKE<ProbeDto[]>("test_connection"),
+	/**  Abre "Rede e Internet" do Windows (para trocar a rede pública por privada). */
+	openNetworkSettings: () => __TAURI_INVOKE<null>("open_network_settings"),
+	/**  Abre a pasta de logs no Explorer. */
+	openLogsDir: () => __TAURI_INVOKE<null>("open_logs_dir"),
+	/**  Onde ficam os logs (para mostrar na tela Sobre). */
+	logsDir: () => __TAURI_INVOKE<string | null>("logs_dir"),
+	/**  Apaga o histórico de conexões. Devolve quantas linhas saíram. */
+	clearHistory: () => __TAURI_INVOKE<number>("clear_history"),
+	/**
+	 *  Gera uma identidade nova para o server e esquece todos os dispositivos pareados. Vale por
+	 *  inteiro depois de reiniciar o app (`restart_app`).
+	 */
+	regenerateIdentity: () => __TAURI_INVOKE<null>("regenerate_identity"),
+	/**  Reinicia o app (a identidade nova e as portas só valem depois disso). */
+	restartApp: () => __TAURI_INVOKE<null>("restart_app"),
 	/**  Gera QR code e PIN. Cada chamada invalida o PIN anterior. */
 	startPairing: () => __TAURI_INVOKE<PairingOfferDto>("start_pairing"),
 	cancelPairing: () => __TAURI_INVOKE<void>("cancel_pairing"),
@@ -96,6 +124,7 @@ export const events = {
 	sessionState: makeEvent<SessionState>("session-state"),
 	settingsChanged: makeEvent<SettingsChanged>("settings-changed"),
 	slotsChanged: makeEvent<SlotsChanged>("slots-changed"),
+	windowChromeChanged: makeEvent<WindowChromeChanged>("window-chrome-changed"),
 };
 
 /* Types */
@@ -143,6 +172,23 @@ export type AppSettings = {
 	onboarding_completed?: boolean,
 	/**  Pedir confirmação para novos dispositivos. */
 	require_approval?: boolean,
+	/**
+	 *  Nome do server mostrado no celular; vazio usa o nome do computador. Vale na próxima
+	 *  vez que o app abrir.
+	 */
+	server_name?: string,
+	/**  Fechar a janela deixa o app na bandeja (em vez de encerrar). */
+	close_to_tray?: boolean,
+	/**  Perfil que um dispositivo novo (sem perfil próprio) recebe; `None` usa o "Padrão". */
+	default_profile_id?: string | null,
+	/**  Taxa máxima de envio sugerida aos clients, em Hz (125 ou 250). */
+	send_rate_hz?: number,
+	/**  Por quanto tempo o slot fica reservado depois da queda da conexão, em segundos. */
+	reservation_secs?: number,
+	/**  Efeito de vidro (Mica/Acrylic) na janela. */
+	transparency?: boolean,
+	/**  Reduz as animações da interface. */
+	reduce_motion?: boolean,
 };
 
 export type ApprovalPromptDto = {
@@ -298,7 +344,31 @@ export type ErrorCode = "internal" | "invalid_input" |
 /**  O arquivo `.padprofile` é inválido. */
 "import_invalid" | 
 /**  Sem rede local para o QR code. */
-"no_network";
+"no_network" | 
+/**  O usuário recusou o pedido de permissão do Windows (UAC). */
+"cancelled";
+
+/**  Uma porta de que o server precisa e se o firewall a libera. */
+export type FirewallPortDto = {
+	/**  Para que serve (texto técnico, em português). */
+	purpose: string,
+	port: number,
+	/**  `tcp` ou `udp`. */
+	protocol: string,
+	allowed: boolean,
+};
+
+/**  O estado do firewall do Windows para o `PadGaming`. */
+export type FirewallStatusDto = {
+	/**  O sistema tem o firewall do Windows (fora dele, nada a fazer). */
+	applicable: boolean,
+	firewall_on: boolean,
+	/**  Nada bloqueia o app: o firewall está desligado ou todas as portas estão liberadas. */
+	ok: boolean,
+	/**  Alguma rede ativa é pública: as regras do app não valem nela. */
+	public_network: boolean,
+	ports: FirewallPortDto[],
+};
 
 export type FrontendLogLevel = "error" | "warn" | "info" | "debug";
 
@@ -463,6 +533,12 @@ export type Ports = {
 	input: number,
 	/**  Descoberta por broadcast (UDP). */
 	discovery: number,
+};
+
+/**  O resultado de uma sonda do "Testar conexão". */
+export type ProbeDto = {
+	what: string,
+	ok: boolean,
 };
 
 /**  Perfil de mapeamento completo. */
@@ -705,6 +781,11 @@ export type Turbo = {
 export type WindowChrome = {
 	material: WindowMaterial,
 	corners: WindowCorners,
+};
+
+/**  O material da janela mudou (`window:chrome-changed`): a UI refaz o fundo e os cantos. */
+export type WindowChromeChanged = {
+	chrome: WindowChrome,
 };
 
 /**  Quem arredonda os cantos da janela. */

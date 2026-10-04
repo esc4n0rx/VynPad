@@ -4,8 +4,12 @@
 //! A janela é sem moldura e transparente; o que aparece "atrás" do React é decidido aqui e
 //! informado à UI por [`window_chrome`], que ajusta o CSS (`data-material` / `data-corners`).
 
-use serde::Serialize;
+use std::sync::{Mutex, PoisonError};
+
+use serde::{Deserialize, Serialize};
 use specta::Type;
+use tauri::{AppHandle, Manager, Runtime};
+use tauri_specta::Event;
 
 /// Primeiro build do Windows 11, a partir do qual o DWM arredonda os cantos e aceita o Mica.
 const WINDOWS_11_BUILD: u32 = 22_000;
@@ -16,7 +20,7 @@ const ACRYLIC_MIN_BUILD: u32 = 17_134;
 const ACRYLIC_TINT: (u8, u8, u8, u8) = (28, 28, 30, 90);
 
 /// O que fica atrás do conteúdo da janela.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Type)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "lowercase")]
 pub enum WindowMaterial {
     Mica,
@@ -25,7 +29,7 @@ pub enum WindowMaterial {
 }
 
 /// Quem arredonda os cantos da janela.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Type)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "lowercase")]
 pub enum WindowCorners {
     /// O DWM do Windows 11.
@@ -38,7 +42,7 @@ pub enum WindowCorners {
 }
 
 /// O que a UI precisa saber para pintar a janela.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Type)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
 pub struct WindowChrome {
     pub material: WindowMaterial,
     pub corners: WindowCorners,
@@ -65,10 +69,15 @@ pub fn choose_corners(build: Option<u32>, material: WindowMaterial) -> WindowCor
 }
 
 /// Aplica o material e devolve o que de fato ficou (cai para sólido se o sistema recusar).
+/// `transparency` é a preferência do app (Configurações → Aparência); o efeito só aparece se o
+/// Windows também estiver com os efeitos de transparência ligados.
 #[cfg(windows)]
-pub fn apply(window: &tauri::WebviewWindow) -> WindowChrome {
+pub fn apply<R: Runtime>(window: &tauri::WebviewWindow<R>, transparency: bool) -> WindowChrome {
     let build = windows_build();
-    let wanted = choose_material(build, transparency_enabled());
+    // Tira o efeito anterior antes de pôr (ou não) o novo: trocar a preferência vale na hora.
+    let _ = window_vibrancy::clear_mica(window);
+    let _ = window_vibrancy::clear_acrylic(window);
+    let wanted = choose_material(build, transparency && transparency_enabled());
     let applied = match wanted {
         WindowMaterial::Mica => window_vibrancy::apply_mica(window, Some(true)),
         WindowMaterial::Acrylic => window_vibrancy::apply_acrylic(window, Some(ACRYLIC_TINT)),
@@ -91,7 +100,7 @@ pub fn apply(window: &tauri::WebviewWindow) -> WindowChrome {
 
 /// Fora do Windows não há Mica/Acrylic: fundo sólido e cantos pelo CSS (Linux, T-803).
 #[cfg(not(windows))]
-pub fn apply(_window: &tauri::WebviewWindow) -> WindowChrome {
+pub fn apply<R: Runtime>(_window: &tauri::WebviewWindow<R>, _transparency: bool) -> WindowChrome {
     WindowChrome {
         material: WindowMaterial::Solid,
         corners: WindowCorners::Css,
@@ -129,8 +138,43 @@ fn transparency_enabled() -> bool {
         .map_or(true, |value| value != 0)
 }
 
-/// O material aplicado na janela principal, guardado como estado do app.
-pub struct ChromeState(pub WindowChrome);
+/// O material aplicado na janela principal, guardado como estado do app (muda com a preferência
+/// de transparência).
+pub struct ChromeState(pub Mutex<WindowChrome>);
+
+impl ChromeState {
+    pub fn new(chrome: WindowChrome) -> Self {
+        Self(Mutex::new(chrome))
+    }
+
+    fn get(&self) -> WindowChrome {
+        *self.0.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
+    fn set(&self, chrome: WindowChrome) {
+        *self.0.lock().unwrap_or_else(PoisonError::into_inner) = chrome;
+    }
+}
+
+/// O material da janela mudou (`window:chrome-changed`): a UI refaz o fundo e os cantos.
+#[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
+pub struct WindowChromeChanged {
+    pub chrome: WindowChrome,
+}
+
+/// Aplica de novo o material com a preferência `transparency`, guarda e avisa a UI.
+pub fn reapply<R: Runtime>(app: &AppHandle<R>, transparency: bool) {
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
+    let chrome = apply(&window, transparency);
+    if let Some(state) = app.try_state::<ChromeState>() {
+        state.set(chrome);
+    }
+    if let Err(error) = (WindowChromeChanged { chrome }).emit(app) {
+        tracing::warn!(%error, "não consegui avisar a UI do novo material da janela");
+    }
+}
 
 /// Como a janela está pintada, para a UI escolher fundo e cantos.
 // O Tauri injeta o `State` por valor.
@@ -138,7 +182,7 @@ pub struct ChromeState(pub WindowChrome);
 #[tauri::command]
 #[specta::specta]
 pub fn window_chrome(state: tauri::State<'_, ChromeState>) -> WindowChrome {
-    state.0
+    state.get()
 }
 
 #[cfg(test)]

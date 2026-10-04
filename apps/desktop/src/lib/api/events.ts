@@ -1,5 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { commands, events } from "@/lib/bindings";
+import { applyWindowChrome } from "@/lib/windowChrome";
 import { log } from "@/lib/log";
 import { keys } from "./keys";
 import { resetLiveSubscriptions, useLiveInput } from "./live";
@@ -67,6 +68,9 @@ async function register(queryClient: QueryClient): Promise<() => void> {
     }),
     events.driverChanged.listen((e) => {
       queryClient.setQueryData(keys.driver, e.payload.status);
+    }),
+    events.windowChromeChanged.listen((e) => {
+      applyWindowChrome(e.payload.chrome);
     }),
     events.metricsTick.listen((e) => {
       useMetrics.getState().set(e.payload.metrics);

@@ -426,7 +426,243 @@
     }
   },
   "settings": {
-    "title": "Configurações"
+    "title": "Configurações",
+    "search": {
+      "label": "Buscar nas configurações",
+      "placeholder": "Buscar",
+      "empty": "Nada encontrado para “{{query}}”."
+    },
+    "nav": "Seções das configurações",
+    "sections": {
+      "general": "Geral",
+      "network": "Rede",
+      "controls": "Controles",
+      "appearance": "Aparência",
+      "language": "Idioma",
+      "privacy": "Privacidade e segurança",
+      "about": "Sobre"
+    },
+    "items": {
+      "serverName": {
+        "label": "Nome do server",
+        "hint": "É o nome que o celular mostra. Vazio usa o nome do computador. Vale na próxima vez que o app abrir."
+      },
+      "autostart": {
+        "label": "Iniciar com o Windows",
+        "hint": "Abre o PadGaming quando você entra no Windows."
+      },
+      "startMinimized": {
+        "label": "Iniciar minimizado",
+        "hint": "Abre direto na bandeja, sem mostrar a janela."
+      },
+      "closeToTray": {
+        "label": "Fechar vai para a bandeja",
+        "hint": "Ao fechar a janela, o app continua rodando para os celulares seguirem conectados."
+      },
+      "requireApproval": {
+        "label": "Pedir aprovação para novos dispositivos",
+        "hint": "Um celular novo só entra depois de você permitir."
+      },
+      "redoIntro": {
+        "label": "Refazer a introdução",
+        "hint": "Mostra de novo o passo a passo inicial."
+      },
+      "ports": {
+        "label": "Portas",
+        "hint": "Canal de controle (TCP), input (UDP) e descoberta (UDP). Mudar as portas vale depois de reiniciar o app."
+      },
+      "interfaces": {
+        "label": "Interfaces de rede",
+        "hint": "Os endereços deste PC na rede local, para conectar um celular manualmente."
+      },
+      "testConnection": {
+        "label": "Testar conexão",
+        "hint": "Confere se o canal de controle e a descoberta respondem na rede local."
+      },
+      "firewall": {
+        "label": "Firewall do Windows",
+        "hint": "O PadGaming precisa de regras de entrada para o celular alcançar o PC."
+      },
+      "driver": {
+        "label": "Driver de controle virtual (ViGEmBus)",
+        "hint": "Cria os controles de Xbox 360 que os jogos enxergam."
+      },
+      "defaultProfile": {
+        "label": "Perfil padrão para novos dispositivos",
+        "hint": "O mapeamento que um celular novo recebe, enquanto você não escolher outro para ele."
+      },
+      "sendRate": {
+        "label": "Taxa de envio sugerida",
+        "hint": "Quantas vezes por segundo o celular manda o estado do controle. 250 Hz é mais preciso; 125 Hz poupa bateria e rede."
+      },
+      "reservation": {
+        "label": "Tempo de reserva do slot",
+        "hint": "Por quanto tempo o controle espera o celular voltar depois de uma queda."
+      },
+      "theme": {
+        "label": "Tema",
+        "hint": "Escuro, claro ou o mesmo do sistema."
+      },
+      "accent": {
+        "label": "Cor de destaque",
+        "hint": "A cor dos botões, seleções e foco."
+      },
+      "transparency": {
+        "label": "Transparência",
+        "hint": "Efeito de vidro (Mica ou Acrylic) na janela."
+      },
+      "reduceMotion": {
+        "label": "Reduzir movimento",
+        "hint": "Menos animações na interface."
+      },
+      "language": {
+        "label": "Idioma",
+        "hint": "O idioma do app."
+      },
+      "clearHistory": {
+        "label": "Limpar histórico",
+        "hint": "Apaga a lista de conexões, desconexões e recusas."
+      },
+      "regenerateIdentity": {
+        "label": "Regenerar a identidade do server",
+        "hint": "Cria um certificado novo. Todos os celulares pareados deixam de reconhecer este PC e precisam parear de novo."
+      },
+      "version": {
+        "label": "Versão",
+        "hint": "Versões do app e do núcleo."
+      },
+      "logs": {
+        "label": "Pasta de logs",
+        "hint": "Onde ficam os registros para diagnóstico."
+      },
+      "updates": {
+        "label": "Atualizações",
+        "hint": "Procurar uma versão nova do PadGaming."
+      },
+      "diagnostic": {
+        "label": "Exportar diagnóstico",
+        "hint": "Junta logs e informações do sistema num arquivo para o suporte."
+      },
+      "licenses": {
+        "label": "Licenças de terceiros",
+        "hint": "Componentes de terceiros usados pelo PadGaming, incluindo o ViGEmBus."
+      }
+    },
+    "general": {
+      "serverNamePlaceholder": "Nome do computador",
+      "redoIntroButton": "Refazer"
+    },
+    "network": {
+      "ports": {
+        "control": "Controle (TCP)",
+        "input": "Input (UDP)",
+        "discovery": "Descoberta (UDP)",
+        "apply": "Aplicar portas",
+        "invalidRange": "Use portas de 1024 a 65535.",
+        "duplicate": "As três portas precisam ser diferentes.",
+        "mdns": "A porta 5353 é usada pelo mDNS.",
+        "pending": "As portas novas valem depois de reiniciar o app.",
+        "restart": "Reiniciar agora"
+      },
+      "interfaces": {
+        "empty": "Nenhuma rede local encontrada.",
+        "auto": "Em uso",
+        "virtual": "Virtual",
+        "copy": "Copiar {{ip}}",
+        "copied": "Copiado"
+      },
+      "test": {
+        "run": "Testar",
+        "running": "Testando…",
+        "ok": "Respondeu",
+        "fail": "Sem resposta",
+        "noNetwork": "Sem rede local para testar."
+      },
+      "firewall": {
+        "ok": "O firewall não bloqueia o PadGaming.",
+        "off": "O firewall está desligado.",
+        "blocked": "Algumas portas estão bloqueadas.",
+        "notApplicable": "Este sistema não usa o firewall do Windows.",
+        "fix": "Corrigir",
+        "fixing": "Corrigindo…",
+        "fixed": "Regras criadas.",
+        "port": "{{protocol}} {{port}}",
+        "allowed": "liberada",
+        "blockedPort": "bloqueada",
+        "public": "Uma das suas redes está como pública, e o firewall bloqueia o celular nela.",
+        "openNetwork": "Abrir configurações de rede",
+        "cancelled": "A permissão de administrador foi recusada."
+      }
+    },
+    "controls": {
+      "driver": {
+        "ready": "Instalado e funcionando",
+        "download": "Baixar o ViGEmBus",
+        "reinstall": "Reinstalar"
+      },
+      "defaultProfile": {
+        "appDefault": "Padrão do app"
+      },
+      "sendRate": {
+        "hz": "{{hz}} Hz"
+      },
+      "reservation": {
+        "seconds": "{{seconds}} s"
+      }
+    },
+    "appearance": {
+      "theme": {
+        "dark": "Escuro",
+        "light": "Claro",
+        "system": "Sistema"
+      },
+      "accent": {
+        "blue": "Azul",
+        "purple": "Roxo",
+        "pink": "Rosa",
+        "red": "Vermelho",
+        "orange": "Laranja",
+        "yellow": "Amarelo",
+        "green": "Verde",
+        "graphite": "Grafite",
+        "custom": "Personalizada",
+        "customLabel": "Cor personalizada",
+        "group": "Cor de destaque"
+      }
+    },
+    "language": {
+      "pt-BR": "Português (Brasil)",
+      "en": "English"
+    },
+    "privacy": {
+      "clear": {
+        "button": "Limpar histórico",
+        "title": "Limpar o histórico?",
+        "body": "A lista de conexões é apagada para sempre.",
+        "confirm": "Limpar",
+        "done": "Histórico limpo ({{count}} registros)."
+      },
+      "regenerate": {
+        "button": "Regenerar identidade",
+        "title": "Regenerar a identidade do server?",
+        "body": "Todos os celulares pareados são esquecidos e precisam parear de novo, e o app precisa reiniciar. Isso não pode ser desfeito.",
+        "confirm": "Regenerar",
+        "done": "Identidade nova criada.",
+        "restartTitle": "Reiniciar o app?",
+        "restartBody": "A identidade nova só vale depois de reiniciar. Os celulares foram desconectados.",
+        "restartNow": "Reiniciar agora",
+        "later": "Depois"
+      },
+      "cancel": "Cancelar"
+    },
+    "about": {
+      "version": "App {{app}} · Núcleo {{core}}",
+      "openLogs": "Abrir pasta de logs",
+      "logsPath": "Pasta: {{path}}",
+      "soon": "Em breve",
+      "licensesShow": "Mostrar licenças",
+      "licensesHide": "Esconder licenças"
+    }
   },
   "onboarding": {
     "title": "Boas-vindas"
@@ -443,6 +679,7 @@
     "builtin_profile": "O perfil Padrão é do app e não pode ser alterado nem apagado. Duplique-o para personalizar.",
     "profile_in_use": "Este perfil está em uso.",
     "import_invalid": "O arquivo não é um perfil válido do PadGaming.",
-    "no_network": "Nenhuma rede local encontrada. Conecte o PC ao Wi-Fi ou à rede cabeada."
+    "no_network": "Nenhuma rede local encontrada. Conecte o PC ao Wi-Fi ou à rede cabeada.",
+    "cancelled": "A permissão do Windows foi recusada."
   }
 }

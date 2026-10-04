@@ -291,10 +291,18 @@ fn translate_control(event: &ControlEvent) -> Vec<Outbound> {
 /// Encaminha os eventos do `Core` para a webview.
 pub fn spawn_pump<R: Runtime>(app: AppHandle<R>, core: &Arc<Core>) {
     let mut events = core.subscribe();
+    let mut transparency = core.settings().get().transparency;
     tauri::async_runtime::spawn(async move {
         loop {
             match events.recv().await {
                 Ok(event) => {
+                    // O efeito de vidro da janela segue a preferência de transparência.
+                    if let CoreEvent::Settings(settings) = &event
+                        && settings.transparency != transparency
+                    {
+                        transparency = settings.transparency;
+                        crate::window::reapply(&app, transparency);
+                    }
                     for outbound in translate(&event) {
                         outbound.emit(&app);
                     }

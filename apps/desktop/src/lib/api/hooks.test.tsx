@@ -20,6 +20,13 @@ const defaults: Settings = {
   start_minimized: false,
   onboarding_completed: false,
   require_approval: false,
+  server_name: "",
+  close_to_tray: true,
+  default_profile_id: null,
+  send_rate_hz: 250,
+  reservation_secs: 30,
+  transparency: true,
+  reduce_motion: false,
 };
 
 function error(code: AppError["code"], extra: Partial<AppError> = {}): AppError {

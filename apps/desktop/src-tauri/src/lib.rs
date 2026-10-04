@@ -13,6 +13,7 @@ mod events;
 mod live;
 mod logging;
 mod state;
+mod system;
 mod window;
 
 use std::sync::Arc;
@@ -65,6 +66,15 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
             commands::set_slot_profile,
             commands::get_metrics,
             commands::set_ui_visible,
+            system::firewall_status,
+            system::fix_firewall,
+            system::test_connection,
+            system::open_network_settings,
+            system::open_logs_dir,
+            system::logs_dir,
+            system::clear_history,
+            system::regenerate_identity,
+            system::restart_app,
             commands::start_pairing,
             commands::cancel_pairing,
             commands::answer_approval,
@@ -79,6 +89,7 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
         .events(collect_events![
             events::SettingsChanged,
             events::MetricsTick,
+            window::WindowChromeChanged,
             events::SlotsChanged,
             events::DevicesChanged,
             events::DevicesPaired,
@@ -113,7 +124,7 @@ fn setup_window(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let window = app
         .get_webview_window(MAIN_WINDOW)
         .ok_or("a janela principal não existe")?;
-    app.manage(window::ChromeState(window::apply(&window)));
+    app.manage(window::ChromeState::new(window::apply(&window, true)));
     Ok(())
 }
 
@@ -126,6 +137,10 @@ fn start_core(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let (core, live) = (Arc::clone(&state.core), Arc::clone(&state.live));
     app.manage(state);
 
+    // A preferência de transparência vale desde a abertura (o `setup_window` usou o padrão).
+    if !core.settings().get().transparency {
+        window::reapply(app.handle(), false);
+    }
     events::spawn_pump(app.handle().clone(), &core);
 
     // O `input:live` só é amostrado enquanto alguma tela assina.

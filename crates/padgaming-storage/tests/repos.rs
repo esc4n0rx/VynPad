@@ -123,7 +123,11 @@ async fn invalid_settings_are_refused_with_a_reason_and_change_nothing() {
         .await
         .unwrap();
     let original = service.get();
-    let cases: [Case; 5] = [
+    let cases: [Case; 9] = [
+        ("nome", |s| s.server_name = "x".repeat(41)),
+        ("nome", |s| s.server_name = "ruim\u{7}".into()),
+        ("125", |s| s.send_rate_hz = 100),
+        ("reserva", |s| s.reservation_secs = 5),
         ("cor", |s| s.accent = "azul".into()),
         ("cor", |s| s.accent = "#12345".into()),
         ("1024", |s| s.ports.control = 80),

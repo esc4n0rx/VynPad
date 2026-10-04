@@ -71,6 +71,21 @@ pub struct AppSettings {
     pub onboarding_completed: bool,
     /// Pedir confirmação para novos dispositivos.
     pub require_approval: bool,
+    /// Nome do server mostrado no celular; vazio usa o nome do computador. Vale na próxima
+    /// vez que o app abrir.
+    pub server_name: String,
+    /// Fechar a janela deixa o app na bandeja (em vez de encerrar).
+    pub close_to_tray: bool,
+    /// Perfil que um dispositivo novo (sem perfil próprio) recebe; `None` usa o "Padrão".
+    pub default_profile_id: Option<String>,
+    /// Taxa máxima de envio sugerida aos clients, em Hz (125 ou 250).
+    pub send_rate_hz: u16,
+    /// Por quanto tempo o slot fica reservado depois da queda da conexão, em segundos.
+    pub reservation_secs: u16,
+    /// Efeito de vidro (Mica/Acrylic) na janela.
+    pub transparency: bool,
+    /// Reduz as animações da interface.
+    pub reduce_motion: bool,
 }
 
 impl Default for AppSettings {
@@ -89,9 +104,23 @@ impl Default for AppSettings {
             start_minimized: false,
             onboarding_completed: false,
             require_approval: false,
+            server_name: String::new(),
+            close_to_tray: true,
+            default_profile_id: None,
+            send_rate_hz: 250,
+            reservation_secs: 30,
+            transparency: true,
+            reduce_motion: false,
         }
     }
 }
+
+/// Taxas de envio que o app oferece (Hz).
+pub const SEND_RATES_HZ: [u16; 2] = [125, 250];
+/// Faixa do tempo de reserva do slot, em segundos.
+pub const RESERVATION_SECS: std::ops::RangeInclusive<u16> = 10..=120;
+/// Tamanho máximo do nome do server, em caracteres.
+pub const SERVER_NAME_MAX: usize = 40;
 
 /// Portas abaixo desta são reservadas ao sistema.
 const MIN_PORT: u16 = 1024;
@@ -118,11 +147,22 @@ impl AppSettings {
         if [control, input, discovery].contains(&5353) {
             return invalid("a porta 5353 é usada pelo mDNS");
         }
+        if self.server_name.chars().count() > SERVER_NAME_MAX
+            || self.server_name.chars().any(char::is_control)
+        {
+            return invalid("o nome do server tem até 40 caracteres, sem controles");
+        }
+        if !SEND_RATES_HZ.contains(&self.send_rate_hz) {
+            return invalid("a taxa de envio precisa ser 125 ou 250 Hz");
+        }
+        if !RESERVATION_SECS.contains(&self.reservation_secs) {
+            return invalid("o tempo de reserva do slot vai de 10 a 120 segundos");
+        }
         Ok(())
     }
 
     /// Cada campo como `(chave, JSON)`.
-    fn entries(&self) -> Result<[(&'static str, String); 8], serde_json::Error> {
+    fn entries(&self) -> Result<[(&'static str, String); 15], serde_json::Error> {
         Ok([
             ("language", serde_json::to_string(&self.language)?),
             ("theme", serde_json::to_string(&self.theme)?),
@@ -141,6 +181,19 @@ impl AppSettings {
                 "require_approval",
                 serde_json::to_string(&self.require_approval)?,
             ),
+            ("server_name", serde_json::to_string(&self.server_name)?),
+            ("close_to_tray", serde_json::to_string(&self.close_to_tray)?),
+            (
+                "default_profile_id",
+                serde_json::to_string(&self.default_profile_id)?,
+            ),
+            ("send_rate_hz", serde_json::to_string(&self.send_rate_hz)?),
+            (
+                "reservation_secs",
+                serde_json::to_string(&self.reservation_secs)?,
+            ),
+            ("transparency", serde_json::to_string(&self.transparency)?),
+            ("reduce_motion", serde_json::to_string(&self.reduce_motion)?),
         ])
     }
 
@@ -156,6 +209,13 @@ impl AppSettings {
             "start_minimized" => self.start_minimized = serde_json::from_str(json)?,
             "onboarding_completed" => self.onboarding_completed = serde_json::from_str(json)?,
             "require_approval" => self.require_approval = serde_json::from_str(json)?,
+            "server_name" => self.server_name = serde_json::from_str(json)?,
+            "close_to_tray" => self.close_to_tray = serde_json::from_str(json)?,
+            "default_profile_id" => self.default_profile_id = serde_json::from_str(json)?,
+            "send_rate_hz" => self.send_rate_hz = serde_json::from_str(json)?,
+            "reservation_secs" => self.reservation_secs = serde_json::from_str(json)?,
+            "transparency" => self.transparency = serde_json::from_str(json)?,
+            "reduce_motion" => self.reduce_motion = serde_json::from_str(json)?,
             _ => {}
         }
         Ok(())
