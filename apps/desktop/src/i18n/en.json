@@ -244,7 +244,61 @@
     }
   },
   "latency": {
-    "title": "Latency"
+    "title": "Latency",
+    "windows": {
+      "label": "Chart window",
+      "s30": "30 s",
+      "m2": "2 min",
+      "m10": "10 min"
+    },
+    "pause": "Pause chart",
+    "resume": "Resume chart",
+    "paused": "Chart paused",
+    "copy": "Copy summary",
+    "copied": "Summary copied",
+    "chart": {
+      "label": "Latency chart: RTT p50 and p95 for each controller",
+      "p50": "p50",
+      "p95": "p95"
+    },
+    "legend": {
+      "label": "Controllers on the chart",
+      "toggle": "Show or hide P{{slot}}"
+    },
+    "tiles": {
+      "group": "Controller P{{slot}}",
+      "rtt": "RTT p95",
+      "jitter": "Jitter",
+      "loss": "Loss",
+      "rate": "Packets/s",
+      "processing": "On the server",
+      "ms": "{{value}} ms",
+      "pct": "{{value}}%",
+      "hz": "{{value}}/s",
+      "none": "—"
+    },
+    "quality": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "unstable": "Unstable",
+      "poor": "Poor",
+      "waiting": "Measuring…"
+    },
+    "tips": {
+      "title": "Tips",
+      "loss": "P{{slot}}: move closer to the router or use the 5 GHz network.",
+      "jitter": "P{{slot}}: turn off Wi-Fi battery saving on the phone.",
+      "rtt": "P{{slot}}: close apps that use the network or change the Wi-Fi channel."
+    },
+    "summary": {
+      "slot": "P{{slot}}",
+      "line": "RTT {{rtt}} ms (p95 {{p95}} ms), jitter {{jitter}} ms, loss {{loss}}%, {{rate}} packets/s, server {{processing}} ms",
+      "quality": "{{label}}"
+    },
+    "empty": {
+      "title": "No controllers connected",
+      "description": "Connect a phone to see the latency live."
+    }
   },
   "settings": {
     "title": "Settings"

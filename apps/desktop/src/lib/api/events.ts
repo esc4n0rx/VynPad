@@ -3,6 +3,7 @@ import { commands, events } from "@/lib/bindings";
 import { log } from "@/lib/log";
 import { keys } from "./keys";
 import { resetLiveSubscriptions, useLiveInput } from "./live";
+import { appendMetrics } from "./latencyHistory";
 import { useMetrics } from "./metrics";
 import { useApprovals, useLastPaired } from "./server";
 import { useSlots } from "./slots";
@@ -69,6 +70,7 @@ async function register(queryClient: QueryClient): Promise<() => void> {
     }),
     events.metricsTick.listen((e) => {
       useMetrics.getState().set(e.payload.metrics);
+      appendMetrics(e.payload.metrics);
     }),
     events.inputLive.listen((e) => {
       useLiveInput.getState().set(e.payload.slot, e.payload.report);

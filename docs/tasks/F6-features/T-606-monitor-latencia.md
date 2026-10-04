@@ -6,7 +6,7 @@
 | Prioridade | P1 |
 | Estimativa | M |
 | Depende de | T-305, T-503 |
-| Status | ⬜ A fazer |
+| Status | 🟨 Pronta; falta medir os 60 fps com 4 slots e 10 min no app e comparar com o `padgaming-sim bench` |
 
 ## Objetivo
 Mostrar ao usuário, de forma clara, se a rede está boa para jogar, e ajudar a diagnosticar quando não está.
@@ -25,3 +25,10 @@ Mostrar ao usuário, de forma clara, se a rede está boa para jogar, e ajudar a 
 
 ## Fora de escopo
 - Exportação de CSV (pós-v1).
+
+## Fechamento
+- `features/latency`: `LatencyPage` (janela de 30 s / 2 min / 10 min, pausar, copiar resumo, legenda que esconde slots, tiles por slot com a qualidade e dicas), `LatencyChart` (uPlot: p50 em linha cheia e p95 tracejada, nas cores dos slots, repintando ao trocar o tema) e `insights.ts` (dicas: perda > 2%, jitter > 8 ms, RTT p95 > 60 ms; resumo em texto).
+- O histórico (`lib/api/latencyHistory.ts`) guarda 10 min de `metrics:tick` em arrays mutáveis e só avisa por um contador: o gráfico se atualiza sem re-renderizar o React.
+- Pausar congela só a vista; o histórico continua crescendo e o gráfico volta a acompanhar ao retomar.
+- Os tiles mostram o RTT p95, o jitter, a perda, os pacotes/s e o processamento no server, os mesmos números que o `padgaming-sim bench` reporta (RTT p95 e perda).
+- O canvas do uPlot não roda no jsdom: os testes usam um dublê e conferem as chamadas (`setData`, `setSeries`, `destroy`).

@@ -244,7 +244,61 @@
     }
   },
   "latency": {
-    "title": "Latência"
+    "title": "Latência",
+    "windows": {
+      "label": "Janela do gráfico",
+      "s30": "30 s",
+      "m2": "2 min",
+      "m10": "10 min"
+    },
+    "pause": "Pausar gráfico",
+    "resume": "Retomar gráfico",
+    "paused": "Gráfico pausado",
+    "copy": "Copiar resumo",
+    "copied": "Resumo copiado",
+    "chart": {
+      "label": "Gráfico de latência: RTT p50 e p95 de cada controle",
+      "p50": "p50",
+      "p95": "p95"
+    },
+    "legend": {
+      "label": "Controles no gráfico",
+      "toggle": "Mostrar ou esconder o P{{slot}}"
+    },
+    "tiles": {
+      "group": "Controle P{{slot}}",
+      "rtt": "RTT p95",
+      "jitter": "Jitter",
+      "loss": "Perda",
+      "rate": "Pacotes/s",
+      "processing": "No server",
+      "ms": "{{value}} ms",
+      "pct": "{{value}}%",
+      "hz": "{{value}}/s",
+      "none": "—"
+    },
+    "quality": {
+      "excellent": "Excelente",
+      "good": "Boa",
+      "unstable": "Instável",
+      "poor": "Ruim",
+      "waiting": "Medindo…"
+    },
+    "tips": {
+      "title": "Dicas",
+      "loss": "P{{slot}}: aproxime-se do roteador ou use a rede de 5 GHz.",
+      "jitter": "P{{slot}}: desative a economia de bateria do Wi-Fi no celular.",
+      "rtt": "P{{slot}}: feche apps que usam a rede ou troque o canal do Wi-Fi."
+    },
+    "summary": {
+      "slot": "P{{slot}}",
+      "line": "RTT {{rtt}} ms (p95 {{p95}} ms), jitter {{jitter}} ms, perda {{loss}}%, {{rate}} pacotes/s, server {{processing}} ms",
+      "quality": "{{label}}"
+    },
+    "empty": {
+      "title": "Nenhum controle conectado",
+      "description": "Conecte um celular para ver a latência ao vivo."
+    }
   },
   "settings": {
     "title": "Configurações"
