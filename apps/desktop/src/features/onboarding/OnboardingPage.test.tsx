@@ -34,6 +34,7 @@ const settings: Settings = {
   notify_pairing: true,
   notify_driver: true,
   notify_skip_fullscreen: true,
+  check_updates: true,
 };
 
 const firewall = (patch: Partial<FirewallStatusDto> = {}): FirewallStatusDto => ({

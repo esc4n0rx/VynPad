@@ -555,6 +555,10 @@
         "label": "Updates",
         "hint": "Look for a new VynPad version."
       },
+      "autoUpdates": {
+        "label": "Check for updates automatically",
+        "hint": "On launch and every 6 hours VynPad asks GitHub for a new version. When off, only the Check for updates button does it. It never installs without you asking."
+      },
       "diagnostic": {
         "label": "Export diagnostics",
         "hint": "Bundles the last days of logs and system info into a file for support, without tokens or keys."
@@ -695,7 +699,6 @@
       "version": "App {{app}} · Core {{core}}",
       "openLogs": "Open logs folder",
       "logsPath": "Folder: {{path}}",
-      "soon": "Coming soon",
       "licensesShow": "Show licenses",
       "licensesHide": "Hide licenses",
       "exportButton": "Export diagnostics",
@@ -703,6 +706,23 @@
       "maskIps": "Hide IP addresses",
       "exported": "Diagnostics saved to {{path}}",
       "openHelp": "Open help"
+    },
+    "update": {
+      "available": "Version {{version}} is available. See Settings → About.",
+      "check": "Check for updates",
+      "checking": "Checking…",
+      "upToDate": "You have the latest version ({{version}}).",
+      "newVersion": "New version {{version}}",
+      "install": "Update now",
+      "installing": "Installing…",
+      "installStarted": "Installing the update. VynPad will close and open again.",
+      "notesShow": "See what's new",
+      "notesHide": "Hide what's new",
+      "noNotes": "This version has no release notes.",
+      "confirmTitle": "Controllers are connected",
+      "confirmBody": "Controllers connected right now: {{count}}. Updating will disconnect them and close VynPad for a moment. Pairings and profiles stay saved.",
+      "confirmAction": "Update anyway",
+      "cancel": "Not now"
     }
   },
   "onboarding": {
@@ -798,6 +818,7 @@
     "profile_in_use": "This profile is in use.",
     "import_invalid": "The file is not a valid VynPad profile.",
     "no_network": "No local network found. Connect the PC to Wi-Fi or a wired network.",
-    "cancelled": "The Windows permission was declined."
+    "cancelled": "The Windows permission was declined.",
+    "update_failed": "Couldn't reach the update server. Check your internet connection and try again."
   }
 }

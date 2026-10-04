@@ -275,8 +275,8 @@ fn reject_text(reason: &str, pt: bool) -> &'static str {
         ("no_slot", false) => "no free slot",
         ("locked", true) => "muitas tentativas",
         ("locked", false) => "too many attempts",
-        ("version", true) => "versão incompatível",
-        ("version", false) => "incompatible version",
+        ("version", true) => "versão incompatível, atualize o app no celular",
+        ("version", false) => "incompatible version, update the app on the phone",
         (_, true) => "motivo desconhecido",
         (_, false) => "unknown reason",
     }

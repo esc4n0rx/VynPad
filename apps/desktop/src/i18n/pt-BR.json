@@ -555,6 +555,10 @@
         "label": "Atualizações",
         "hint": "Procurar uma versão nova do VynPad."
       },
+      "autoUpdates": {
+        "label": "Procurar atualizações sozinho",
+        "hint": "Ao abrir e a cada 6 horas o VynPad consulta o GitHub por uma versão nova. Desligado, só o botão Procurar atualizações faz isso. Nunca instala sem você pedir."
+      },
       "diagnostic": {
         "label": "Exportar diagnóstico",
         "hint": "Junta logs dos últimos dias e informações do sistema num arquivo para o suporte, sem tokens nem chaves."
@@ -695,7 +699,6 @@
       "version": "App {{app}} · Núcleo {{core}}",
       "openLogs": "Abrir pasta de logs",
       "logsPath": "Pasta: {{path}}",
-      "soon": "Em breve",
       "licensesShow": "Mostrar licenças",
       "licensesHide": "Esconder licenças",
       "exportButton": "Exportar diagnóstico",
@@ -703,6 +706,23 @@
       "maskIps": "Esconder os endereços IP",
       "exported": "Diagnóstico salvo em {{path}}",
       "openHelp": "Abrir a ajuda"
+    },
+    "update": {
+      "available": "Nova versão {{version}} disponível. Veja em Configurações → Sobre.",
+      "check": "Procurar atualizações",
+      "checking": "Procurando…",
+      "upToDate": "Você está na versão mais recente ({{version}}).",
+      "newVersion": "Nova versão {{version}}",
+      "install": "Atualizar agora",
+      "installing": "Instalando…",
+      "installStarted": "Instalando a atualização. O VynPad vai fechar e abrir de novo.",
+      "notesShow": "Ver novidades",
+      "notesHide": "Esconder novidades",
+      "noNotes": "Esta versão não traz notas.",
+      "confirmTitle": "Há controles conectados",
+      "confirmBody": "Controles conectados agora: {{count}}. Atualizar vai desconectá-los e fechar o VynPad por um instante. Os pareamentos e os perfis continuam salvos.",
+      "confirmAction": "Atualizar mesmo assim",
+      "cancel": "Agora não"
     }
   },
   "onboarding": {
@@ -798,6 +818,7 @@
     "profile_in_use": "Este perfil está em uso.",
     "import_invalid": "O arquivo não é um perfil válido do VynPad.",
     "no_network": "Nenhuma rede local encontrada. Conecte o PC ao Wi-Fi ou à rede cabeada.",
-    "cancelled": "A permissão do Windows foi recusada."
+    "cancelled": "A permissão do Windows foi recusada.",
+    "update_failed": "Não consegui falar com o servidor de atualizações. Confira a internet e tente de novo."
   }
 }

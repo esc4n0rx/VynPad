@@ -1,6 +1,7 @@
 /** Chaves do React Query, num só lugar: os eventos do backend invalidam por elas. */
 export const keys = {
   appInfo: ["app_info"] as const,
+  pendingUpdate: ["pending_update"] as const,
   settings: ["settings"] as const,
   profiles: ["profiles"] as const,
   profile: (id: string) => ["profiles", id] as const,

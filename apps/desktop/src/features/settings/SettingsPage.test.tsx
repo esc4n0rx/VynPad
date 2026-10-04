@@ -32,6 +32,7 @@ const defaults: Settings = {
   notify_pairing: true,
   notify_driver: true,
   notify_skip_fullscreen: true,
+  check_updates: true,
 };
 
 const firewall = (patch: Partial<FirewallStatusDto> = {}): FirewallStatusDto => ({
@@ -577,10 +578,6 @@ describe("sobre", () => {
       expect(commands.openLogsDir).toHaveBeenCalledTimes(1);
     });
 
-    // Atualizações ainda não existem.
-    expect(screen.getAllByRole("button", { name: "Em breve" })).toHaveLength(1);
-    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Em breve" }).disabled).toBe(true);
-
     fireEvent.click(screen.getByRole("button", { name: "Mostrar licenças" }));
     const licenses = screen.getByRole<HTMLTextAreaElement>("textbox", {
       name: "Licenças de terceiros",
@@ -591,5 +588,90 @@ describe("sobre", () => {
       fireEvent.click(screen.getByRole("button", { name: "Esconder licenças" }));
     });
     expect(screen.queryByRole("textbox", { name: "Licenças de terceiros" })).toBeNull();
+  });
+});
+
+describe("atualizações", () => {
+  const found = {
+    version: "0.2.0",
+    current_version: "0.1.0",
+    notes: "## Novidades\n\n- Ajuste fino dos gatilhos",
+    date: null,
+  };
+
+  it("procura e avisa que já está na versão mais recente", async () => {
+    commands.checkForUpdate.mockResolvedValue(null);
+    setup();
+    goTo("Sobre");
+    fireEvent.click(await screen.findByRole("button", { name: "Procurar atualizações" }));
+    expect(await screen.findByText("Você está na versão mais recente (0.1.0).")).toBeTruthy();
+    expect(commands.checkForUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  it("mostra a versão nova com as notas e instala sem controles conectados", async () => {
+    commands.pendingUpdate.mockResolvedValue(found);
+    commands.installUpdate.mockResolvedValue({ started: true, active_sessions: 0 });
+    setup();
+    goTo("Sobre");
+    expect(await screen.findByText("Nova versão 0.2.0")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Ver novidades" }));
+    expect(screen.getByText("Ajuste fino dos gatilhos")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Atualizar agora" }));
+    await waitFor(() => {
+      expect(commands.installUpdate).toHaveBeenCalledWith(false);
+    });
+    await waitFor(() => {
+      expect(useToasts.getState().toasts.map((t) => t.message)).toContain(
+        "Instalando a atualização. O VynPad vai fechar e abrir de novo.",
+      );
+    });
+  });
+
+  it("com controles conectados pede confirmação e só então instala", async () => {
+    commands.pendingUpdate.mockResolvedValue(found);
+    commands.installUpdate
+      .mockResolvedValueOnce({ started: false, active_sessions: 2 })
+      .mockResolvedValueOnce({ started: true, active_sessions: 0 });
+    setup();
+    goTo("Sobre");
+    fireEvent.click(await screen.findByRole("button", { name: "Atualizar agora" }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Há controles conectados")).toBeTruthy();
+    expect(within(dialog).getByText(/Controles conectados agora: 2/)).toBeTruthy();
+    expect(commands.installUpdate).toHaveBeenCalledTimes(1);
+    expect(commands.installUpdate).toHaveBeenLastCalledWith(false);
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Atualizar mesmo assim" }));
+    await waitFor(() => {
+      expect(commands.installUpdate).toHaveBeenLastCalledWith(true);
+    });
+  });
+
+  it("recusar a confirmação não instala", async () => {
+    commands.pendingUpdate.mockResolvedValue(found);
+    commands.installUpdate.mockResolvedValue({ started: false, active_sessions: 1 });
+    setup();
+    goTo("Sobre");
+    fireEvent.click(await screen.findByRole("button", { name: "Atualizar agora" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Agora não" }));
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+    expect(commands.installUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  it("a procura automática vem ligada e se desliga", async () => {
+    setup();
+    goTo("Sobre");
+    const auto = await screen.findByRole("switch", { name: "Procurar atualizações sozinho" });
+    expect(auto.getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(auto);
+    await waitFor(() => {
+      expect(lastSaved()?.check_updates).toBe(false);
+    });
   });
 });

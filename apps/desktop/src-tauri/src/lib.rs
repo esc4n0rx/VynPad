@@ -18,6 +18,7 @@ mod shell;
 mod state;
 mod system;
 mod tray;
+mod updates;
 mod window;
 
 use std::sync::Arc;
@@ -91,6 +92,9 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
             commands::unsubscribe_live_input,
             commands::reset_live_input,
             window::window_chrome,
+            updates::check_for_update,
+            updates::pending_update,
+            updates::install_update,
         ])
         .events(collect_events![
             events::SettingsChanged,
@@ -112,6 +116,7 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
             events::ApprovalResolved,
             events::DriverChanged,
             events::InputLive,
+            updates::UpdateAvailable,
         ])
         // Timestamps em epoch ms cabem com folga em um `number` do JS (2^53).
         .dangerously_cast_bigints_to_number()
@@ -152,6 +157,7 @@ fn start_core(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .await;
     });
     driver::spawn_watcher(app.handle());
+    updates::spawn_checker(app.handle().clone());
     Ok(())
 }
 
@@ -192,9 +198,11 @@ pub fn run() {
             // O material real é aplicado quando a janela nasce (`shell::show_main_window`).
             app.manage(window::ChromeState::new(window::FALLBACK_CHROME));
             app.manage(shell::PendingNav::default());
+            app.manage(updates::UpdateState::new(app.handle().clone()));
             start_core(app)
         })
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,

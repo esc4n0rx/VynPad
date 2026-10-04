@@ -31,6 +31,13 @@
       "devCsp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost data: blob:; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost ws://localhost:1420 ws://localhost:1421"
     }
   },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRFMEVFMDg0MUZEOEVDQzcKUldUSDdOZ2ZoT0FPVHVpdjY4NmFnRVM1Z1M3WU9yeEs0c3dEQ0FmNGwyWE5oc1hrNTVBa0tRYUQK",
+      "endpoints": ["https://github.com/esc4n0rx/VynPad/releases/latest/download/latest.json"],
+      "windows": { "installMode": "passive" }
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",

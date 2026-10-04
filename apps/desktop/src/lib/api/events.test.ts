@@ -12,7 +12,7 @@ import { useSlots } from "./slots";
 
 vi.mock("@/lib/bindings", async () => (await import("@/test/bindings-mock")).bindingsMock);
 
-const EVENT_COUNT = 18;
+const EVENT_COUNT = 19;
 
 const slots: SlotsDto = {
   free_count: 3,
@@ -108,6 +108,17 @@ describe("registerEventListeners", () => {
     const [first, second] = useToasts.getState().toasts;
     expect(first).toMatchObject({ kind: "success", message: "Galaxy conectado como P1" });
     expect(second).toMatchObject({ kind: "error", message: "O driver parou" });
+  });
+
+  it("uma atualização disponível entra no cache e avisa com um toast", () => {
+    useToasts.setState({ toasts: [] });
+    const update = { version: "0.2.0", current_version: "0.1.0", notes: null, date: null };
+    emit("updateAvailable", { update });
+    expect(queryClient.getQueryData(keys.pendingUpdate)).toEqual(update);
+    expect(useToasts.getState().toasts[0]).toMatchObject({
+      kind: "info",
+      message: "Nova versão 0.2.0 disponível. Veja em Configurações → Sobre.",
+    });
   });
 
   it("desfaz tudo e permite registrar de novo", async () => {

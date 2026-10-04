@@ -79,6 +79,15 @@ async function register(queryClient: QueryClient): Promise<() => void> {
       // O app vai para a bandeja em instantes: o aviso aparece na janela que está fechando.
       useToasts.getState().push("info", i18n.t("hint", { ns: "tray" }));
     }),
+    events.updateAvailable.listen((e) => {
+      queryClient.setQueryData(keys.pendingUpdate, e.payload.update);
+      useToasts
+        .getState()
+        .push(
+          "info",
+          i18n.t("update.available", { ns: "settings", version: e.payload.update.version }),
+        );
+    }),
     events.windowChromeChanged.listen((e) => {
       applyWindowChrome(e.payload.chrome);
     }),

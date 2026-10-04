@@ -43,7 +43,7 @@ function renderSection(id: SectionId, props: SectionProps): ReactNode {
     case "privacy":
       return <PrivacySection />;
     case "about":
-      return <AboutSection />;
+      return <AboutSection {...props} />;
   }
 }
 

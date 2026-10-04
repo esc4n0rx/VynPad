@@ -115,6 +115,33 @@ export const commands = {
 	resetLiveInput: () => __TAURI_INVOKE<void>("reset_live_input"),
 	/**  Como a janela está pintada, para a UI escolher fundo e cantos. */
 	windowChrome: () => __TAURI_INVOKE<WindowChrome>("window_chrome"),
+	/**  Procura agora (botão em Configurações → Sobre), ligado ou não o automático. */
+	checkForUpdate: () => __TAURI_INVOKE<{
+	/**  Versão disponível. */
+	version: string,
+	/**  Versão instalada. */
+	current_version: string,
+	/**  Notas da versão, em markdown. */
+	notes: string | null,
+	/**  Data da publicação (RFC 3339), se o manifesto trouxer. */
+	date: string | null,
+} | null>("check_for_update"),
+	/**  A atualização já encontrada, para a UI montar o selo sem esperar o próximo evento. */
+	pendingUpdate: () => __TAURI_INVOKE<{
+	/**  Versão disponível. */
+	version: string,
+	/**  Versão instalada. */
+	current_version: string,
+	/**  Notas da versão, em markdown. */
+	notes: string | null,
+	/**  Data da publicação (RFC 3339), se o manifesto trouxer. */
+	date: string | null,
+} | null>("pending_update"),
+	/**
+	 *  Baixa e instala a atualização encontrada. Com controles conectados e `confirmed = false` não
+	 *  faz nada e devolve quantos são, para a UI pedir confirmação.
+	 */
+	installUpdate: (confirmed: boolean) => __TAURI_INVOKE<InstallResult>("install_update", { confirmed }),
 };
 
 /** Events */
@@ -137,6 +164,7 @@ export const events = {
 	slotsChanged: makeEvent<SlotsChanged>("slots-changed"),
 	trayHint: makeEvent<TrayHint>("tray-hint"),
 	trayNavigate: makeEvent<TrayNavigate>("tray-navigate"),
+	updateAvailable: makeEvent<UpdateAvailable>("update-available"),
 	windowChromeChanged: makeEvent<WindowChromeChanged>("window-chrome-changed"),
 };
 
@@ -212,6 +240,11 @@ export type AppSettings = {
 	notify_driver?: boolean,
 	/**  Não avisar enquanto um jogo ocupa a tela cheia. */
 	notify_skip_fullscreen?: boolean,
+	/**
+	 *  Procurar atualizações sozinho (ao abrir e a cada 6 h). Desligado, só o botão em
+	 *  Configurações → Sobre consulta o servidor de atualizações.
+	 */
+	check_updates?: boolean,
 };
 
 export type ApprovalPromptDto = {
@@ -369,7 +402,9 @@ export type ErrorCode = "internal" | "invalid_input" |
 /**  Sem rede local para o QR code. */
 "no_network" | 
 /**  O usuário recusou o pedido de permissão do Windows (UAC). */
-"cancelled";
+"cancelled" | 
+/**  Não deu para procurar, baixar ou instalar a atualização (T-704). */
+"update_failed";
 
 /**  Uma porta de que o server precisa e se o firewall a libera. */
 export type FirewallPortDto = {
@@ -469,6 +504,14 @@ export type InputReportDto = {
 	ly: number,
 	rx: number,
 	ry: number,
+};
+
+/**  O que aconteceu com o pedido de instalar. */
+export type InstallResult = {
+	/**  A instalação começou (o app fecha e reabre sozinho). */
+	started: boolean,
+	/**  Com `started = false`: quantos controles estão conectados, o que exige confirmação. */
+	active_sessions: number,
 };
 
 export type InterfaceDto = {
@@ -823,6 +866,23 @@ export type Turbo = {
 	button: Button,
 	/**  Pressionamentos por segundo (1–30). */
 	hz: number | null,
+};
+
+/**  Há uma versão nova (`update:available`). */
+export type UpdateAvailable = {
+	update: UpdateInfoDto,
+};
+
+/**  Uma versão nova, como a UI a mostra. */
+export type UpdateInfoDto = {
+	/**  Versão disponível. */
+	version: string,
+	/**  Versão instalada. */
+	current_version: string,
+	/**  Notas da versão, em markdown. */
+	notes: string | null,
+	/**  Data da publicação (RFC 3339), se o manifesto trouxer. */
+	date: string | null,
 };
 
 /**  O que a UI precisa saber para pintar a janela. */

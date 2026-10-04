@@ -32,6 +32,7 @@ Os atacantes considerados: **A)** alguém na mesma rede local (Wi-Fi de casa, de
 | Denial of service | Um dispositivo pareado manda lixo ou fica mudo. | O watchdog solta o controle em 250 ms sem pacotes, a sessão cai em 15 s sem nada no canal de controle e a reserva do slot vence. | `crates/vynpad-sim/tests/control_handshake.rs` e `crates/vynpad-server/tests/core.rs` (ciclo de vida da sessão). |
 | **E**levation of privilege | Um pareamento novo entrar sem o dono saber. | Com "Pedir aprovação" ligado, o primeiro pareamento espera a resposta do usuário (30 s), e o PIN/QR vale por poucos minutos e só um uso. | `crates/vynpad-server/tests/core.rs` (`new_devices_wait_for_the_users_answer_when_confirmation_is_on`, `an_unanswered_confirmation_expires_and_closes_the_popup`). |
 | Elevation of privilege | A UI (webview) ganhar poder demais. | Permissões do Tauri mínimas (`capabilities/default.json`, só o que a janela usa: arrastar, fechar, minimizar, maximizar, estado da janela e eventos). CSP de produção sem `unsafe-eval` e sem scripts inline (`script-src 'self'`). A webview não acessa arquivos nem o shell; tudo passa por *commands* tipados que validam a entrada. | `apps/desktop/src-tauri/tauri.conf.json` e `capabilities/default.json`; os testes de commands em `apps/desktop/src-tauri/src/lib.rs` conferem que índices e valores inválidos são recusados. |
+| Tampering / Elevation of privilege | Servir uma atualização falsa (rede hostil, release adulterada) para rodar código no PC. | O `tauri-plugin-updater` só instala o que tem **assinatura minisign** válida para a chave pública embutida no app (`plugins.updater.pubkey`); o endpoint é HTTPS. A chave privada fica só com o mantenedor e no segredo `TAURI_SIGNING_PRIVATE_KEY` do CI. O app nunca instala sozinho, e com controles conectados pede confirmação. | `apps/desktop/src-tauri/src/updates.rs` (política de instalação) e o `release.yml` (falha sem a chave). |
 
 ## 3. Checklist da T-706
 
@@ -61,6 +62,7 @@ Os atacantes considerados: **A)** alguém na mesma rede local (Wi-Fi de casa, de
 - **D) Outro programa do mesmo usuário no mesmo PC** pode ler `%APPDATA%\VynPad`. Não é um modelo de ameaça deste app: esse programa já poderia injetar input diretamente no Windows.
 - **E) O ViGEmBus** é um driver de terceiros (arquivado, ver D-03) com privilégios de kernel. O app o isola atrás da trait `VirtualPadDriver` e só entrega a ele relatórios de controle já validados e mapeados.
 - **F) Pentest externo** está fora de escopo desta task.
+- **G) Chave de assinatura das atualizações:** quem a tiver publica atualizações que todos os apps aceitam. Perder a chave impede novas atualizações. Guarde uma cópia offline e o segredo do CI; trocar a chave exige um release assinado com a antiga que embuta a nova `pubkey`. Antes do primeiro release público, gere a chave definitiva (a atual foi criada no desenvolvimento, sem senha).
 
 ## 6. Como refazer a revisão
 

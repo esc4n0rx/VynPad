@@ -96,6 +96,9 @@ pub struct AppSettings {
     pub notify_driver: bool,
     /// Não avisar enquanto um jogo ocupa a tela cheia.
     pub notify_skip_fullscreen: bool,
+    /// Procurar atualizações sozinho (ao abrir e a cada 6 h). Desligado, só o botão em
+    /// Configurações → Sobre consulta o servidor de atualizações.
+    pub check_updates: bool,
 }
 
 impl Default for AppSettings {
@@ -126,6 +129,7 @@ impl Default for AppSettings {
             notify_pairing: true,
             notify_driver: true,
             notify_skip_fullscreen: true,
+            check_updates: true,
         }
     }
 }
@@ -177,7 +181,7 @@ impl AppSettings {
     }
 
     /// Cada campo como `(chave, JSON)`.
-    fn entries(&self) -> Result<[(&'static str, String); 20], serde_json::Error> {
+    fn entries(&self) -> Result<[(&'static str, String); 21], serde_json::Error> {
         Ok([
             ("language", serde_json::to_string(&self.language)?),
             ("theme", serde_json::to_string(&self.theme)?),
@@ -226,6 +230,7 @@ impl AppSettings {
                 "notify_skip_fullscreen",
                 serde_json::to_string(&self.notify_skip_fullscreen)?,
             ),
+            ("check_updates", serde_json::to_string(&self.check_updates)?),
         ])
     }
 
@@ -255,6 +260,7 @@ impl AppSettings {
             "notify_skip_fullscreen" => {
                 self.notify_skip_fullscreen = serde_json::from_str(json)?;
             }
+            "check_updates" => self.check_updates = serde_json::from_str(json)?,
             _ => {}
         }
         Ok(())

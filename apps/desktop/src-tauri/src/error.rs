@@ -30,6 +30,8 @@ pub enum ErrorCode {
     NoNetwork,
     /// O usuário recusou o pedido de permissão do Windows (UAC).
     Cancelled,
+    /// Não deu para procurar, baixar ou instalar a atualização (T-704).
+    UpdateFailed,
 }
 
 impl ErrorCode {
@@ -44,6 +46,7 @@ impl ErrorCode {
             Self::ImportInvalid => "errors.import_invalid",
             Self::NoNetwork => "errors.no_network",
             Self::Cancelled => "errors.cancelled",
+            Self::UpdateFailed => "errors.update_failed",
         }
     }
 }

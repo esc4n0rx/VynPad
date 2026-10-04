@@ -32,6 +32,7 @@ const defaults: Settings = {
   notify_pairing: true,
   notify_driver: true,
   notify_skip_fullscreen: true,
+  check_updates: true,
 };
 
 function error(code: AppError["code"], extra: Partial<AppError> = {}): AppError {

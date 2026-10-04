@@ -18,6 +18,7 @@ import {
 import { useToasts } from "@/lib/toast";
 import notices from "../../../../../docs/THIRD-PARTY-NOTICES.md?raw";
 import { SettingRow } from "./SettingRow";
+import { UpdatesControl } from "./UpdatesControl";
 
 interface SectionProps {
   settings: Settings;
@@ -135,7 +136,7 @@ export function PrivacySection() {
 }
 
 /** Sobre: versão, pasta de logs, atualizações, diagnóstico e licenças. */
-export function AboutSection() {
+export function AboutSection({ settings, patch }: SectionProps) {
   const { t } = useTranslation("settings");
   const info = useAppInfo();
   const logs = useLogsDir();
@@ -175,11 +176,19 @@ export function AboutSection() {
           </div>
         )}
       </SettingRow>
-      <SettingRow id="updates">
-        {() => (
-          <Button variant="secondary" disabled>
-            {t("about.soon")}
-          </Button>
+      <SettingRow id="updates" stacked>
+        {() => <UpdatesControl />}
+      </SettingRow>
+      <SettingRow id="autoUpdates">
+        {({ labelId, hintId }) => (
+          <Toggle
+            aria-labelledby={labelId}
+            aria-describedby={hintId}
+            checked={settings.check_updates}
+            onCheckedChange={(checked) => {
+              patch({ check_updates: checked });
+            }}
+          />
         )}
       </SettingRow>
       <SettingRow id="help">

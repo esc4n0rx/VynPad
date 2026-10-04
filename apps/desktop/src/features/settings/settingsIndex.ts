@@ -51,6 +51,7 @@ export type ItemId =
   | "logs"
   | "help"
   | "updates"
+  | "autoUpdates"
   | "diagnostic"
   | "licenses";
 
@@ -90,6 +91,7 @@ export const ITEMS: readonly IndexedItem[] = [
   { id: "logs", section: "about" },
   { id: "help", section: "about" },
   { id: "updates", section: "about" },
+  { id: "autoUpdates", section: "about" },
   { id: "diagnostic", section: "about" },
   { id: "licenses", section: "about" },
 ];

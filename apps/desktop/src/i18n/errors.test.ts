@@ -28,6 +28,7 @@ describe("messageForError", () => {
       "profile_in_use",
       "import_invalid",
       "no_network",
+      "update_failed",
     ] as const) {
       const text = messageForError({ ...base, code, message_key: `errors.${code}` });
       expect(text.length).toBeGreaterThan(10);

@@ -78,3 +78,9 @@ The PC isn’t on any local network, so there’s no way for the phone to reach 
 ## Windows permission declined {#err-cancelled}
 
 You closed or declined Windows’ administrator permission request. The action wasn’t done. Try again and click **Yes** when Windows asks.
+
+## Couldn’t update {#err-update-failed}
+
+VynPad couldn’t reach the update server (GitHub), download the new version, or install it. Check that the PC has internet and try again in **Settings → About → Check for updates**. If it keeps failing, download the latest installer from the project’s releases page and install it over the current one: your pairings and profiles stay saved.
+
+VynPad never installs an update on its own. With controllers connected it also asks for your confirmation, because updating closes the app for a moment.

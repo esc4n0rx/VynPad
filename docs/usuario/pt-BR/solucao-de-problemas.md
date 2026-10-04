@@ -78,3 +78,9 @@ O PC não está em nenhuma rede local, então não há como o celular alcançá-
 ## Permissão do Windows recusada {#err-cancelled}
 
 Você fechou ou recusou o pedido de permissão de administrador do Windows. A ação não foi feita. Tente de novo e clique em **Sim** quando o Windows perguntar.
+
+## Não consegui atualizar {#err-update-failed}
+
+O VynPad não conseguiu falar com o servidor de atualizações (o GitHub), baixar a versão nova ou instalá-la. Confira se o PC está com internet e tente de novo em **Configurações → Sobre → Procurar atualizações**. Se a falha continuar, baixe o instalador da versão mais recente na página de releases do projeto e instale por cima: seus pareamentos e perfis continuam salvos.
+
+O VynPad nunca instala uma atualização sozinho. Com controles conectados ele ainda pede a sua confirmação, porque atualizar fecha o app por um instante.

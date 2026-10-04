@@ -25,6 +25,7 @@ export const ERROR_HELP: Record<ErrorCode, string> = {
   import_invalid: "err-import-invalid",
   no_network: "err-no-network",
   cancelled: "err-cancelled",
+  update_failed: "err-update-failed",
 };
 
 const SOURCES = import.meta.glob("../../../../docs/usuario/*/*.md", {
