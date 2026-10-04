@@ -15,7 +15,7 @@
 // e os seguintes já começam no dashboard.
 import { spawn } from "node:child_process";
 import { browser } from "@wdio/globals";
-import { existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,6 +30,18 @@ const nativeDriver =
   process.env.EDGE_DRIVER ?? join(here, ".drivers", `msedgedriver${exe}`);
 const tauriDriver =
   process.env.TAURI_DRIVER ?? join(homedir(), ".cargo", "bin", `tauri-driver${exe}`);
+
+// `E2E_DRIVER_LOG=<arquivo>` liga o log detalhado do msedgedriver (para diagnosticar uma sessão
+// que não abre). O tauri-driver só repassa `--native-driver`, então um wrapper põe as opções.
+function nativeDriverCommand() {
+  const log = process.env.E2E_DRIVER_LOG;
+  if (!log || process.platform !== "win32") return nativeDriver;
+  const wrapper = join(here, ".drivers", "msedgedriver-verbose.cmd");
+  writeFileSync(wrapper, `@echo off
+"${nativeDriver}" %* --verbose --log-path="${log}"
+`);
+  return wrapper;
+}
 
 // O lançador carrega este arquivo primeiro e define a pasta; os workers herdam o ambiente.
 const ownsDataDir = !process.env.VYNPAD_DATA_DIR;
@@ -65,7 +77,7 @@ export const config = {
   },
 
   beforeSession() {
-    driver = spawn(tauriDriver, ["--native-driver", nativeDriver], {
+    driver = spawn(tauriDriver, ["--native-driver", nativeDriverCommand()], {
       stdio: [null, process.stdout, process.stderr],
     });
     // O tauri-driver demora um instante para abrir a porta 4444.

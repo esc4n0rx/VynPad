@@ -3,7 +3,17 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore: &docs-only
+      # Só documentação e metadados do repositório: não há o que testar.
+      - "**/*.md"
+      - "**/*.txt"
+      - "docs/**"
+      - "LICENSE"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/CODEOWNERS"
+      - ".github/dependabot.yml"
   pull_request:
+    paths-ignore: *docs-only
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -86,6 +96,7 @@ jobs:
       - run: cargo test -p vynpad-desktop --locked --no-fail-fast
 
   coverage:
+    if: github.actor != 'dependabot[bot]'
     name: Cobertura (cargo-llvm-cov)
     needs: [rust]
     runs-on: ubuntu-22.04
@@ -119,6 +130,7 @@ jobs:
           retention-days: 14
 
   e2e:
+    if: github.actor != 'dependabot[bot]'
     name: E2E da interface (Windows)
     needs: [rust]
     runs-on: windows-latest
@@ -158,17 +170,21 @@ jobs:
           if ($p.HasExited) { "O app saiu sozinho com código $($p.ExitCode)" } else { "O app segue aberto (PID $($p.Id))"; Stop-Process -Id $p.Id -Force }
           Get-ChildItem "$env:LOCALAPPDATA\VynPad\logs" -ErrorAction SilentlyContinue | ForEach-Object { "--- $($_.Name)"; Get-Content $_.FullName -Tail 25 }
       - run: pnpm --filter @vynpad/e2e e2e
+        env:
+          E2E_DRIVER_LOG: ${{ runner.temp }}\msedgedriver.log
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: e2e-diagnostico
           path: |
             e2e/logs
+            ${{ runner.temp }}/msedgedriver.log
             C:/Users/runneradmin/AppData/Local/VynPad/logs
           if-no-files-found: ignore
           retention-days: 7
 
   bench:
+    if: github.actor != 'dependabot[bot]'
     name: Benchmark do server (gate de regressão)
     needs: [rust]
     runs-on: ubuntu-22.04
