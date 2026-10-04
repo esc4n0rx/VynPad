@@ -1,0 +1,31 @@
+Copyright (c) 2026 Paulo Oliveira. Todos os direitos reservados.
+Copyright (c) 2026 Paulo Oliveira. All rights reserved.
+
+VynPad: software proprietário / proprietary software.
+
+PT-BR
+Este software e o seu código-fonte são propriedade exclusiva do titular dos direitos
+autorais. Nenhuma licença é concedida, expressa ou implícita. Sem autorização prévia e
+por escrito do titular, é proibido usar, copiar, modificar, mesclar, publicar, distribuir,
+sublicenciar, vender ou criar obras derivadas deste software, no todo ou em parte.
+
+A visibilidade do código-fonte (por exemplo, num repositório público ou compartilhado)
+não concede nenhum desses direitos.
+
+Componentes de terceiros que acompanham ou são usados pelo software continuam sob as suas
+próprias licenças. Veja docs/THIRD-PARTY-NOTICES.md.
+
+EN
+This software and its source code are the exclusive property of the copyright holder. No
+license is granted, express or implied. Without the prior written permission of the
+copyright holder, you may not use, copy, modify, merge, publish, distribute, sublicense,
+sell, or create derivative works of this software, in whole or in part.
+
+Making the source code visible (for example, in a public or shared repository) does not
+grant any of these rights.
+
+Third-party components that ship with or are used by the software remain under their own
+licenses. See docs/THIRD-PARTY-NOTICES.md.
+
+O SOFTWARE É FORNECIDO "NO ESTADO EM QUE SE ENCONTRA", SEM GARANTIA DE QUALQUER TIPO.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.

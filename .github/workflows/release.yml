@@ -18,6 +18,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # O changelog sai dos commits desde a tag anterior: precisa do histórico e das tags.
+          fetch-depth: 0
       - name: A tag bate com a versão do app
         shell: bash
         run: |
@@ -96,9 +99,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # O changelog sai dos commits e PRs desde a tag anterior; as mesmas notas vão no
-          # `latest.json`, que o app mostra em Configurações → Sobre.
-          gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="$GITHUB_REF_NAME" --jq .body > notes.md
+          # O changelog sai dos Conventional Commits desde a tag anterior (scripts/changelog.mjs); as
+          # mesmas notas vão no `latest.json`, que o app mostra em Configurações → Sobre.
+          node scripts/changelog.mjs --tag "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --out notes.md
           node scripts/make-latest-json.mjs --tag "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
             --dir target/release/bundle/nsis --notes-file notes.md --out latest.json
           gh release create "$GITHUB_REF_NAME" --notes-file notes.md --title "VynPad $GITHUB_REF_NAME" \

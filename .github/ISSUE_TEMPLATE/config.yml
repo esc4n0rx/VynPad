@@ -1,1 +1,5 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Vulnerabilidade de segurança
+    url: https://github.com/esc4n0rx/VynPad/security/advisories/new
+    about: Relate vulnerabilidades em particular, nunca em uma issue pública (veja SECURITY.md).
