@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | T-205, T-306 |
-| Status | ⬜ A fazer |
+| Status | 🟨 Em andamento |
 
 ## Objetivo
 Instalação em um clique, confiável e sem alertas assustadores do SmartScreen.
@@ -21,8 +21,17 @@ Instalação em um clique, confiável e sem alertas assustadores do SmartScreen.
 - Pipeline `release.yml`: tag `v*` → build → assinatura → GitHub Release com changelog automático.
 
 ## Critérios de aceite
-- [ ] Instalar e desinstalar numa VM limpa sem sobras (exceto os dados, se o usuário escolher manter).
-- [ ] O instalador assinado não dispara o alerta "editor desconhecido".
+- [ ] Instalar e desinstalar numa VM limpa sem sobras (exceto os dados, se o usuário escolher manter). Testado em silencioso na máquina de desenvolvimento: instala, e o desinstalador remove executável, atalho, chave de desinstalação e a entrada de "Iniciar com o Windows". Falta a VM limpa e o caminho interativo (UAC das regras de firewall e a caixa de apagar dados).
+- [ ] O instalador assinado não dispara o alerta "editor desconhecido". Depende de um certificado ou de uma conta do Azure Trusted Signing.
+
+## Implementação
+- `tauri.conf.json` (`bundle`): NSIS por usuário sem admin, pt-BR e en com seletor de idioma, MSI em pt-BR e en-US, WebView2 por `downloadBootstrapper`.
+- `apps/desktop/src-tauri/windows/hooks.nsh`: no desinstalador remove as regras de firewall `PadGaming *` (UAC só se existirem; nunca em modo silencioso), a entrada de autostart e, se o usuário marcar a opção, `%APPDATA%\PadGaming` e `%LOCALAPPDATA%\PadGaming`.
+- `.github/workflows/release.yml`: tag `v*` confere a versão, compila NSIS e MSI, assina com o Azure Trusted Signing quando os segredos existem (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `TRUSTED_SIGNING_ENDPOINT`, `TRUSTED_SIGNING_ACCOUNT`, `TRUSTED_SIGNING_PROFILE`), confere as assinaturas e publica o GitHub Release com changelog automático. Sem os segredos publica sem assinar e avisa.
+
+## Decisões
+- **ViGEmBus não vai no pacote.** A T-205 decidiu levar o usuário ao download oficial, e o `THIRD-PARTY-NOTICES.md` registra que o app não redistribui o driver. Isso substitui o item "setup em `resources/`" do escopo original.
+- As regras de firewall são criadas pelo app (fluxo elevado da T-306), não pelo instalador; o instalador só as remove.
 
 ## Fora de escopo
 - Microsoft Store (pós-v1).

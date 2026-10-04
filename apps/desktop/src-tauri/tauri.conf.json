@@ -40,6 +40,18 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "PadGaming",
+    "shortDescription": "Use o celular como controle de Xbox 360 no PC",
+    "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper" },
+      "nsis": {
+        "installMode": "currentUser",
+        "installerHooks": "windows/hooks.nsh",
+        "languages": ["PortugueseBR", "English"],
+        "displayLanguageSelector": true
+      },
+      "wix": { "language": ["pt-BR", "en-US"] }
+    }
   }
 }
