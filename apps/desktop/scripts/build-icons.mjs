@@ -1,8 +1,10 @@
-// Gera os ícones do app a partir dos SVGs de `src-tauri/icons/source`:
-//   - `source/app-icon.png` (1024 px) — entrada do `pnpm tauri icon`, que produz .ico/.icns/PNGs;
-//   - `tray/*.ico` — ícones da bandeja (T-607) em várias resoluções.
-// Uso: `pnpm icons` (e depois `pnpm tauri icon src-tauri/icons/source/app-icon.png`).
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+// Gera os ícones da bandeja (T-607) em várias resoluções (`tray/*.ico`).
+//
+// O ícone do app NÃO sai daqui: `source/app-icon.png` (1024 px, fundo transparente) é a arte
+// final feita à mão (o original gerado está em `source/app-icon.original.png`). Para refazer
+// os .ico/.icns/PNGs a partir dela: `pnpm tauri icon src-tauri/icons/source/app-icon.png`.
+// Uso deste script: `pnpm icons`.
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Resvg } from "@resvg/resvg-js";
@@ -17,12 +19,6 @@ mkdirSync(tray, { recursive: true });
 function rasterize(svg, size) {
   return new Resvg(svg, { fitTo: { mode: "width", value: size } }).render().asPng();
 }
-
-// Ícone do app.
-writeFileSync(
-  join(source, "app-icon.png"),
-  rasterize(readFileSync(join(source, "app-icon.svg"), "utf8"), 1024),
-);
 
 // Bandeja: o gamepad em branco (fica bem sobre a barra escura do Windows), sem fundo; o estado
 // vai num selo no canto. Os tamanhos cobrem 100% a 200%+ de escala (16/24/32 px) e o 256 do ICO.

@@ -30,7 +30,7 @@ Regras de firewall passam a se chamar `VynPad *`, e o instalador remove essas, n
 - Validado como o CI: fmt, clippy `-D warnings`, testes do workspace e do desktop, `cargo deny`, prettier, eslint, tsc, vitest e `check` dos vectors.
 
 ## Pendências
-- **Ícones e arte**: os PNG/ICO/ICNS não foram alterados. Se tiverem o nome ou o logotipo antigo, precisam ser refeitos.
+- **Ícone do app**: feito (2026-10-04). Arte nova em `icons/source/app-icon.png` (1024 px, transparente, limpa das sobras da remoção de fundo; o original gerado está em `app-icon.original.png`) e todos os formatos gerados com `pnpm tauri icon`. Falta só o ícone da **bandeja**, que continua com o gamepad branco antigo (`pnpm icons`).
 - **Repositório**: os links nos docs já apontam para `github.com/esc4n0rx/VynPad`, mas o `origin` ainda é o repositório antigo. A migração para o repo novo fica para depois.
 - **Instalação antiga**: quem tem o app instalado como PadGaming mantém essa instalação (outra chave de desinstalação, outra pasta de dados); desinstalar à mão.
 - **Updater**: o endpoint em `tauri.conf.json` aponta para `github.com/esc4n0rx/VynPad`; conferir quando o repositório novo existir. Os segredos do CI (`TAURI_SIGNING_PRIVATE_KEY`, assinatura de código) precisam ser recadastrados nele.
