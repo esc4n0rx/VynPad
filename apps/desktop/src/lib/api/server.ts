@@ -53,6 +53,22 @@ export function useCancelPairing() {
   return useMutation({ mutationFn: () => commands.cancelPairing() });
 }
 
+/** O último dispositivo que terminou o primeiro pareamento (`seq` sobe a cada um). */
+interface PairedState {
+  seq: number;
+  last: { device_id: string; name: string; model: string } | null;
+  record: (device: { device_id: string; name: string; model: string }) => void;
+}
+
+/** A tela de parear fecha com a animação de sucesso quando `seq` passa do que ela viu ao abrir. */
+export const useLastPaired = create<PairedState>((set) => ({
+  seq: 0,
+  last: null,
+  record: (device) => {
+    set((s) => ({ seq: s.seq + 1, last: device }));
+  },
+}));
+
 /** Pedidos de confirmação de novos dispositivos esperando resposta. */
 interface ApprovalsState {
   pending: ApprovalPromptDto[];

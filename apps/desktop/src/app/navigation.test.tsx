@@ -81,7 +81,7 @@ describe("shell", () => {
     expect(await screen.findByText("Online")).toBeTruthy();
     expect(screen.getByText("Driver OK")).toBeTruthy();
     expect(screen.getByText("192.168.0.10")).toBeTruthy();
-    expect(await screen.findByText("Esta tela chega na T-603.")).toBeTruthy();
+    expect(nav.querySelector('a[href="/devices"]')?.getAttribute("aria-current")).toBe("page");
   });
 
   it("navega pelo teclado com Ctrl+<número> e Ctrl+,", async () => {

@@ -1,6 +1,7 @@
 import { Outlet } from "react-router";
 import { TitleBar } from "@/components/TitleBar";
 import { useLanguageSync } from "@/i18n/useLanguageSync";
+import { ApprovalDialog } from "@/features/devices/ApprovalDialog";
 
 /** Moldura da janela: barra de título e, abaixo, a rota (com ou sem sidebar). */
 export function RootLayout() {
@@ -11,6 +12,7 @@ export function RootLayout() {
       <div className="min-h-0 flex-1">
         <Outlet />
       </div>
+      <ApprovalDialog />
     </div>
   );
 }

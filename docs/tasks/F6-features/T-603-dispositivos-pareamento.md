@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | G |
 | Depende de | T-103, T-303, T-403 |
-| Status | ⬜ A fazer |
+| Status | 🟨 Pronta; falta conferir no app com o simulador (3 s para aparecer, QR colado e PIN, revogar derrubando a sessão) |
 
 ## Objetivo
 Gerenciar os celulares, com auto detect na rede e pareamento sem fricção.
@@ -26,3 +26,9 @@ Gerenciar os celulares, com auto detect na rede e pareamento sem fricção.
 
 ## Fora de escopo
 - Lado Android (T-903/T-904).
+
+## Fechamento
+- `features/devices`: `DevicesPage` (próximos, pareados, histórico, estado vazio), `NearbySection`, `PairedSection` (nome editável, menu com slot e perfil padrão, revogar e esquecer com confirmação), `PairDialog` (abas QR/PIN, renova ao vencer, fecha com sucesso ao receber `devices:paired`, invalida o código ao fechar) e `HistoryPanel` (50 eventos, só consulta ao abrir).
+- `ApprovalDialog` fica na raiz (`RootLayout`): o pedido aparece em qualquer tela, com contagem regressiva (`timeout_s`, novo no `ApprovalPromptDto`); fechar sem responder nega.
+- Componentes novos de uso geral: `ActionMenu` (menu com submenus) e `ConfirmDialog`.
+- Os eventos `devices:paired` alimentam `useLastPaired` (`lib/api/server.ts`), que o modal observa.

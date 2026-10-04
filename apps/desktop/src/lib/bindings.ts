@@ -146,6 +146,8 @@ export type ApprovalPromptDto = {
 	name: string,
 	model: string,
 	peer: string,
+	/**  Em quantos segundos o pedido expira sozinho (o popup mostra a contagem). */
+	timeout_s: number,
 };
 
 /**  Um novo dispositivo espera a confirmação do usuário. */

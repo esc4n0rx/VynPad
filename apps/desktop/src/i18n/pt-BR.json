@@ -109,7 +109,101 @@
     "swapped": "P{{from}} e P{{to}} trocaram de lugar."
   },
   "devices": {
-    "title": "Dispositivos"
+    "title": "Dispositivos",
+    "pairNew": "Parear novo",
+    "nearby": {
+      "title": "Próximos na rede",
+      "empty": "Nenhum celular com o PadGaming aberto por perto.",
+      "seenNow": "visto agora",
+      "seenAgo": "visto há {{seconds}} s",
+      "state": {
+        "new": "Novo",
+        "paired": "Pareado",
+        "connected": "Conectado"
+      },
+      "pair": "Parear"
+    },
+    "paired": {
+      "title": "Pareados",
+      "lastSeen": "Último acesso {{when}}",
+      "never": "nunca conectou",
+      "revoked": "Revogado",
+      "slot": "Slot {{slot}}",
+      "slotAuto": "Slot automático",
+      "profile": "Perfil: {{name}}",
+      "profileApp": "Perfil padrão do app",
+      "connectedAt": "Conectado em P{{slot}}"
+    },
+    "menu": {
+      "label": "Ações de {{name}}",
+      "rename": "Renomear",
+      "setSlot": "Definir slot",
+      "slotAuto": "Automático",
+      "setProfile": "Definir perfil",
+      "profileApp": "Padrão do app",
+      "revoke": "Revogar",
+      "forget": "Esquecer"
+    },
+    "rename": {
+      "label": "Nome do dispositivo",
+      "edit": "Renomear {{name}}"
+    },
+    "confirm": {
+      "revokeTitle": "Revogar {{name}}?",
+      "revokeBody": "O dispositivo é desconectado agora e não conecta mais sem parear de novo.",
+      "revoke": "Revogar",
+      "forgetTitle": "Esquecer {{name}}?",
+      "forgetBody": "O registro e o histórico dele são apagados. Para voltar a usar, é preciso parear de novo.",
+      "forget": "Esquecer",
+      "cancel": "Cancelar"
+    },
+    "pair": {
+      "title": "Parear novo dispositivo",
+      "description": "Abra o PadGaming no celular e escaneie o código ou digite o PIN.",
+      "tabs": "Forma de parear",
+      "qr": "QR code",
+      "pin": "PIN",
+      "qrAlt": "QR code para parear",
+      "pinHelp": "No app, escolha “Digitar PIN” e informe estes números.",
+      "pinLabel": "PIN de pareamento",
+      "hosts": "Endereços: {{hosts}}",
+      "fingerprint": "Impressão digital: {{fingerprint}}",
+      "fingerprintHelp": "Confira se é a mesma que aparece no celular.",
+      "expires": "Renova em {{seconds}} s",
+      "renewing": "Renovando…",
+      "forDevice": "Pareando com {{name}}",
+      "success": "{{name}} pareado!",
+      "done": "Concluir",
+      "error": "Não foi possível gerar o código.",
+      "retry": "Tentar de novo",
+      "copyUri": "Copiar link de pareamento",
+      "copied": "Copiado"
+    },
+    "approval": {
+      "title": "{{name}} quer se conectar",
+      "body": "{{model}} · {{ip}}",
+      "allow": "Permitir",
+      "deny": "Negar",
+      "expires": "Expira em {{seconds}} s"
+    },
+    "history": {
+      "title": "Histórico de conexões",
+      "empty": "Nada aconteceu ainda.",
+      "unknownDevice": "Dispositivo removido",
+      "slot": "P{{slot}}",
+      "events": {
+        "connected": "Conectou",
+        "disconnected": "Desconectou",
+        "rejected": "Recusado",
+        "paired": "Pareou",
+        "revoked": "Revogado",
+        "unknown": "Evento"
+      }
+    },
+    "empty": {
+      "title": "Nenhum dispositivo ainda",
+      "description": "Abra o PadGaming no celular, na mesma rede Wi-Fi, e pareie por QR code ou PIN."
+    }
   },
   "mapping": {
     "title": "Mapeamento",

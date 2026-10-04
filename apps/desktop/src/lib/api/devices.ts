@@ -40,9 +40,10 @@ export function useSetDeviceDefaults() {
 }
 
 /** Histórico de conexões (mais recentes primeiro). */
-export function useConnectionLog(query: LogQueryDto) {
+export function useConnectionLog(query: LogQueryDto, enabled = true) {
   return useQuery({
     queryKey: [...keys.connectionLog, query] as const,
     queryFn: () => commands.getConnectionLog(query),
+    enabled,
   });
 }

@@ -7,7 +7,7 @@ use std::time::Instant;
 use padgaming_core::{SlotView, SlotsSnapshot};
 use padgaming_driver::XReport;
 use padgaming_mapping::Profile;
-use padgaming_net::control::SessionHealth;
+use padgaming_net::control::{ControlConfig, SessionHealth};
 use padgaming_net::discovery::{InterfaceInfo, NearbyDevice};
 use padgaming_server::{ApprovalPrompt, PairingOffer};
 use padgaming_storage::{Device, DeviceDefaults, LogEntry, LogQuery, ProfileInput, ProfileSummary};
@@ -405,6 +405,8 @@ pub struct ApprovalPromptDto {
     pub name: String,
     pub model: String,
     pub peer: String,
+    /// Em quantos segundos o pedido expira sozinho (o popup mostra a contagem).
+    pub timeout_s: u32,
 }
 
 impl From<ApprovalPrompt> for ApprovalPromptDto {
@@ -415,6 +417,8 @@ impl From<ApprovalPrompt> for ApprovalPromptDto {
             name: p.name,
             model: p.model,
             peer: p.peer.to_string(),
+            timeout_s: u32::try_from(ControlConfig::default().approval_timeout.as_secs())
+                .unwrap_or(30),
         }
     }
 }

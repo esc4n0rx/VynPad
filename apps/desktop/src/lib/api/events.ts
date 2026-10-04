@@ -3,7 +3,7 @@ import { commands, events } from "@/lib/bindings";
 import { log } from "@/lib/log";
 import { keys } from "./keys";
 import { resetLiveSubscriptions, useLiveInput } from "./live";
-import { useApprovals } from "./server";
+import { useApprovals, useLastPaired } from "./server";
 import { useSlots } from "./slots";
 
 let registered: Promise<() => void> | null = null;
@@ -34,7 +34,8 @@ async function register(queryClient: QueryClient): Promise<() => void> {
     events.devicesChanged.listen(() => {
       invalidate(keys.devices);
     }),
-    events.devicesPaired.listen(() => {
+    events.devicesPaired.listen((e) => {
+      useLastPaired.getState().record(e.payload);
       invalidate(keys.devices, keys.connectionLog);
     }),
     events.devicesDiscovered.listen((e) => {

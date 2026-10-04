@@ -109,7 +109,101 @@
     "swapped": "P{{from}} and P{{to}} swapped places."
   },
   "devices": {
-    "title": "Devices"
+    "title": "Devices",
+    "pairNew": "Pair new",
+    "nearby": {
+      "title": "Nearby on the network",
+      "empty": "No phone with PadGaming open nearby.",
+      "seenNow": "seen now",
+      "seenAgo": "seen {{seconds}} s ago",
+      "state": {
+        "new": "New",
+        "paired": "Paired",
+        "connected": "Connected"
+      },
+      "pair": "Pair"
+    },
+    "paired": {
+      "title": "Paired",
+      "lastSeen": "Last seen {{when}}",
+      "never": "never connected",
+      "revoked": "Revoked",
+      "slot": "Slot {{slot}}",
+      "slotAuto": "Automatic slot",
+      "profile": "Profile: {{name}}",
+      "profileApp": "App default profile",
+      "connectedAt": "Connected on P{{slot}}"
+    },
+    "menu": {
+      "label": "Actions for {{name}}",
+      "rename": "Rename",
+      "setSlot": "Set slot",
+      "slotAuto": "Automatic",
+      "setProfile": "Set profile",
+      "profileApp": "App default",
+      "revoke": "Revoke",
+      "forget": "Forget"
+    },
+    "rename": {
+      "label": "Device name",
+      "edit": "Rename {{name}}"
+    },
+    "confirm": {
+      "revokeTitle": "Revoke {{name}}?",
+      "revokeBody": "The device is disconnected now and can’t connect again without pairing.",
+      "revoke": "Revoke",
+      "forgetTitle": "Forget {{name}}?",
+      "forgetBody": "Its record and history are erased. To use it again, pair it again.",
+      "forget": "Forget",
+      "cancel": "Cancel"
+    },
+    "pair": {
+      "title": "Pair a new device",
+      "description": "Open PadGaming on your phone and scan the code or type the PIN.",
+      "tabs": "Pairing method",
+      "qr": "QR code",
+      "pin": "PIN",
+      "qrAlt": "QR code for pairing",
+      "pinHelp": "In the app, choose “Enter PIN” and type these numbers.",
+      "pinLabel": "Pairing PIN",
+      "hosts": "Addresses: {{hosts}}",
+      "fingerprint": "Fingerprint: {{fingerprint}}",
+      "fingerprintHelp": "Check that it matches the one on your phone.",
+      "expires": "Renews in {{seconds}} s",
+      "renewing": "Renewing…",
+      "forDevice": "Pairing with {{name}}",
+      "success": "{{name}} paired!",
+      "done": "Done",
+      "error": "Could not generate the code.",
+      "retry": "Try again",
+      "copyUri": "Copy pairing link",
+      "copied": "Copied"
+    },
+    "approval": {
+      "title": "{{name}} wants to connect",
+      "body": "{{model}} · {{ip}}",
+      "allow": "Allow",
+      "deny": "Deny",
+      "expires": "Expires in {{seconds}} s"
+    },
+    "history": {
+      "title": "Connection history",
+      "empty": "Nothing has happened yet.",
+      "unknownDevice": "Removed device",
+      "slot": "P{{slot}}",
+      "events": {
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "rejected": "Rejected",
+        "paired": "Paired",
+        "revoked": "Revoked",
+        "unknown": "Event"
+      }
+    },
+    "empty": {
+      "title": "No devices yet",
+      "description": "Open PadGaming on your phone, on the same Wi-Fi network, and pair with a QR code or PIN."
+    }
   },
   "mapping": {
     "title": "Mapping",
