@@ -42,6 +42,7 @@ Confiança para evoluir sem quebrar o que já funciona.
   - O `msedgedriver` abre o app com `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=...`. No runner (Windows Server 2025, WebView2 153.0.4234.48, driver da mesma versão) o processo do WebView2 sobe **sem** esse argumento, e o driver espera 60 s pelo `DevToolsActivePort` que nunca aparece. No PC o argumento é acrescentado normalmente.
   - Não há políticas do Edge no registro do runner, e a variável `WEBVIEW2_USER_DATA_FOLDER` é respeitada (só os argumentos extras não).
   - O workflow manual `e2e-debug` (`e2e/scripts/diagnose-webview2.ps1`) reproduz isso e testa o Edge e o `msedgewebview2.exe` direto com a porta; foi criado para fechar este ponto.
+  - Resultado do `e2e-debug`: o `msedge.exe` 153 do runner **aceita** `--remote-debugging-port` (mesmo como administrador no Windows Server 2025), então a plataforma não bloqueia a depuração remota; só o WebView2 embutido no app ignora o argumento extra. O `msedgewebview2.exe` aberto direto também não respondeu (teste pouco conclusivo).
   - Caminhos a testar: o Edge/WebView2 do runner aceitar a porta quando aberto direto (então o problema é o app); instalar no runner o WebView2 154; ou conectar por outro meio. Se nada servir, o E2E roda só localmente e como etapa do checklist de release.
   - Enquanto isso o job está com `continue-on-error`: informa, mas não derruba o CI.
 - Checklist manual: executar e registrar no primeiro release.
