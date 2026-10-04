@@ -101,6 +101,40 @@ fn micros(since: Instant, now: Instant) -> i64 {
     i64::try_from(now.saturating_duration_since(since).as_micros()).unwrap_or(i64::MAX)
 }
 
+/// Pede ao Windows um relógio de 1 ms enquanto o client roda.
+///
+/// Por padrão o relógio do Windows anda de ~15,6 ms em ~15,6 ms, e os `sleep` e timeouts de
+/// leitura do laço de pacing arredondam para isso: o client mandaria uns 40 pacotes por segundo
+/// em vez de 250 (o que acontece nos runners do CI; PCs com jogos ou navegador abertos já
+/// costumam ter o relógio fino). Fora do Windows não faz nada.
+struct TimerResolution;
+
+#[cfg(windows)]
+impl TimerResolution {
+    #[allow(unsafe_code)] // FFI do winmm: duas chamadas sem ponteiros
+    fn request() -> Self {
+        // SAFETY: `timeBeginPeriod` só recebe um inteiro e é desfeita no `Drop`.
+        unsafe { windows_sys::Win32::Media::timeBeginPeriod(1) };
+        Self
+    }
+}
+
+#[cfg(windows)]
+impl Drop for TimerResolution {
+    #[allow(unsafe_code)]
+    fn drop(&mut self) {
+        // SAFETY: par da chamada de `request`.
+        unsafe { windows_sys::Win32::Media::timeEndPeriod(1) };
+    }
+}
+
+#[cfg(not(windows))]
+impl TimerResolution {
+    const fn request() -> Self {
+        Self
+    }
+}
+
 /// Roda o client até a fonte acabar, `duration` passar ou `stop` ser ligado.
 #[allow(clippy::too_many_lines)] // um laço só: pacing, pings, status e espera
 pub fn run(
@@ -111,6 +145,7 @@ pub fn run(
     on_event: &mut dyn FnMut(Event),
 ) -> anyhow::Result<ClientReport> {
     anyhow::ensure!(config.rate_hz > 0, "a taxa deve ser maior que zero");
+    let _timer = TimerResolution::request();
     let bind = if config.server.is_ipv4() {
         "0.0.0.0:0"
     } else {

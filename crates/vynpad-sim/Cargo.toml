@@ -26,6 +26,10 @@ rustls = { version = "0.23", default-features = false, features = ["ring", "std"
 sha2 = { version = "0.11", default-features = false }
 toml = "1"
 
+[target.'cfg(windows)'.dependencies]
+# `timeBeginPeriod`: relógio de 1 ms para o pacing do client (ver `client.rs`).
+windows-sys = { version = "0.61.2", features = ["Win32_Media"] }
+
 [dev-dependencies]
 vynpad-core = { workspace = true }
 vynpad-driver = { workspace = true, features = ["mock"] }

@@ -6274,6 +6274,7 @@ dependencies = [
  "vynpad-mapping",
  "vynpad-net",
  "vynpad-protocol",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
