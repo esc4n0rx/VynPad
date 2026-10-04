@@ -14,7 +14,7 @@ vynpad-protocol = { workspace = true }
 arc-swap = "1"
 base64 = "0.22"
 crossbeam-channel = "0.5"
-getrandom = "0.3"
+getrandom = "0.4"
 qrcode = { version = "0.14", default-features = false, features = ["svg"] }
 # Provedor `ring` (o aws-lc-rs exigiria cmake/nasm no build do Windows).
 rcgen = { version = "0.14", default-features = false, features = ["ring", "pem"] }
