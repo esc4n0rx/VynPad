@@ -132,6 +132,10 @@ jobs:
   e2e:
     if: github.actor != 'dependabot[bot]'
     name: E2E da interface (Windows)
+    # PENDENTE: no runner o WebView2 153 ignora a porta de depuração do msedgedriver (passa no PC
+    # com o WebView2 154). Enquanto isso o job informa mas não derruba o CI; ver
+    # docs/tasks/F7-release-windows/T-701-testes.md (Pendências) e o workflow e2e-debug.
+    continue-on-error: true
     needs: [rust]
     runs-on: windows-latest
     steps:

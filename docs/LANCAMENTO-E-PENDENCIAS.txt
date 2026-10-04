@@ -25,9 +25,10 @@ repositorio) e as regras que o projeto segue. Nao coloque chaves nem senhas aqui
            e) Confira em Settings > Actions que o CI rodou no repositorio novo.
          O historico antigo traz commits com o nome PadGaming; isso e normal.
 
-[ ] 1.3  Cadastrar os segredos do CI no repositorio novo (Settings > Secrets and variables > Actions):
-           TAURI_SIGNING_PRIVATE_KEY            conteudo do arquivo updater.key
-           TAURI_SIGNING_PRIVATE_KEY_PASSWORD   so se a chave tiver senha
+[ ] 1.3  Segredos do CI no repositorio novo (Settings > Secrets and variables > Actions).
+         JA CADASTRADO em 2026-10-04: TAURI_SIGNING_PRIVATE_KEY (a chave atual nao tem senha, entao
+         nao ha TAURI_SIGNING_PRIVATE_KEY_PASSWORD; se gerar uma chave com senha, cadastre tambem).
+         Faltam, so para assinar o instalador:
          Para assinar o instalador (evita o alerta do SmartScreen), Azure Trusted Signing:
            AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET
            TRUSTED_SIGNING_ENDPOINT, TRUSTED_SIGNING_ACCOUNT, TRUSTED_SIGNING_PROFILE
@@ -57,10 +58,12 @@ repositorio) e as regras que o projeto segue. Nao coloque chaves nem senhas aqui
              Configuracoes > Sobre > Procurar atualizacoes;
            - conferir que banco, perfis e pareamentos continuam depois de atualizar.
 
-[ ] 1.9  Conferir o primeiro CI no repositorio novo. Os jobs "coverage" (cobertura, minimo de
-         80% nos crates de dominio) e "e2e" (testes da interface, no Windows) sao novos e nunca
-         rodaram no GitHub. Se o e2e falhar, as capturas de tela ficam no artefato
-         "e2e-screenshots".
+[ ] 1.9  PENDENTE (E2E no CI). O repositorio novo ja existe (esc4n0rx/VynPad, privado) e o CI
+         passa em tudo, menos o job "e2e" (testes da interface no Windows): no runner o
+         WebView2 153 ignora a porta de depuracao do msedgedriver; no seu PC (WebView2 154)
+         os 3 cenarios passam. O job esta com continue-on-error (nao bloqueia). Diagnostico e
+         proximos passos: docs/tasks/F7-release-windows/T-701-testes.md (Pendencias) e o
+         workflow manual "E2E debug" (Actions > E2E debug > Run workflow).
 
 [ ] 1.10 Executar e registrar o docs/QA-CHECKLIST.md antes do primeiro release (jogos reais,
          instalador, atualizacao). E o que os testes automaticos nao conseguem cobrir.

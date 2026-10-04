@@ -65,8 +65,9 @@ export const config = {
   reporters: ["spec"],
   mochaOpts: { ui: "bdd", timeout: 120_000 },
   waitforTimeout: 15_000,
-  connectionRetryTimeout: 60_000,
-  connectionRetryCount: 2,
+  // Se a sessão não abre (WebView2 sem depuração remota), falha logo em vez de esperar 3 x 60 s.
+  connectionRetryTimeout: 45_000,
+  connectionRetryCount: 0,
 
   onPrepare() {
     for (const [what, file] of [
