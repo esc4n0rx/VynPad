@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState, type DragEvent } from "react";
 import {
   ArrowLeftRight,
   Activity,
+  Battery,
   MoreHorizontal,
   Pause,
   Play,
   Plus,
   Power,
   Smartphone,
+  Wifi,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
@@ -20,8 +22,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button, IconButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, type SelectOption } from "@/components/ui/select";
+import { useSlotMetrics } from "@/lib/api/metrics";
 import { useProfile } from "@/lib/api/profiles";
-import type { DeviceDto, ProfileSummaryDto, SessionHealthDto, SlotDto } from "@/lib/bindings";
+import type {
+  DeviceDto,
+  ProfileSummaryDto,
+  QualityDto,
+  SessionHealthDto,
+  SlotDto,
+} from "@/lib/bindings";
 import { cn } from "@/lib/utils";
 import { secondsLeft, type SlotCardKind } from "./slotView";
 
@@ -62,6 +71,44 @@ function Countdown({ expiresInMs }: { expiresInMs: number }) {
       {" · "}
       {t("slot.reconnecting.countdown", { seconds: secondsLeft(deadline, now) })}
     </span>
+  );
+}
+
+const QUALITY_STATUS = {
+  excellent: "success",
+  good: "info",
+  unstable: "warning",
+  poor: "danger",
+} as const satisfies Record<QualityDto, string>;
+
+/** Bateria do celular e latência com o selo de qualidade da conexão. */
+function MetricsRow({ slot }: { slot: number }) {
+  const { t } = useTranslation("dashboard");
+  const metrics = useSlotMetrics(slot);
+  if (!metrics) return null;
+  const { battery, rtt_ms: rtt, quality } = metrics;
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-fg-2 tabular-nums">
+      {battery !== null && (
+        <span title={t("metrics.batteryLabel")} className="flex items-center gap-1">
+          <Battery aria-hidden className="size-3.5" />
+          <span aria-label={t("metrics.batteryLabel")}>
+            {t("metrics.battery", { percent: battery })}
+          </span>
+        </span>
+      )}
+      <span title={t("metrics.pingLabel")} className="flex items-center gap-1">
+        <Wifi aria-hidden className="size-3.5" />
+        <span aria-label={t("metrics.pingLabel")}>
+          {rtt === null ? t("metrics.noPing") : t("metrics.ping", { ms: Math.round(rtt) })}
+        </span>
+      </span>
+      {quality !== null && (
+        <Badge status={QUALITY_STATUS[quality]} title={t("metrics.qualityLabel")}>
+          {t(`metrics.quality.${quality}`)}
+        </Badge>
+      )}
+    </div>
   );
 }
 
@@ -252,6 +299,8 @@ export function SlotCard(props: SlotCardProps) {
               className={cn("w-full max-w-72 transition-opacity", reconnecting && "opacity-40")}
             />
           </div>
+
+          {kind === "connected" && <MetricsRow slot={slot.slot} />}
 
           <div className="flex flex-wrap items-center gap-2">
             {reconnecting && (

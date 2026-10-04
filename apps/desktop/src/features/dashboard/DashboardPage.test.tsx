@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testi
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useLiveInput } from "@/lib/api/live";
+import { useMetrics } from "@/lib/api/metrics";
 import { useSlots } from "@/lib/api/slots";
 import type { DeviceDto, ProfileSummaryDto, SlotDto, SlotsDto } from "@/lib/bindings";
 import { commands, resetBindingsMock } from "@/test/bindings-mock";
@@ -123,6 +124,7 @@ afterEach(() => {
   cleanup();
   useSlots.setState({ slots: null, health: {} });
   useLiveInput.setState({ reports: {} });
+  useMetrics.setState({ bySlot: {} });
 });
 
 const card = (index: number) => screen.getByTestId(`slot-${String(index)}`);
@@ -165,6 +167,60 @@ describe("dashboard", () => {
   it("o selo de gyro aparece quando o perfil do slot usa gyro", async () => {
     setup([connected(0), slot(1), slot(2), slot(3)], { profiles: ["fps", null, null, null] });
     await within(card(0)).findByText("Gyro");
+  });
+
+  it("mostra bateria, latência e a qualidade da conexão do slot", async () => {
+    setup([connected(0), slot(1), slot(2), slot(3)]);
+    act(() => {
+      useMetrics.getState().set({
+        slots: [
+          {
+            slot: 0,
+            session_id: 7,
+            rtt_ms: 21.4,
+            rtt_percentiles_ms: { p50: 20, p95: 25, p99: 30 },
+            jitter_ms: 2,
+            loss_pct: 0,
+            out_of_order: 0,
+            rate_hz: 250,
+            processing_percentiles_ms: { p50: 0.02, p95: 0.05, p99: 0.1 },
+            battery: 87,
+            quality: "good",
+          },
+        ],
+      });
+    });
+    const metrics = within(card(0));
+    expect(await metrics.findByText("21 ms")).toBeTruthy();
+    expect(metrics.getByText("87%")).toBeTruthy();
+    expect(metrics.getByText("Boa")).toBeTruthy();
+    // O slot sem sessão não mostra nada disso.
+    expect(within(card(1)).queryByText("21 ms")).toBeNull();
+  });
+
+  it("sem medida ainda, a latência aparece como traço e a qualidade fica de fora", () => {
+    setup([connected(0), slot(1), slot(2), slot(3)]);
+    act(() => {
+      useMetrics.getState().set({
+        slots: [
+          {
+            slot: 0,
+            session_id: 7,
+            rtt_ms: null,
+            rtt_percentiles_ms: { p50: 0, p95: 0, p99: 0 },
+            jitter_ms: 0,
+            loss_pct: 0,
+            out_of_order: 0,
+            rate_hz: 0,
+            processing_percentiles_ms: { p50: 0, p95: 0, p99: 0 },
+            battery: null,
+            quality: null,
+          },
+        ],
+      });
+    });
+    expect(within(card(0)).getByText("— ms")).toBeTruthy();
+    expect(within(card(0)).queryByText("Excelente")).toBeNull();
   });
 
   it("sem sinal vira reconectando, com o contador da reserva", () => {

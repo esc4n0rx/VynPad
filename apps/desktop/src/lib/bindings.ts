@@ -53,6 +53,10 @@ export const commands = {
 	getSlotProfiles: () => __TAURI_INVOKE<(string | null)[]>("get_slot_profiles"),
 	/**  Troca o perfil do slot na hora (vale só até o dispositivo desconectar). Devolve o `id` aplicado. */
 	setSlotProfile: (slot: number, profileId: string) => __TAURI_INVOKE<string>("set_slot_profile", { slot, profileId }),
+	/**  As métricas de latência de cada slot com sessão, agora (o evento `metrics:tick` as mantém). */
+	getMetrics: () => __TAURI_INVOKE<MetricsDto>("get_metrics"),
+	/**  A janela está à vista ou escondida: escondida, as métricas saem a 0,2 Hz em vez de 4 Hz. */
+	setUiVisible: (visible: boolean) => __TAURI_INVOKE<void>("set_ui_visible", { visible }),
 	/**  Gera QR code e PIN. Cada chamada invalida o PIN anterior. */
 	startPairing: () => __TAURI_INVOKE<PairingOfferDto>("start_pairing"),
 	cancelPairing: () => __TAURI_INVOKE<void>("cancel_pairing"),
@@ -85,6 +89,7 @@ export const events = {
 	devicesPaired: makeEvent<DevicesPaired>("devices-paired"),
 	driverChanged: makeEvent<DriverChanged>("driver-changed"),
 	inputLive: makeEvent<InputLive>("input-live"),
+	metricsTick: makeEvent<MetricsTick>("metrics-tick"),
 	reservationExpired: makeEvent<ReservationExpired>("reservation-expired"),
 	sessionEnded: makeEvent<SessionEnded>("session-ended"),
 	sessionStarted: makeEvent<SessionStarted>("session-started"),
@@ -407,6 +412,16 @@ export type LogQueryDto = {
 	limit: number | null,
 };
 
+/**  Métricas de todos os slots com sessão. */
+export type MetricsDto = {
+	slots: SlotMetricsDto[],
+};
+
+/**  Métricas de latência dos slots (`metrics:tick`): 4 Hz com a janela à vista, 0,2 Hz sem. */
+export type MetricsTick = {
+	metrics: MetricsDto,
+};
+
 export type NearbyDto = {
 	id: string,
 	name: string,
@@ -431,6 +446,13 @@ export type PairingOfferDto = {
 	fingerprint_short: string,
 	hosts: string[],
 	port: number,
+};
+
+/**  Percentis p50/p95/p99. */
+export type PercentilesDto = {
+	p50: number | null,
+	p95: number | null,
+	p99: number | null,
 };
 
 /**  Portas do server (mudam com reinício do app). */
@@ -483,6 +505,9 @@ export type ProfileSummaryDto = {
 	created_at: number,
 	updated_at: number,
 };
+
+/**  Como a conexão está (ícones e cores). */
+export type QualityDto = "excellent" | "good" | "unstable" | "poor";
 
 /**  A reserva de um slot venceu. */
 export type ReservationExpired = {
@@ -547,6 +572,30 @@ export type SlotDto = {
 	paused: boolean,
 	/**  Índice `XInput` real do controle, quando conhecido. */
 	user_index: number | null,
+};
+
+/**  As métricas de um slot com sessão. Tempos em milissegundos. */
+export type SlotMetricsDto = {
+	slot: number,
+	session_id: number,
+	/**  Último RTT medido; `null` antes da primeira medida. */
+	rtt_ms: number | null,
+	/**  RTT dos últimos 60 s. */
+	rtt_percentiles_ms: PercentilesDto,
+	/**  Jitter do intervalo entre inputs. */
+	jitter_ms: number | null,
+	/**  Perda de pacotes nos últimos 10 s, em %. */
+	loss_pct: number | null,
+	/**  Pacotes repetidos ou fora de ordem desde o início da sessão. */
+	out_of_order: number,
+	/**  Pacotes por segundo. */
+	rate_hz: number | null,
+	/**  Processamento no server dos últimos 60 s. */
+	processing_percentiles_ms: PercentilesDto,
+	/**  Bateria do celular (0–100). */
+	battery: number | null,
+	/**  `null` até chegar o primeiro pacote. */
+	quality: QualityDto | null,
 };
 
 export type SlotStateDto = "free" | 

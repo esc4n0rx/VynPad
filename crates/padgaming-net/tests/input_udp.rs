@@ -434,3 +434,40 @@ fn four_simulators_at_250_hz_keep_p99_under_one_millisecond() {
     assert_eq!(snap.submit_errors, 0);
     assert!(p99 < Duration::from_millis(1), "p99 = {p99:?}");
 }
+
+#[test]
+fn session_metrics_count_loss_out_of_order_and_battery() {
+    let rig = rig();
+    let session_id = 101;
+    rig.slots.assign(&device(1), session_id, None).unwrap();
+    let activity = rig.server.add_session(SessionSpec {
+        session_id,
+        key: Secret::new(KEY),
+        profile: rig.profile.clone(),
+    });
+    let mut client = Client::new(session_id, rig.server.local_addr());
+    let with_battery = |battery| InputState {
+        battery,
+        ..pressed(Buttons::A, 10)
+    };
+
+    client.send_input(with_battery(80));
+    let first = client.sealed(&Payload::Input(with_battery(80)));
+    client.socket.send_to(&first, client.server).unwrap();
+    // Dois pacotes selados e nunca enviados: o servidor os vê como perda.
+    let _ = client.sealed(&Payload::Input(with_battery(80)));
+    let _ = client.sealed(&Payload::Input(with_battery(80)));
+    client.send_input(with_battery(79));
+    // O mesmo datagrama de novo: chega repetido (fora de ordem).
+    client.socket.send_to(&first, client.server).unwrap();
+
+    wait_until("métricas", || {
+        let s = activity.metrics.snapshot();
+        s.received == 3 && s.out_of_order == 1
+    });
+    let s = activity.metrics.snapshot();
+    assert_eq!(s.lost, 2);
+    assert_eq!(s.battery, Some(79));
+    assert!(s.processing_p[1] > Duration::ZERO);
+    assert_eq!(s.rtt_last, None, "o RTT vem do canal de controle");
+}

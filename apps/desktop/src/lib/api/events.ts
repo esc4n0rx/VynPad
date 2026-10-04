@@ -3,6 +3,7 @@ import { commands, events } from "@/lib/bindings";
 import { log } from "@/lib/log";
 import { keys } from "./keys";
 import { resetLiveSubscriptions, useLiveInput } from "./live";
+import { useMetrics } from "./metrics";
 import { useApprovals, useLastPaired } from "./server";
 import { useSlots } from "./slots";
 
@@ -66,6 +67,9 @@ async function register(queryClient: QueryClient): Promise<() => void> {
     events.driverChanged.listen((e) => {
       queryClient.setQueryData(keys.driver, e.payload.status);
     }),
+    events.metricsTick.listen((e) => {
+      useMetrics.getState().set(e.payload.metrics);
+    }),
     events.inputLive.listen((e) => {
       useLiveInput.getState().set(e.payload.slot, e.payload.report);
     }),
@@ -77,6 +81,14 @@ async function register(queryClient: QueryClient): Promise<() => void> {
   await commands.resetLiveInput().catch((error: unknown) => {
     log.warn(`não consegui zerar o input ao vivo: ${JSON.stringify(error)}`);
   });
+  await commands
+    .getMetrics()
+    .then((metrics) => {
+      useMetrics.getState().set(metrics);
+    })
+    .catch((error: unknown) => {
+      log.warn(`não consegui ler as métricas: ${JSON.stringify(error)}`);
+    });
   await commands
     .getSlots()
     .then((slots) => {

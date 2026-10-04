@@ -15,8 +15,9 @@ use specta::Type;
 use tauri::State;
 
 use crate::dto::{
-    AddressDto, DeviceDefaultsDto, DeviceDto, InterfaceDto, LogEntryDto, LogQueryDto, NearbyDto,
-    PairingOfferDto, ProfileDto, ProfileInputDto, ProfileSummaryDto, ServerInfoDto, SlotsDto,
+    AddressDto, DeviceDefaultsDto, DeviceDto, InterfaceDto, LogEntryDto, LogQueryDto, MetricsDto,
+    NearbyDto, PairingOfferDto, ProfileDto, ProfileInputDto, ProfileSummaryDto, ServerInfoDto,
+    SlotsDto,
 };
 use crate::error::AppError;
 use crate::state::AppState;
@@ -301,6 +302,22 @@ pub async fn set_slot_profile(
         .core
         .set_slot_profile(slot_id(slot)?, &profile_id)
         .await?)
+}
+
+// ------------------------------------------------------------------ métricas
+
+/// As métricas de latência de cada slot com sessão, agora (o evento `metrics:tick` as mantém).
+#[tauri::command]
+#[specta::specta]
+pub fn get_metrics(state: State<'_, AppState>) -> MetricsDto {
+    MetricsDto::from(&state.core.metrics())
+}
+
+/// A janela está à vista ou escondida: escondida, as métricas saem a 0,2 Hz em vez de 4 Hz.
+#[tauri::command]
+#[specta::specta]
+pub fn set_ui_visible(state: State<'_, AppState>, visible: bool) {
+    state.core.set_ui_visible(visible);
 }
 
 // ------------------------------------------------------------------ pareamento e rede

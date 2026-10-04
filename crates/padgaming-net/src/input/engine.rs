@@ -16,6 +16,7 @@ use padgaming_protocol::{
     KEY_LEN, MAX_PACKET_LEN, Payload, Pong, ProtoError, Role, Secret, Session, parse_header,
 };
 
+use super::metrics::SessionMetrics;
 use super::stats::InputStats;
 
 /// Sessões simultâneas que a tabela comporta (4 slots, mais folga para a troca de sessão numa
@@ -28,6 +29,8 @@ pub struct SessionActivity {
     epoch: Instant,
     last_seen_us: AtomicU64,
     peer: ArcSwapOption<SocketAddr>,
+    /// Qualidade da conexão: perda, jitter, RTT, bateria e tempo de processamento.
+    pub metrics: SessionMetrics,
 }
 
 impl SessionActivity {
@@ -36,6 +39,7 @@ impl SessionActivity {
             epoch,
             last_seen_us: AtomicU64::new(0),
             peer: ArcSwapOption::empty(),
+            metrics: SessionMetrics::default(),
         };
         activity.touch(now);
         activity
@@ -189,11 +193,17 @@ impl InputEngine {
         };
         let packet = match entry.session.receive_parsed(&header, datagram) {
             Ok(packet) => packet,
-            Err(error) => return Self::drop_for(&self.stats, error),
+            Err(error) => {
+                if error == ProtoError::StaleSeq {
+                    entry.activity.metrics.on_stale();
+                }
+                return Self::drop_for(&self.stats, error);
+            }
         };
 
         // Daqui em diante o pacote é autêntico e novo.
         entry.activity.touch(rx);
+        entry.activity.metrics.on_packet(packet.seq);
         if entry.peer != Some(src) {
             entry.peer = Some(src);
             // Só na primeira vez e em roaming (troca de IP/porta): aloca, mas é raro.
@@ -202,6 +212,7 @@ impl InputEngine {
 
         let handled = match packet.payload {
             Payload::Input(state) => {
+                entry.activity.metrics.set_battery(state.battery);
                 Self::deliver(
                     &self.slots,
                     &self.stats,
@@ -212,6 +223,7 @@ impl InputEngine {
                 Handled::Input
             }
             Payload::InputMotion(state, motion) => {
+                entry.activity.metrics.set_battery(state.battery);
                 Self::deliver(
                     &self.slots,
                     &self.stats,
@@ -245,7 +257,9 @@ impl InputEngine {
             }
         };
         if handled == Handled::Input {
-            self.stats.processing.record(rx.elapsed());
+            let elapsed = rx.elapsed();
+            self.stats.processing.record(elapsed);
+            entry.activity.metrics.record_processing(elapsed);
         }
         handled
     }
@@ -258,7 +272,9 @@ impl InputEngine {
         rx: Instant,
     ) {
         let dt = entry.last_input.map_or(FIRST_INPUT_DT, |last| {
-            rx.saturating_duration_since(last).as_secs_f32()
+            let interval = rx.saturating_duration_since(last);
+            entry.activity.metrics.on_interval(interval);
+            interval.as_secs_f32()
         });
         entry.last_input = Some(rx);
         let report = entry.mapper.map(raw, dt);

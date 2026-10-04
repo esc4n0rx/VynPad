@@ -58,6 +58,7 @@ beforeEach(() => {
     free_slots: 4,
   });
   commands.driverStatus.mockResolvedValue({ state: "ready" });
+  commands.setUiVisible.mockResolvedValue(undefined);
 });
 
 describe("atalhos", () => {

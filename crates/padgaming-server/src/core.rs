@@ -5,7 +5,7 @@ use std::net::{Ipv4Addr, SocketAddr};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::thread::JoinHandle as ThreadHandle;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use padgaming_core::{SlotManager, SystemClock};
 use padgaming_driver::{DriverStatus, SlotId, VirtualPadDriver, default_driver};
@@ -34,6 +34,7 @@ use tokio::task::JoinHandle;
 use crate::config::{CoreConfig, computer_name};
 use crate::error::CoreError;
 use crate::event::{ApprovalEvent, ApprovalPrompt, CoreEvent};
+use crate::metrics::{MetricsCollector, MetricsSnapshot, QualityThresholds};
 use crate::registry::SlotRegistry;
 use crate::store::{DeviceStoreAdapter, PairedSet};
 
@@ -85,6 +86,8 @@ struct Shared {
     paired: Arc<PairedSet>,
     approvals: Mutex<HashMap<u64, oneshot::Sender<bool>>>,
     next_approval: AtomicU64,
+    /// A janela está à vista: as métricas saem a 4 Hz; escondida, a 0,2 Hz (bandeja).
+    ui_visible: AtomicBool,
 }
 
 impl Shared {
@@ -102,6 +105,7 @@ pub struct Core {
     profiles: Arc<ProfileService>,
     slots: Arc<SlotManager>,
     registry: Arc<SlotRegistry>,
+    metrics: Arc<MetricsCollector>,
     driver: Arc<dyn VirtualPadDriver>,
     input: Arc<InputServer>,
     control: Arc<ControlServer>,
@@ -197,6 +201,7 @@ impl Core {
             paired: Arc::clone(&paired),
             approvals: Mutex::new(HashMap::new()),
             next_approval: AtomicU64::new(1),
+            ui_visible: AtomicBool::new(true),
         });
         let stop = Arc::new(AtomicBool::new(false));
 
@@ -244,6 +249,10 @@ impl Core {
             profiles,
             slots: Arc::clone(&slots),
             registry,
+            metrics: Arc::new(MetricsCollector::new(
+                Arc::clone(&control),
+                QualityThresholds::default(),
+            )),
             driver,
             input,
             control: Arc::clone(&control),
@@ -272,6 +281,11 @@ impl Core {
             Arc::clone(&self.shared),
             Arc::clone(&self.control),
             self.settings.subscribe(),
+        )));
+        // Métricas de latência dos slots.
+        self.tasks.push(tokio::spawn(metrics_pump(
+            Arc::clone(&self.shared),
+            Arc::clone(&self.metrics),
         )));
         // Pedidos de confirmação de novos dispositivos.
         self.tasks.push(tokio::spawn(approval_pump(
@@ -492,6 +506,17 @@ impl Core {
         Ok(())
     }
 
+    /// As métricas de latência de cada slot com sessão, agora.
+    #[must_use]
+    pub fn metrics(&self) -> MetricsSnapshot {
+        self.metrics.sample(Instant::now())
+    }
+
+    /// Avisa se a janela do app está à vista: escondida, as métricas saem a 0,2 Hz em vez de 4 Hz.
+    pub fn set_ui_visible(&self, visible: bool) {
+        self.shared.ui_visible.store(visible, Ordering::Relaxed);
+    }
+
     /// Troca dois slots de lugar, com o perfil de cada um (arrastar um card no dashboard).
     pub fn swap_slots(&self, a: SlotId, b: SlotId) -> Result<(), CoreError> {
         self.slots
@@ -693,6 +718,26 @@ async fn settings_pump(
             }
             Err(broadcast::error::RecvError::Lagged(_)) => {}
             Err(broadcast::error::RecvError::Closed) => break,
+        }
+    }
+}
+
+/// Intervalo das métricas com a janela à vista.
+const METRICS_EVERY: Duration = Duration::from_millis(250);
+/// A cada quantos ciclos sai uma foto com a janela escondida (5 s).
+const METRICS_HIDDEN_EVERY: u32 = 20;
+
+/// Amostra as métricas sempre (as janelas de 60 s dependem disso) e publica no ritmo da janela.
+async fn metrics_pump(shared: Arc<Shared>, collector: Arc<MetricsCollector>) {
+    let mut ticker = tokio::time::interval(METRICS_EVERY);
+    ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+    let mut cycle = 0u32;
+    loop {
+        ticker.tick().await;
+        let snapshot = collector.sample(Instant::now());
+        cycle = cycle.wrapping_add(1);
+        if shared.ui_visible.load(Ordering::Relaxed) || cycle.is_multiple_of(METRICS_HIDDEN_EVERY) {
+            shared.emit(CoreEvent::Metrics(Arc::new(snapshot)));
         }
     }
 }

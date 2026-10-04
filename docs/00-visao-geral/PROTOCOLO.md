@@ -139,6 +139,7 @@ Toda mensagem tem o discriminador `"type"`. O schema normativo é `protocol/sche
    - `no_slot`: os 4 slots estão ocupados.
 3. Cada `welcome` cria uma **sessão nova**: `session_id` e `udp_key` novos (aleatórios); os contadores `seq` recomeçam (§6.3).
 4. Keepalive: quem não enviou nada por **5 s** manda `ping`; quem recebe `ping` responde `pong`. Sem receber nada por **15 s**, fecha a conexão.
+   O server também manda um `ping` a cada **250 ms** para medir o RTT do canal de controle (T-305): o client DEVE responder `pong` na hora, sem esperar o próximo ciclo. O RTT medido assim aparece no app como latência da conexão.
 5. Depois do `welcome`, o server PODE mandar `config` a qualquer momento (ex.: o usuário ligou o gyro).
 6. `bye` precede um fechamento limpo. O server manda `revoked` quando o usuário revoga o dispositivo e `kicked` quando o desconecta pela UI.
 7. **Reconexão:** se o TLS cair, o client reconecta com `device_token` com backoff 0,5 s → 1 s → 2 s → 4 s → 5 s (teto). O server reserva o slot do `device_id` por **30 s** após a queda do TLS; uma reconexão nesse prazo volta ao mesmo slot (com uma sessão nova).

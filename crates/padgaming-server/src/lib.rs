@@ -21,6 +21,7 @@ mod config;
 mod core;
 mod error;
 mod event;
+mod metrics;
 mod registry;
 mod store;
 
@@ -28,5 +29,8 @@ pub use config::{CoreConfig, computer_name};
 pub use core::{BoundPorts, Core, PairingOffer};
 pub use error::CoreError;
 pub use event::{ApprovalEvent, ApprovalPrompt, CoreEvent};
+pub use metrics::{
+    Limits, MetricsCollector, MetricsSnapshot, Quality, QualityThresholds, SlotMetrics,
+};
 pub use registry::SlotRegistry;
 pub use store::{DeviceStoreAdapter, PairedSet};

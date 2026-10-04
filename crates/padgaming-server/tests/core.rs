@@ -13,7 +13,7 @@ use padgaming_net::control::{ControlConfig, ControlEvent};
 use padgaming_protocol::Secret;
 use padgaming_protocol::control::{Auth, ByeReason, Bytes, ControlMessage, RejectReason, Uuid};
 use padgaming_protocol::pairing_uri::PairingUri;
-use padgaming_server::{ApprovalEvent, Core, CoreConfig, CoreEvent};
+use padgaming_server::{ApprovalEvent, Core, CoreConfig, CoreEvent, Quality};
 use padgaming_sim::client::{self, ClientConfig};
 use padgaming_sim::control::{self, ControlSession, Identity, Outcome, Trust};
 use padgaming_sim::link::FaultConfig;
@@ -698,6 +698,88 @@ async fn swapping_two_slots_moves_the_controller_and_its_profile() {
     client.join().unwrap();
     // Dois slots vazios: nada a trocar.
     assert!(rig.core.swap_slots(p1, SlotId::new(1).unwrap()).is_err());
+}
+
+/// Responde aos `ping` do server com `pong`, como um client de verdade, até `stop`.
+fn answer_pings(
+    mut session: Box<ControlSession>,
+    stop: Arc<AtomicBool>,
+) -> std::thread::JoinHandle<()> {
+    std::thread::spawn(move || {
+        while !stop.load(Ordering::Relaxed) {
+            if let Ok(ControlMessage::Ping) = session.recv(Duration::from_millis(100)) {
+                let _ = session.send(&ControlMessage::Pong);
+            }
+        }
+    })
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn metrics_report_rtt_rate_and_quality_per_slot() {
+    let mut rig = rig().await;
+    let session = welcomed(&rig, 1).await;
+    let stop = Arc::new(AtomicBool::new(false));
+    let sender = hold(&rig, &session, 0.5, Arc::clone(&stop));
+    let responder = answer_pings(session, Arc::clone(&stop));
+
+    eventually_async("métricas com RTT", || {
+        let metrics = rig.core.metrics();
+        async move {
+            metrics
+                .slots
+                .first()
+                .is_some_and(|m| m.rtt_last.is_some() && m.rate_hz > 100.0 && m.quality.is_some())
+        }
+    })
+    .await;
+    let metrics = rig.core.metrics();
+    let slot = &metrics.slots[0];
+    assert_eq!(slot.slot, SlotId::new(0).unwrap());
+    // Loopback: o RTT do canal de controle fica em poucos ms.
+    assert!(
+        slot.rtt_last.unwrap() < Duration::from_millis(50),
+        "{:?}",
+        slot.rtt_last
+    );
+    assert!(slot.rtt_p[1] >= slot.rtt_p[0]);
+    assert!(
+        (150.0..=300.0).contains(&slot.rate_hz),
+        "taxa {}",
+        slot.rate_hz
+    );
+    assert!(slot.processing_p[1] > Duration::ZERO);
+    assert!(matches!(
+        slot.quality,
+        Some(Quality::Excellent | Quality::Good)
+    ));
+
+    // Com a janela à vista, o evento sai a 4 Hz.
+    let tick = next_matching(&mut rig.events, |event| match event {
+        CoreEvent::Metrics(snapshot) if !snapshot.slots.is_empty() => Some(snapshot.clone()),
+        _ => None,
+    })
+    .await;
+    assert_eq!(tick.slots[0].slot, SlotId::new(0).unwrap());
+
+    stop.store(true, Ordering::Relaxed);
+    sender.join().unwrap();
+    responder.join().unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn hidden_window_gets_far_fewer_metric_events() {
+    let mut rig = rig().await;
+    rig.core.set_ui_visible(false);
+    let _ = rig.events.try_recv();
+    tokio::time::sleep(Duration::from_millis(1200)).await;
+    let mut ticks = 0;
+    while let Ok(event) = rig.events.try_recv() {
+        if matches!(event, CoreEvent::Metrics(_)) {
+            ticks += 1;
+        }
+    }
+    // Visível seriam ~4 por segundo; escondida, um a cada 5 s.
+    assert!(ticks <= 1, "{ticks} eventos com a janela escondida");
 }
 
 // ------------------------------------------------------------------ confirmação e configurações

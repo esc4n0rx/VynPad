@@ -22,7 +22,7 @@ use tokio_rustls::server::TlsStream;
 
 use super::server::{Command, Live, Shared};
 use super::{ApprovalRequest, ControlEvent, SUPPORTED_VERSIONS, SessionEnd, SessionHealth};
-use crate::input::SessionSpec;
+use crate::input::{SessionActivity, SessionSpec};
 use crate::pairing::{AuthError, Authenticated};
 use crate::random_bytes;
 
@@ -93,6 +93,7 @@ struct Established {
     welcome: Welcome,
     paired: bool,
     commands: mpsc::UnboundedReceiver<Command>,
+    activity: Arc<SessionActivity>,
 }
 
 /// Ponto de entrada da conexão.
@@ -155,6 +156,7 @@ pub(super) async fn run(
         welcome,
         paired,
         commands,
+        activity,
     } = established;
     let end = if let Err(error) = send(&mut writer, &ControlMessage::Welcome(welcome), limit).await
     {
@@ -175,7 +177,7 @@ pub(super) async fn run(
             device_id: device.clone(),
             peer: peer.ip(),
         });
-        serve(&shared, reader, &mut writer, commands).await
+        serve(&shared, reader, &mut writer, commands, &activity).await
     };
     finish(&shared, session_id, slot, &device, end);
     let _ = timeout(limit, writer.shutdown()).await;
@@ -253,7 +255,7 @@ async fn establish(
                 device: device.clone(),
                 slot,
                 commands: command_tx,
-                activity,
+                activity: Arc::clone(&activity),
                 health: SessionHealth::Live,
             },
         );
@@ -275,6 +277,7 @@ async fn establish(
         device,
         paired,
         commands,
+        activity,
         welcome: Welcome {
             proto_ver: hello.proto_ver,
             session_id,
@@ -344,17 +347,22 @@ fn approve(shared: &Shared, runtime: &Handle, hello: &Hello, peer: IpAddr) -> bo
     })
 }
 
+/// Uma sonda de RTT sem resposta por este tempo é dada como perdida.
+const PROBE_LOST_AFTER: Duration = Duration::from_secs(2);
+
 /// Depois do `welcome`: keepalive, `config` e `bye`. Devolve por que a sessão acabou.
 async fn serve(
     shared: &Arc<Shared>,
     mut reader: Reader,
     writer: &mut Writer,
     mut commands: mpsc::UnboundedReceiver<Command>,
+    activity: &SessionActivity,
 ) -> SessionEnd {
-    let (ping_after, dead_after, limit) = (
+    let (ping_after, dead_after, limit, probe_every) = (
         shared.config.ping_after,
         shared.config.dead_after,
         shared.config.write_timeout,
+        shared.config.rtt_probe_every,
     );
     let mut stop = shared.shutdown.subscribe();
 
@@ -376,6 +384,9 @@ async fn serve(
 
     let mut last_recv = Instant::now();
     let mut last_sent = last_recv;
+    // RTT: um `ping` de sonda por vez; o `pong` seguinte fecha a medida.
+    let mut last_probe = last_recv;
+    let mut probe_sent: Option<Instant> = None;
     let end = loop {
         let outcome = tokio::select! {
             message = incoming.recv() => match message {
@@ -391,7 +402,13 @@ async fn serve(
                     match message {
                         Incoming::Message(ControlMessage::Ping) => Some(ControlMessage::Pong),
                         Incoming::Message(ControlMessage::Bye(_)) => break SessionEnd::ClientBye,
-                        // `pong` só renova o `last_recv`; o resto não faz sentido aqui.
+                        Incoming::Message(ControlMessage::Pong) => {
+                            if let Some(sent) = probe_sent.take() {
+                                activity.metrics.record_rtt(sent.elapsed());
+                            }
+                            None
+                        }
+                        // O resto não faz sentido aqui.
                         Incoming::Message(_) | Incoming::Ignored => None,
                     }
                 }
@@ -409,6 +426,16 @@ async fn serve(
                 None => break SessionEnd::Shutdown,
             },
             () = sleep_until(last_sent + ping_after) => Some(ControlMessage::Ping),
+            () = sleep_until(last_probe + probe_every) => {
+                last_probe = Instant::now();
+                // Sem resposta há mais de 2 s: a sonda foi perdida, manda outra.
+                if probe_sent.is_some_and(|sent| sent.elapsed() < PROBE_LOST_AFTER) {
+                    None
+                } else {
+                    probe_sent = Some(last_probe);
+                    Some(ControlMessage::Ping)
+                }
+            }
             () = sleep_until(last_recv + dead_after) => {
                 let _ = send(writer, &bye(ByeReason::Timeout), limit).await;
                 break SessionEnd::Timeout;

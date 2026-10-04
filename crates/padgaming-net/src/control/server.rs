@@ -50,6 +50,18 @@ pub(super) enum Command {
     Bye(ByeReason),
 }
 
+/// Uma sessão viva, como o coletor de métricas a enxerga.
+pub struct LiveSession {
+    /// Id da sessão.
+    pub session_id: u32,
+    /// Slot em que está agora.
+    pub slot: SlotId,
+    /// Dispositivo dono da sessão.
+    pub device: Uuid,
+    /// Atividade e métricas da sessão.
+    pub activity: Arc<SessionActivity>,
+}
+
 /// Uma sessão viva no registro.
 pub(super) struct Live {
     pub device: Uuid,
@@ -188,6 +200,20 @@ impl ControlServer {
             .values()
             .find(|l| l.slot == slot)
             .is_some_and(|l| l.commands.send(Command::Config(config)).is_ok())
+    }
+
+    /// As sessões vivas com o slot atual de cada uma, para o coletor de métricas (T-305).
+    pub fn live_sessions(&self) -> Vec<LiveSession> {
+        self.shared
+            .live()
+            .iter()
+            .map(|(id, live)| LiveSession {
+                session_id: *id,
+                slot: live.slot,
+                device: live.device.clone(),
+                activity: Arc::clone(&live.activity),
+            })
+            .collect()
     }
 
     /// Troca o slot das sessões vivas de `a` e `b` (a UI trocou os controles de lugar). Quem

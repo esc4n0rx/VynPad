@@ -63,6 +63,8 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
             commands::swap_slots,
             commands::get_slot_profiles,
             commands::set_slot_profile,
+            commands::get_metrics,
+            commands::set_ui_visible,
             commands::start_pairing,
             commands::cancel_pairing,
             commands::answer_approval,
@@ -76,6 +78,7 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
         ])
         .events(collect_events![
             events::SettingsChanged,
+            events::MetricsTick,
             events::SlotsChanged,
             events::DevicesChanged,
             events::DevicesPaired,

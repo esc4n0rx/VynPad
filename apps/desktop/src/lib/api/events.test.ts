@@ -5,12 +5,13 @@ import { commands, emit, listenerCount, resetBindingsMock, stopped } from "@/tes
 import { registerEventListeners } from "./events";
 import { keys } from "./keys";
 import { useLiveInput } from "./live";
+import { useMetrics } from "./metrics";
 import { useApprovals } from "./server";
 import { useSlots } from "./slots";
 
 vi.mock("@/lib/bindings", async () => (await import("@/test/bindings-mock")).bindingsMock);
 
-const EVENT_COUNT = 14;
+const EVENT_COUNT = 15;
 
 const slots: SlotsDto = {
   free_count: 3,
@@ -42,6 +43,8 @@ let stop: () => void;
 beforeEach(async () => {
   resetBindingsMock();
   commands.getSlots.mockResolvedValue(slots);
+  commands.getMetrics.mockResolvedValue({ slots: [] });
+  useMetrics.setState({ bySlot: {} });
   useSlots.setState({ slots: null, health: {} });
   useLiveInput.setState({ reports: {} });
   useApprovals.setState({ pending: [] });
@@ -65,6 +68,28 @@ describe("registerEventListeners", () => {
     expect(commands.resetLiveInput).toHaveBeenCalledTimes(1);
     expect(commands.getSlots).toHaveBeenCalledTimes(1);
     expect(useSlots.getState().slots).toEqual(slots);
+  });
+
+  it("o tick de métricas substitui as métricas de cada slot com sessão", () => {
+    const metric = (slot: number) => ({
+      slot,
+      session_id: 7 + slot,
+      rtt_ms: 12.5,
+      rtt_percentiles_ms: { p50: 12, p95: 15, p99: 20 },
+      jitter_ms: 1,
+      loss_pct: 0,
+      out_of_order: 0,
+      rate_hz: 250,
+      processing_percentiles_ms: { p50: 0.02, p95: 0.05, p99: 0.1 },
+      battery: 80,
+      quality: "excellent",
+    });
+    emit("metricsTick", { metrics: { slots: [metric(0), metric(2)] } });
+    expect(Object.keys(useMetrics.getState().bySlot)).toEqual(["0", "2"]);
+    expect(useMetrics.getState().bySlot[2]?.rtt_ms).toBe(12.5);
+    // O slot que saiu do tick some do store.
+    emit("metricsTick", { metrics: { slots: [metric(2)] } });
+    expect(useMetrics.getState().bySlot[0]).toBeUndefined();
   });
 
   it("desfaz tudo e permite registrar de novo", async () => {

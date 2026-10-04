@@ -8,7 +8,7 @@
     clippy::cast_sign_loss
 )]
 
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::time::Duration;
 
 /// Resolução exata até 16 ns; depois disso, 4 sub-faixas por potência de 2 (erro ≤ 25%).
@@ -80,6 +80,14 @@ impl LatencyHistogram {
         Duration::from_nanos(self.max_ns.load(Ordering::Relaxed))
     }
 
+    fn clear(&self) {
+        for bucket in &self.buckets {
+            bucket.store(0, Ordering::Relaxed);
+        }
+        self.count.store(0, Ordering::Relaxed);
+        self.max_ns.store(0, Ordering::Relaxed);
+    }
+
     /// Limite superior da faixa que contém o percentil `p` (0–100); `ZERO` sem amostras.
     /// O valor real é no máximo este, e no mínimo 80% dele.
     pub fn percentile(&self, p: f64) -> Duration {
@@ -96,6 +104,73 @@ impl LatencyHistogram {
             }
         }
         self.max()
+    }
+}
+
+/// Quantos segundos a janela deslizante guarda.
+pub const WINDOW_SECS: usize = 60;
+
+/// Histograma dos últimos [`WINDOW_SECS`] segundos: um [`LatencyHistogram`] por segundo.
+///
+/// Quem mede grava sem lock em [`Self::record`]; o coletor chama [`Self::advance`] uma vez por
+/// segundo (fora do hot path), o que descarta o segundo mais antigo.
+#[derive(Debug)]
+pub struct RollingHistogram {
+    slices: [LatencyHistogram; WINDOW_SECS],
+    cursor: AtomicUsize,
+}
+
+impl Default for RollingHistogram {
+    fn default() -> Self {
+        Self {
+            slices: std::array::from_fn(|_| LatencyHistogram::default()),
+            cursor: AtomicUsize::new(0),
+        }
+    }
+}
+
+impl RollingHistogram {
+    /// Registra uma duração no segundo atual.
+    pub fn record(&self, elapsed: Duration) {
+        self.slices[self.cursor.load(Ordering::Relaxed)].record(elapsed);
+    }
+
+    /// Passa para o próximo segundo e esquece o mais antigo.
+    pub fn advance(&self) {
+        let next = (self.cursor.load(Ordering::Relaxed) + 1) % WINDOW_SECS;
+        self.slices[next].clear();
+        self.cursor.store(next, Ordering::Relaxed);
+    }
+
+    /// Amostras na janela.
+    pub fn count(&self) -> u64 {
+        self.slices.iter().map(LatencyHistogram::count).sum()
+    }
+
+    /// Percentil `p` (0–100) de toda a janela; `ZERO` sem amostras. Mesma precisão do
+    /// [`LatencyHistogram::percentile`].
+    pub fn percentile(&self, p: f64) -> Duration {
+        let total = self.count();
+        if total == 0 {
+            return Duration::ZERO;
+        }
+        let rank = ((p / 100.0) * total as f64).ceil().max(1.0) as u64;
+        let mut seen = 0;
+        for i in 0..BUCKETS {
+            seen += self
+                .slices
+                .iter()
+                .map(|s| s.buckets[i].load(Ordering::Relaxed))
+                .sum::<u64>();
+            if seen >= rank {
+                return Duration::from_nanos(upper_bound(i));
+            }
+        }
+        self.slices
+            .iter()
+            .map(LatencyHistogram::max)
+            .max()
+            .unwrap_or(Duration::ZERO)
     }
 }
 
@@ -207,6 +282,31 @@ mod tests {
         }
         assert_eq!(bucket_of(u64::MAX), BUCKETS - 1);
         assert!(bucket_of(1u64 << 40) < BUCKETS);
+    }
+
+    #[test]
+    fn rolling_histogram_forgets_old_seconds() {
+        let h = RollingHistogram::default();
+        assert_eq!(h.percentile(50.0), Duration::ZERO);
+        for _ in 0..100 {
+            h.record(Duration::from_millis(40));
+        }
+        h.advance();
+        for _ in 0..100 {
+            h.record(Duration::from_millis(2));
+        }
+        assert_eq!(h.count(), 200);
+        // Metade das amostras é de 2 ms e a outra metade de 40 ms.
+        assert!(h.percentile(40.0) <= Duration::from_micros(2_600));
+        assert!(h.percentile(99.0) >= Duration::from_millis(40));
+        // Depois de uma janela inteira, o 40 ms sai.
+        for _ in 0..WINDOW_SECS - 1 {
+            h.advance();
+        }
+        assert_eq!(h.count(), 100);
+        assert!(h.percentile(99.0) <= Duration::from_micros(2_600));
+        h.advance();
+        assert_eq!(h.count(), 0);
     }
 
     #[test]

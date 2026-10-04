@@ -3,6 +3,8 @@
 use std::net::IpAddr;
 use std::sync::Arc;
 
+use crate::metrics::MetricsSnapshot;
+
 use padgaming_core::SlotsSnapshot;
 use padgaming_net::control::ControlEvent;
 use padgaming_net::discovery::NearbyDevice;
@@ -52,4 +54,6 @@ pub enum CoreEvent {
     Approval(ApprovalEvent),
     /// A lista de dispositivos pareados mudou (novo, renomeado, revogado, esquecido, visto).
     DevicesChanged,
+    /// Métricas de latência dos slots (`metrics:tick`): 4 Hz com a janela visível, 0,2 Hz sem.
+    Metrics(Arc<MetricsSnapshot>),
 }

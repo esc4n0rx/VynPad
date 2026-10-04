@@ -9,7 +9,7 @@ use padgaming_driver::XReport;
 use padgaming_mapping::Profile;
 use padgaming_net::control::{ControlConfig, SessionHealth};
 use padgaming_net::discovery::{InterfaceInfo, NearbyDevice};
-use padgaming_server::{ApprovalPrompt, PairingOffer};
+use padgaming_server::{ApprovalPrompt, MetricsSnapshot, PairingOffer, Quality};
 use padgaming_storage::{Device, DeviceDefaults, LogEntry, LogQuery, ProfileInput, ProfileSummary};
 use serde::{Deserialize, Serialize};
 use specta::Type;
@@ -419,6 +419,104 @@ impl From<ApprovalPrompt> for ApprovalPromptDto {
             peer: p.peer.to_string(),
             timeout_s: u32::try_from(ControlConfig::default().approval_timeout.as_secs())
                 .unwrap_or(30),
+        }
+    }
+}
+
+// ------------------------------------------------------------------ métricas
+
+/// Como a conexão está (ícones e cores).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum QualityDto {
+    Excellent,
+    Good,
+    Unstable,
+    Poor,
+}
+
+impl From<Quality> for QualityDto {
+    fn from(quality: Quality) -> Self {
+        match quality {
+            Quality::Excellent => Self::Excellent,
+            Quality::Good => Self::Good,
+            Quality::Unstable => Self::Unstable,
+            Quality::Poor => Self::Poor,
+        }
+    }
+}
+
+/// Percentis p50/p95/p99.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Type)]
+pub struct PercentilesDto {
+    pub p50: f64,
+    pub p95: f64,
+    pub p99: f64,
+}
+
+/// As métricas de um slot com sessão. Tempos em milissegundos.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Type)]
+pub struct SlotMetricsDto {
+    pub slot: u8,
+    pub session_id: u32,
+    /// Último RTT medido; `null` antes da primeira medida.
+    pub rtt_ms: Option<f64>,
+    /// RTT dos últimos 60 s.
+    pub rtt_percentiles_ms: PercentilesDto,
+    /// Jitter do intervalo entre inputs.
+    pub jitter_ms: f64,
+    /// Perda de pacotes nos últimos 10 s, em %.
+    pub loss_pct: f64,
+    /// Pacotes repetidos ou fora de ordem desde o início da sessão.
+    pub out_of_order: u32,
+    /// Pacotes por segundo.
+    pub rate_hz: f64,
+    /// Processamento no server dos últimos 60 s.
+    pub processing_percentiles_ms: PercentilesDto,
+    /// Bateria do celular (0–100).
+    pub battery: Option<u8>,
+    /// `null` até chegar o primeiro pacote.
+    pub quality: Option<QualityDto>,
+}
+
+/// Métricas de todos os slots com sessão.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Type)]
+pub struct MetricsDto {
+    pub slots: Vec<SlotMetricsDto>,
+}
+
+fn ms(d: std::time::Duration) -> f64 {
+    d.as_secs_f64() * 1000.0
+}
+
+fn percentiles(p: [std::time::Duration; 3]) -> PercentilesDto {
+    PercentilesDto {
+        p50: ms(p[0]),
+        p95: ms(p[1]),
+        p99: ms(p[2]),
+    }
+}
+
+impl From<&MetricsSnapshot> for MetricsDto {
+    fn from(snapshot: &MetricsSnapshot) -> Self {
+        Self {
+            slots: snapshot
+                .slots
+                .iter()
+                .map(|m| SlotMetricsDto {
+                    slot: m.slot.index(),
+                    session_id: m.session_id,
+                    rtt_ms: m.rtt_last.map(ms),
+                    rtt_percentiles_ms: percentiles(m.rtt_p),
+                    jitter_ms: ms(m.jitter),
+                    loss_pct: m.loss_ratio * 100.0,
+                    out_of_order: u32::try_from(m.out_of_order).unwrap_or(u32::MAX),
+                    rate_hz: m.rate_hz,
+                    processing_percentiles_ms: percentiles(m.processing_p),
+                    battery: m.battery,
+                    quality: m.quality.map(Into::into),
+                })
+                .collect(),
         }
     }
 }

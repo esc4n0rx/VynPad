@@ -15,7 +15,9 @@ use tauri_specta::Event;
 use tokio::sync::broadcast::error::RecvError;
 
 use crate::driver::DriverStatusDto;
-use crate::dto::{ApprovalPromptDto, InputReportDto, NearbyDto, SessionHealthDto, SlotsDto};
+use crate::dto::{
+    ApprovalPromptDto, InputReportDto, MetricsDto, NearbyDto, SessionHealthDto, SlotsDto,
+};
 
 /// As configurações mudaram (`settings:changed`).
 #[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
@@ -32,6 +34,12 @@ pub struct SlotsChanged {
 /// A lista de dispositivos pareados mudou (novo, renomeado, revogado, esquecido, visto).
 #[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
 pub struct DevicesChanged {}
+
+/// Métricas de latência dos slots (`metrics:tick`): 4 Hz com a janela à vista, 0,2 Hz sem.
+#[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
+pub struct MetricsTick {
+    pub metrics: MetricsDto,
+}
 
 /// Um dispositivo terminou o primeiro pareamento (`devices:paired`).
 #[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
@@ -130,6 +138,7 @@ pub enum Outbound {
     ReservationExpired(ReservationExpired),
     ApprovalRequested(ApprovalRequested),
     ApprovalResolved(ApprovalResolved),
+    MetricsTick(MetricsTick),
 }
 
 impl Outbound {
@@ -148,6 +157,7 @@ impl Outbound {
             Self::ReservationExpired(e) => e.emit(app),
             Self::ApprovalRequested(e) => e.emit(app),
             Self::ApprovalResolved(e) => e.emit(app),
+            Self::MetricsTick(e) => e.emit(app),
         };
         if let Err(error) = result {
             tracing::warn!(%error, "não consegui emitir um evento para a UI");
@@ -211,6 +221,9 @@ pub fn translate(event: &CoreEvent) -> Vec<Outbound> {
             accepted: *accepted,
         })],
         CoreEvent::Control(control) => translate_control(control),
+        CoreEvent::Metrics(snapshot) => vec![Outbound::MetricsTick(MetricsTick {
+            metrics: MetricsDto::from(&**snapshot),
+        })],
     }
 }
 

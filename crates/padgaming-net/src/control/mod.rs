@@ -18,7 +18,7 @@ mod connection;
 mod server;
 mod watchdog;
 
-pub use server::{ControlDeps, ControlServer, StartError};
+pub use server::{ControlDeps, ControlServer, LiveSession, StartError};
 
 use std::future::Future;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -51,6 +51,8 @@ pub struct ControlConfig {
     pub ping_after: Duration,
     /// Sem receber nada por este tempo, fecha a conexão.
     pub dead_after: Duration,
+    /// De quanto em quanto tempo o server manda um `ping` só para medir o RTT (T-305).
+    pub rtt_probe_every: Duration,
     /// Quanto o usuário tem para responder ao pedido de confirmação de um novo dispositivo.
     pub approval_timeout: Duration,
     /// Prazo de cada escrita no socket (um client que não lê não trava a sessão).
@@ -73,6 +75,7 @@ impl Default for ControlConfig {
             hello_timeout: Duration::from_secs(10),
             ping_after: Duration::from_secs(5),
             dead_after: Duration::from_secs(15),
+            rtt_probe_every: Duration::from_millis(250),
             approval_timeout: Duration::from_secs(30),
             write_timeout: Duration::from_secs(5),
             neutral_after: Duration::from_millis(250),

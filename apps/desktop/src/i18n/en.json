@@ -106,7 +106,21 @@
       "disconnect": "Disconnect",
       "latency": "View latency"
     },
-    "swapped": "P{{from}} and P{{to}} swapped places."
+    "swapped": "P{{from}} and P{{to}} swapped places.",
+    "metrics": {
+      "ping": "{{ms}} ms",
+      "noPing": "— ms",
+      "pingLabel": "Latency",
+      "battery": "{{percent}}%",
+      "batteryLabel": "Phone battery",
+      "qualityLabel": "Connection quality",
+      "quality": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "unstable": "Unstable",
+        "poor": "Poor"
+      }
+    }
   },
   "devices": {
     "title": "Devices",
