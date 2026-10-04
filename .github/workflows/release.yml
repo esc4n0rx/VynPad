@@ -17,7 +17,7 @@ jobs:
     name: Instalador do Windows
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # O changelog sai dos commits desde a tag anterior: precisa do histórico e das tags.
           fetch-depth: 0
@@ -35,8 +35,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: release
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm

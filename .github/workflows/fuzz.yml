@@ -29,14 +29,14 @@ jobs:
       run:
         working-directory: crates/vynpad-protocol/fuzz
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: crates/vynpad-protocol/fuzz
       - run: cargo +nightly install cargo-fuzz --locked
       - run: cargo +nightly fuzz run ${{ matrix.target }} -- -max_total_time=${{ inputs.seconds || '600' }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: fuzz-artifacts-${{ matrix.target }}
