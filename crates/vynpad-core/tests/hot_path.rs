@@ -4,8 +4,9 @@
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::cell::Cell;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::thread;
+use std::time::{Duration, Instant};
 
 use vynpad_core::SlotManager;
 use vynpad_driver::{MockDriver, SlotId, XReport, xbuttons};
@@ -88,25 +89,36 @@ fn input_thread_survives_concurrent_slot_operations() {
     manager.submit(2, &REPORT).unwrap();
 
     let stop = Arc::new(AtomicBool::new(false));
+    // Quantos inputs a thread de input já entregou, para o teste saber que ela está rodando.
+    let progress = Arc::new(AtomicU64::new(0));
     let input = {
-        let (manager, stop) = (manager.clone(), stop.clone());
+        let (manager, stop, progress) = (manager.clone(), stop.clone(), progress.clone());
         thread::spawn(move || {
             let mut ok = 0u64;
             while !stop.load(Ordering::Relaxed) {
                 // Erros (slot em troca, pausado...) são esperados; só não pode haver pânico.
                 ok += u64::from(manager.submit(1, &REPORT).is_ok());
                 ok += u64::from(manager.submit(2, &REPORT).is_ok());
+                progress.store(ok, Ordering::Relaxed);
             }
             ok
         })
     };
 
     let slot = |i| SlotId::new(i).unwrap();
-    for round in 0..200 {
+    // 200 rodadas terminam em ~1 ms; num runner pequeno a thread de input pode nem ter começado.
+    // Continua trocando até ela ter entregado algum input (no máximo 5 s), para as duas
+    // threads de fato se sobreporem.
+    let started = Instant::now();
+    let mut round = 0;
+    while round < 200
+        || (progress.load(Ordering::Relaxed) == 0 && started.elapsed() < Duration::from_secs(5))
+    {
         manager.swap(slot(0), slot(1)).unwrap();
         manager.set_paused(slot(0), round % 2 == 0).unwrap();
         manager.set_paused(slot(1), false).unwrap();
         let _ = manager.tick();
+        round += 1;
     }
     stop.store(true, Ordering::Relaxed);
     let ok = input.join().expect("a thread de input não pode dar pânico");

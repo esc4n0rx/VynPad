@@ -82,8 +82,8 @@ jobs:
       # O desktop roda separado: no Windows, o tauri-build põe um msvcrt.lib vazio (CRT
       # estática) no caminho de busca do linker, e o cargo o repassa aos doctests das outras
       # crates da mesma invocação, que então ficam sem CRT (LNK1120).
-      - run: cargo test --workspace --exclude vynpad-desktop --locked
-      - run: cargo test -p vynpad-desktop --locked
+      - run: cargo test --workspace --exclude vynpad-desktop --locked --no-fail-fast
+      - run: cargo test -p vynpad-desktop --locked --no-fail-fast
 
   coverage:
     name: Cobertura (cargo-llvm-cov)
