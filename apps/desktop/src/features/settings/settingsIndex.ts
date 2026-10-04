@@ -49,6 +49,7 @@ export type ItemId =
   | "regenerateIdentity"
   | "version"
   | "logs"
+  | "help"
   | "updates"
   | "diagnostic"
   | "licenses";
@@ -87,6 +88,7 @@ export const ITEMS: readonly IndexedItem[] = [
   { id: "regenerateIdentity", section: "privacy" },
   { id: "version", section: "about" },
   { id: "logs", section: "about" },
+  { id: "help", section: "about" },
   { id: "updates", section: "about" },
   { id: "diagnostic", section: "about" },
   { id: "licenses", section: "about" },

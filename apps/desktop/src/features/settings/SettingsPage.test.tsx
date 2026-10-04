@@ -94,6 +94,7 @@ function setup(settings: Partial<Settings> = {}, initial = "/settings") {
     [
       { path: "/settings", element: <SettingsPage /> },
       { path: "/onboarding", element: <p>tela de introdução</p> },
+      { path: "/help", element: <p>tela de ajuda</p> },
     ],
     { initialEntries: [initial] },
   );
@@ -529,6 +530,43 @@ describe("privacidade", () => {
   });
 });
 
+describe("diagnóstico e ajuda", () => {
+  it("exporta o diagnóstico e mostra onde o arquivo ficou", async () => {
+    commands.exportDiagnostics.mockResolvedValue(
+      "C:/Users/ana/Downloads/padgaming-diagnostico.zip",
+    );
+    setup();
+    goTo("Sobre");
+    fireEvent.click(await screen.findByRole("button", { name: "Exportar diagnóstico" }));
+    await waitFor(() => {
+      expect(commands.exportDiagnostics).toHaveBeenCalledWith(false);
+    });
+    await waitFor(() => {
+      expect(useToasts.getState().toasts.at(-1)?.message).toContain("padgaming-diagnostico.zip");
+    });
+  });
+
+  it("pode mascarar os endereços IP", async () => {
+    commands.exportDiagnostics.mockResolvedValue("C:/x.zip");
+    setup();
+    goTo("Sobre");
+    fireEvent.click(await screen.findByRole("switch", { name: "Esconder os endereços IP" }));
+    fireEvent.click(screen.getByRole("button", { name: "Exportar diagnóstico" }));
+    await waitFor(() => {
+      expect(commands.exportDiagnostics).toHaveBeenCalledWith(true);
+    });
+  });
+
+  it("o botão de ajuda abre a ajuda", async () => {
+    const router = setup();
+    goTo("Sobre");
+    fireEvent.click(await screen.findByRole("button", { name: "Abrir a ajuda" }));
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe("/help");
+    });
+  });
+});
+
 describe("sobre", () => {
   it("mostra a versão, abre a pasta de logs e lista as licenças", async () => {
     commands.openLogsDir.mockResolvedValue(null);
@@ -541,11 +579,9 @@ describe("sobre", () => {
       expect(commands.openLogsDir).toHaveBeenCalledTimes(1);
     });
 
-    // Atualizações e diagnóstico ainda não existem.
-    expect(screen.getAllByRole("button", { name: "Em breve" })).toHaveLength(2);
-    for (const button of screen.getAllByRole("button", { name: "Em breve" })) {
-      expect((button as HTMLButtonElement).disabled).toBe(true);
-    }
+    // Atualizações ainda não existem.
+    expect(screen.getAllByRole("button", { name: "Em breve" })).toHaveLength(1);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Em breve" }).disabled).toBe(true);
 
     fireEvent.click(screen.getByRole("button", { name: "Mostrar licenças" }));
     const licenses = screen.getByRole<HTMLTextAreaElement>("textbox", {

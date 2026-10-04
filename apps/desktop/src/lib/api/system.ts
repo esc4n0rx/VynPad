@@ -86,3 +86,8 @@ export function useRegenerateIdentity() {
 export function useRestartApp() {
   return useMutation({ mutationFn: () => commands.restartApp() });
 }
+
+/** Exporta o pacote de diagnóstico (sem segredos); devolve o caminho do `.zip`. */
+export function useExportDiagnostics() {
+  return useMutation({ mutationFn: (maskIps: boolean) => commands.exportDiagnostics(maskIps) });
+}

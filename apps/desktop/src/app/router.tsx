@@ -59,6 +59,20 @@ export const routes: RouteObject[] = [
           },
         ],
       },
+      {
+        element: <ShellLayout />,
+        children: [
+          {
+            errorElement: <RouteError />,
+            children: [
+              {
+                path: "help",
+                ...lazyPage(() => import("@/features/help/HelpPage"), "HelpPage"),
+              },
+            ],
+          },
+        ],
+      },
       // Tela cheia, sem sidebar.
       {
         path: "onboarding",

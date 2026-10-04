@@ -61,6 +61,12 @@
     },
     "gamepad": {
       "label": "Controle X360"
+    },
+    "help": {
+      "title": "Ajuda",
+      "nav": "Documentos da ajuda",
+      "see": "Ver ajuda",
+      "open": "Abrir a ajuda"
     }
   },
   "dashboard": {
@@ -551,7 +557,7 @@
       },
       "diagnostic": {
         "label": "Exportar diagnóstico",
-        "hint": "Junta logs e informações do sistema num arquivo para o suporte."
+        "hint": "Junta logs dos últimos dias e informações do sistema num arquivo para o suporte, sem tokens nem chaves."
       },
       "licenses": {
         "label": "Licenças de terceiros",
@@ -572,6 +578,10 @@
       "notifySkipFullscreen": {
         "label": "Silêncio durante jogos em tela cheia",
         "hint": "Nenhum aviso aparece enquanto um jogo ocupa a tela toda."
+      },
+      "help": {
+        "label": "Ajuda",
+        "hint": "Primeiros passos, parear, mapeamento, latência e solução de problemas."
       }
     },
     "general": {
@@ -687,7 +697,12 @@
       "logsPath": "Pasta: {{path}}",
       "soon": "Em breve",
       "licensesShow": "Mostrar licenças",
-      "licensesHide": "Esconder licenças"
+      "licensesHide": "Esconder licenças",
+      "exportButton": "Exportar diagnóstico",
+      "exporting": "Exportando…",
+      "maskIps": "Esconder os endereços IP",
+      "exported": "Diagnóstico salvo em {{path}}",
+      "openHelp": "Abrir a ajuda"
     }
   },
   "onboarding": {

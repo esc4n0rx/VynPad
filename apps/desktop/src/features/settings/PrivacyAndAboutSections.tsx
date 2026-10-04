@@ -3,10 +3,13 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { Toggle } from "@/components/ui/toggle";
+import { useNavigate } from "react-router";
 import { useAppInfo } from "@/lib/api/app";
 import type { Settings } from "@/lib/api/settings";
 import {
   useClearHistory,
+  useExportDiagnostics,
   useLogsDir,
   useOpenLogsDir,
   useRegenerateIdentity,
@@ -137,6 +140,9 @@ export function AboutSection() {
   const info = useAppInfo();
   const logs = useLogsDir();
   const openLogs = useOpenLogsDir();
+  const diagnostics = useExportDiagnostics();
+  const navigate = useNavigate();
+  const [maskIps, setMaskIps] = useState(false);
   const [showLicenses, setShowLicenses] = useState(false);
 
   return (
@@ -176,11 +182,45 @@ export function AboutSection() {
           </Button>
         )}
       </SettingRow>
-      <SettingRow id="diagnostic">
+      <SettingRow id="help">
         {() => (
-          <Button variant="secondary" disabled>
-            {t("about.soon")}
+          <Button
+            variant="secondary"
+            onClick={() => {
+              void navigate("/help");
+            }}
+          >
+            {t("about.openHelp")}
           </Button>
+        )}
+      </SettingRow>
+      <SettingRow id="diagnostic" stacked>
+        {() => (
+          <div className="flex flex-wrap items-center gap-4">
+            <Button
+              variant="secondary"
+              disabled={diagnostics.isPending}
+              onClick={() => {
+                diagnostics.mutate(maskIps, {
+                  onSuccess: (path) => {
+                    useToasts.getState().push("success", t("about.exported", { path }));
+                  },
+                });
+              }}
+            >
+              {diagnostics.isPending ? t("about.exporting") : t("about.exportButton")}
+            </Button>
+            <div className="flex items-center gap-2">
+              <Toggle
+                aria-labelledby="mask-ips-label"
+                checked={maskIps}
+                onCheckedChange={setMaskIps}
+              />
+              <span id="mask-ips-label" className="text-body text-fg-2">
+                {t("about.maskIps")}
+              </span>
+            </div>
+          </div>
         )}
       </SettingRow>
       <SettingRow id="licenses" stacked>

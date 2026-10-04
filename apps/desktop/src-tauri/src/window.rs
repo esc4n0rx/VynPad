@@ -109,7 +109,7 @@ pub fn apply<R: Runtime>(_window: &tauri::WebviewWindow<R>, _transparency: bool)
 
 /// Número do build do Windows (`CurrentBuildNumber`), ex.: 22631.
 #[cfg(windows)]
-fn windows_build() -> Option<u32> {
+pub(crate) fn windows_build() -> Option<u32> {
     use winreg::RegKey;
     use winreg::enums::{HKEY_LOCAL_MACHINE, KEY_READ};
 
@@ -121,6 +121,12 @@ fn windows_build() -> Option<u32> {
         .trim()
         .parse()
         .ok()
+}
+
+/// Fora do Windows não há número de build.
+#[cfg(not(windows))]
+pub(crate) const fn windows_build() -> Option<u32> {
+    None
 }
 
 /// "Efeitos de transparência" de Configurações → Personalização → Cores (ligado por padrão).

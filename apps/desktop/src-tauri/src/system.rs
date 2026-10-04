@@ -7,6 +7,9 @@
 use padgaming_net::firewall::{
     self, FirewallError, FirewallPorts, FirewallStatus, NETWORK_SETTINGS_URI, Transport,
 };
+use std::time::{Duration, SystemTime};
+
+use padgaming_server::{DeviceSummary, Diagnostics, LogFile};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::State;
@@ -192,4 +195,163 @@ pub async fn restart_app(state: State<'_, AppState>) -> Result<()> {
     // O `restart` encerra o processo sem passar pelo `RunEvent::Exit`: avisa os clients antes.
     state.core.stop().await;
     tauri::process::restart(&tauri::Env::default())
+}
+
+// ------------------------------------------------------------------ diagnóstico
+
+/// Só os logs dos últimos dias entram no pacote.
+const LOG_DAYS: u64 = 3;
+/// De cada log, no máximo este tanto do final (os mais recentes).
+const LOG_TAIL_BYTES: usize = 2 * 1024 * 1024;
+
+/// Lê os logs recentes (`padgaming.*.log` dos últimos [`LOG_DAYS`] dias), só o final de cada um.
+fn recent_logs() -> Vec<LogFile> {
+    let Some(dir) = crate::logging::log_dir() else {
+        return Vec::new();
+    };
+    let Some(limit) = SystemTime::now().checked_sub(Duration::from_secs(LOG_DAYS * 24 * 3600))
+    else {
+        return Vec::new();
+    };
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return Vec::new();
+    };
+    let mut files: Vec<(SystemTime, LogFile)> = entries
+        .flatten()
+        .filter_map(|entry| {
+            let name = entry.file_name().to_string_lossy().into_owned();
+            let is_log = std::path::Path::new(&name)
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("log"));
+            if !(name.starts_with("padgaming") && is_log) {
+                return None;
+            }
+            let modified = entry.metadata().ok()?.modified().ok()?;
+            if modified < limit {
+                return None;
+            }
+            let bytes = std::fs::read(entry.path()).ok()?;
+            let tail = &bytes[bytes.len().saturating_sub(LOG_TAIL_BYTES)..];
+            Some((
+                modified,
+                LogFile {
+                    name,
+                    text: String::from_utf8_lossy(tail).into_owned(),
+                },
+            ))
+        })
+        .collect();
+    files.sort_by_key(|(at, _)| *at);
+    files.into_iter().map(|(_, file)| file).collect()
+}
+
+fn info_text(state: &AppState, firewall: Option<&FirewallStatus>) -> String {
+    let ports = state.core.ports();
+    let settings = state.core.settings().get();
+    let slots = state.core.slots().snapshot();
+    let used = slots.slots.iter().filter(|s| s.device.is_some()).count();
+    let mut lines = vec![
+        format!(
+            "PadGaming {} (núcleo {})",
+            env!("CARGO_PKG_VERSION"),
+            padgaming_core::VERSION
+        ),
+        format!(
+            "Sistema: {} {}{}",
+            std::env::consts::OS,
+            std::env::consts::ARCH,
+            crate::window::windows_build()
+                .map_or_else(String::new, |build| format!(" (build {build})"))
+        ),
+        format!("Idioma: {:?}", settings.language),
+        format!("Driver: {:?}", state.core.driver_status()),
+        format!(
+            "Portas: controle {} / input {} / descoberta {}",
+            ports.control, ports.input, ports.discovery
+        ),
+        format!(
+            "Impressão digital do server: {}",
+            padgaming_protocol::discovery::short_fingerprint(&state.core.fingerprint())
+        ),
+        format!("Slots em uso: {used} de {}", slots.slots.len()),
+    ];
+    lines.push(match firewall {
+        Some(status) => format!(
+            "Firewall: aplicável={}, ligado={}, ok={}, rede pública={}",
+            status.applicable,
+            status.firewall_on,
+            status.ok(),
+            status.public_network_warning()
+        ),
+        None => "Firewall: não consegui ler".to_owned(),
+    });
+    lines.join("\n")
+}
+
+/// Exporta o pacote de diagnóstico (`.zip`) para a pasta Downloads (ou a Área de Trabalho),
+/// mostra o arquivo no Explorer e devolve o caminho. Sem tokens nem chaves; com `mask_ips`, os
+/// IPs também saem mascarados.
+#[tauri::command]
+#[specta::specta]
+pub async fn export_diagnostics(state: State<'_, AppState>, mask_ips: bool) -> Result<String> {
+    let ports = firewall_ports(&state);
+    let firewall = tauri::async_runtime::spawn_blocking(move || {
+        let exe = firewall::current_exe().ok()?;
+        firewall::check(&exe, ports).ok()
+    })
+    .await
+    .ok()
+    .flatten();
+
+    let devices = state
+        .core
+        .devices()
+        .list()
+        .await
+        .map_err(padgaming_server::CoreError::from)?
+        .into_iter()
+        .map(|d| DeviceSummary {
+            id: d.id,
+            name: d.name,
+            model: d.model,
+            os_version: d.os_version,
+            paired_at: d.paired_at,
+            last_seen_at: d.last_seen_at,
+            revoked: d.revoked,
+            preferred_slot: d.preferred_slot,
+        })
+        .collect();
+    let metrics = crate::dto::MetricsDto::from(&state.core.metrics());
+    let diagnostics = Diagnostics {
+        info: info_text(&state, firewall.as_ref()),
+        settings_json: serde_json::to_string_pretty(&*state.core.settings().get())
+            .map_err(|e| AppError::internal(&e))?,
+        interfaces: state
+            .core
+            .local_addresses()
+            .into_iter()
+            .map(|i| (i.name, i.ip.to_string()))
+            .collect(),
+        metrics_json: serde_json::to_string_pretty(&metrics).map_err(|e| AppError::internal(&e))?,
+        devices,
+        logs: recent_logs(),
+        mask_ips,
+    };
+    let bytes = padgaming_server::build_zip(&diagnostics).map_err(|e| AppError::internal(&e))?;
+
+    let dir = dirs::download_dir()
+        .or_else(dirs::desktop_dir)
+        .or_else(dirs::home_dir)
+        .ok_or_else(|| AppError::not_found("a pasta de Downloads"))?;
+    let path = dir.join(format!(
+        "padgaming-diagnostico-{}.zip",
+        padgaming_server::utc_stamp(padgaming_storage::seed::now_ms())
+    ));
+    std::fs::write(&path, bytes)?;
+    tracing::info!(path = %path.display(), "pacote de diagnóstico exportado");
+    // Mostrar no Explorer é conveniência: se falhar, o arquivo já está salvo.
+    if let Err(error) = tauri_plugin_opener::reveal_item_in_dir(&path) {
+        tracing::warn!(%error, "não consegui mostrar o diagnóstico no Explorer");
+    }
+    Ok(path.to_string_lossy().into_owned())
 }

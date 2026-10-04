@@ -80,6 +80,7 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
             system::clear_history,
             system::regenerate_identity,
             system::restart_app,
+            system::export_diagnostics,
             commands::start_pairing,
             commands::cancel_pairing,
             commands::answer_approval,

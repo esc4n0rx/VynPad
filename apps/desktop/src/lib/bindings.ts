@@ -89,6 +89,12 @@ export const commands = {
 	regenerateIdentity: () => __TAURI_INVOKE<null>("regenerate_identity"),
 	/**  Reinicia o app (a identidade nova e as portas só valem depois disso). */
 	restartApp: () => __TAURI_INVOKE<null>("restart_app"),
+	/**
+	 *  Exporta o pacote de diagnóstico (`.zip`) para a pasta Downloads (ou a Área de Trabalho),
+	 *  mostra o arquivo no Explorer e devolve o caminho. Sem tokens nem chaves; com `mask_ips`, os
+	 *  IPs também saem mascarados.
+	 */
+	exportDiagnostics: (maskIps: boolean) => __TAURI_INVOKE<string>("export_diagnostics", { maskIps }),
 	/**  Gera QR code e PIN. Cada chamada invalida o PIN anterior. */
 	startPairing: () => __TAURI_INVOKE<PairingOfferDto>("start_pairing"),
 	cancelPairing: () => __TAURI_INVOKE<void>("cancel_pairing"),

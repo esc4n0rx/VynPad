@@ -19,6 +19,7 @@
 
 mod config;
 mod core;
+mod diagnostics;
 mod error;
 mod event;
 mod metrics;
@@ -27,6 +28,9 @@ mod store;
 
 pub use config::{CoreConfig, computer_name};
 pub use core::{BoundPorts, Core, PairingOffer};
+pub use diagnostics::{
+    DeviceSummary, Diagnostics, DiagnosticsError, LogFile, REDACTED, build_zip, redact, utc_stamp,
+};
 pub use error::CoreError;
 pub use event::{ApprovalEvent, ApprovalPrompt, CoreEvent};
 pub use metrics::{

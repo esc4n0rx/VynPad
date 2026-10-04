@@ -105,6 +105,22 @@ describe("shell", () => {
     ).toBeTruthy();
   });
 
+  it("F1 abre a ajuda", async () => {
+    const router = renderAt("/");
+    await screen.findByRole("navigation", { name: "Seções" });
+    fireEvent.keyDown(window, { key: "F1" });
+    // A tela da ajuda é carregada sob demanda (e traz os documentos): dá mais tempo.
+    await waitFor(
+      () => {
+        expect(router.state.location.pathname).toBe("/help");
+      },
+      { timeout: 4000 },
+    );
+    expect(
+      await screen.findByRole("navigation", { name: "Documentos da ajuda" }, { timeout: 4000 }),
+    ).toBeTruthy();
+  });
+
   it("recolhe a sidebar para só ícones em janelas estreitas", async () => {
     matchMedia(true);
     renderAt("/");
