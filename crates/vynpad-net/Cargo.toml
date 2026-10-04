@@ -12,7 +12,7 @@ vynpad-driver = { workspace = true }
 vynpad-mapping = { workspace = true }
 vynpad-protocol = { workspace = true }
 arc-swap = "1"
-base64 = "0.22"
+base64 = "0.23"
 crossbeam-channel = "0.5"
 getrandom = "0.3"
 qrcode = { version = "0.14", default-features = false, features = ["svg"] }

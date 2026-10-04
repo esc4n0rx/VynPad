@@ -14,7 +14,7 @@ std = ["dep:serde", "dep:serde_json", "dep:base64"]
 [dependencies]
 bitflags = "2"
 chacha20poly1305 = { version = "0.11", default-features = false }
-base64 = { version = "0.22", optional = true }
+base64 = { version = "0.23", optional = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 
