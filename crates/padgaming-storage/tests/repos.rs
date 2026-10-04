@@ -745,3 +745,47 @@ async fn the_log_filters_by_device_and_paginates_newest_first() {
             .is_err()
     );
 }
+
+/// Um `.padprofile` vem de fora (de outra pessoa): tamanho, profundidade e valores são conferidos
+/// antes de qualquer coisa ser gravada (T-706).
+#[tokio::test]
+async fn hostile_padprofile_files_are_refused_without_storing_anything() {
+    let (_db, service, _) = profiles().await;
+    let before = service.list().await.unwrap().len();
+
+    let huge = format!(
+        r#"{{"format":"padprofile","version":1,"name":"x","profile":{{}},"padding":"{}"}}"#,
+        "a".repeat(300 * 1024)
+    );
+    let deep = format!("{}{}", "[".repeat(100_000), "]".repeat(100_000));
+    let wrong_format = r#"{"format":"outro","version":1,"name":"x","profile":{}}"#;
+    let future = r#"{"format":"padprofile","version":99,"name":"x","profile":{}}"#;
+    let out_of_range = r#"{"format":"padprofile","version":1,"name":"x",
+        "profile":{"sticks":{"left":{"deadzone_inner":7.5}}}}"#;
+    let nameless = r#"{"format":"padprofile","version":1,"name":"","profile":{}}"#;
+    let long_name = format!(
+        r#"{{"format":"padprofile","version":1,"name":"{}","profile":{{}}}}"#,
+        "n".repeat(500)
+    );
+    for (what, text) in [
+        ("grande demais", huge.as_str()),
+        ("aninhado demais", deep.as_str()),
+        ("formato errado", wrong_format),
+        ("versão futura", future),
+        ("valor fora da faixa", out_of_range),
+        ("sem nome", nameless),
+        ("nome enorme", long_name.as_str()),
+        ("não é JSON", "isto não é um perfil"),
+        ("vazio", ""),
+    ] {
+        assert!(
+            service.import(text).await.is_err(),
+            "{what} deveria ser recusado"
+        );
+    }
+    assert_eq!(
+        service.list().await.unwrap().len(),
+        before,
+        "nada foi gravado"
+    );
+}

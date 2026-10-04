@@ -2,7 +2,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::io;
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
@@ -11,7 +11,7 @@ use padgaming_core::SlotManager;
 use padgaming_driver::SlotId;
 use padgaming_protocol::control::{ByeReason, Config, Uuid};
 use tokio::net::TcpListener;
-use tokio::sync::{Semaphore, broadcast, mpsc, watch};
+use tokio::sync::{OwnedSemaphorePermit, Semaphore, broadcast, mpsc, watch};
 use tokio::task::JoinHandle;
 use tokio_rustls::TlsAcceptor;
 
@@ -297,6 +297,48 @@ pub enum StartError {
     Tls(#[from] IdentityError),
 }
 
+/// Uma vaga de conexão pendente (ainda sem `hello` autenticado): a vaga geral e a do endereço de
+/// origem. As duas voltam juntas quando a conexão é descartada.
+pub(super) struct Pending {
+    _permit: OwnedSemaphorePermit,
+    ip: IpAddr,
+    per_ip: Arc<Mutex<HashMap<IpAddr, usize>>>,
+}
+
+impl Pending {
+    /// Pega a vaga do `ip`, se ele ainda não está no limite.
+    fn acquire(
+        permit: OwnedSemaphorePermit,
+        ip: IpAddr,
+        per_ip: &Arc<Mutex<HashMap<IpAddr, usize>>>,
+        limit: usize,
+    ) -> Option<Self> {
+        let mut counts = per_ip.lock().unwrap_or_else(PoisonError::into_inner);
+        let count = counts.entry(ip).or_insert(0);
+        if *count >= limit {
+            return None;
+        }
+        *count += 1;
+        Some(Self {
+            _permit: permit,
+            ip,
+            per_ip: Arc::clone(per_ip),
+        })
+    }
+}
+
+impl Drop for Pending {
+    fn drop(&mut self) {
+        let mut counts = self.per_ip.lock().unwrap_or_else(PoisonError::into_inner);
+        if let Some(count) = counts.get_mut(&self.ip) {
+            *count = count.saturating_sub(1);
+            if *count == 0 {
+                counts.remove(&self.ip);
+            }
+        }
+    }
+}
+
 async fn accept_loop(
     listener: TcpListener,
     acceptor: TlsAcceptor,
@@ -304,6 +346,7 @@ async fn accept_loop(
     pending: Arc<Semaphore>,
 ) {
     let mut stop = shared.shutdown.subscribe();
+    let per_ip = Arc::new(Mutex::new(HashMap::new()));
     loop {
         let (stream, peer) = tokio::select! {
             accepted = listener.accept() => match accepted {
@@ -320,6 +363,12 @@ async fn accept_loop(
         let Ok(permit) = Arc::clone(&pending).try_acquire_owned() else {
             tracing::warn!(%peer, "conexões pendentes demais: recusada");
             continue; // `stream` cai aqui e fecha o socket.
+        };
+        let Some(permit) =
+            Pending::acquire(permit, peer.ip(), &per_ip, shared.config.max_pending_per_ip)
+        else {
+            tracing::warn!(%peer, "conexões pendentes demais deste endereço: recusada");
+            continue;
         };
         let _ = stream.set_nodelay(true);
         tokio::spawn(connection::run(

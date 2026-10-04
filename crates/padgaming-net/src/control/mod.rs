@@ -45,6 +45,9 @@ pub struct ControlConfig {
     /// Conexões que ainda não completaram o handshake (TLS + `hello` + auth). Além disso,
     /// as novas são fechadas na hora.
     pub max_pending: usize,
+    /// Quantas dessas vagas um mesmo endereço pode ocupar (T-706): um aparelho na LAN abrindo
+    /// conexões e ficando mudo não pode esgotar as vagas dos outros.
+    pub max_pending_per_ip: usize,
     /// Prazo para o TLS e o `hello` chegarem.
     pub hello_timeout: Duration,
     /// Sem enviar nada por este tempo, manda `ping`.
@@ -72,6 +75,7 @@ impl Default for ControlConfig {
         Self {
             bind: SocketAddr::from((Ipv4Addr::UNSPECIFIED, DEFAULT_PORT)),
             max_pending: 16,
+            max_pending_per_ip: 4,
             hello_timeout: Duration::from_secs(10),
             ping_after: Duration::from_secs(5),
             dead_after: Duration::from_secs(15),

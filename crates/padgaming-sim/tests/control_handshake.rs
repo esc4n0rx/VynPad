@@ -626,6 +626,40 @@ async fn pending_connections_are_limited() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn one_address_cannot_take_every_pending_slot() {
+    let rig = rig(ControlConfig {
+        max_pending: 16,
+        max_pending_per_ip: 2,
+        hello_timeout: Duration::from_secs(5),
+        ..quick()
+    })
+    .await;
+    let addr = rig.control.local_addr();
+    let held: Vec<_> = (0..2)
+        .map(|_| std::net::TcpStream::connect(addr).unwrap())
+        .collect();
+    tokio::time::sleep(Duration::from_millis(100)).await;
+
+    // O mesmo endereço (aqui, o loopback) não ocupa uma terceira vaga, mesmo sobrando vagas gerais.
+    let third = tokio::task::spawn_blocking(move || {
+        use std::io::Read;
+        let mut tcp = std::net::TcpStream::connect(addr).unwrap();
+        tcp.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+        let mut buf = [0u8; 8];
+        matches!(tcp.read(&mut buf), Ok(0) | Err(_))
+    })
+    .await
+    .unwrap();
+    assert!(third, "a 3ª conexão do mesmo endereço deveria ser fechada");
+
+    // Soltas as vagas, o endereço volta a conseguir conectar (a contagem não vaza).
+    drop(held);
+    tokio::time::sleep(Duration::from_millis(300)).await;
+    let session = welcomed(addr, Trust::FirstUse, device(1), token_auth(&rig)).await;
+    drop(session);
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn shutdown_says_bye_to_everyone() {
     // O client de teste não responde ao keepalive: o `timeout` não pode ganhar do shutdown.
     let rig = rig(ControlConfig {

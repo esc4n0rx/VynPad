@@ -15,7 +15,7 @@ use padgaming_protocol::control::{
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
 use tokio::runtime::Handle;
-use tokio::sync::{OwnedSemaphorePermit, mpsc, oneshot};
+use tokio::sync::{mpsc, oneshot};
 use tokio::time::{Instant, sleep_until, timeout, timeout_at};
 use tokio_rustls::TlsAcceptor;
 use tokio_rustls::server::TlsStream;
@@ -102,7 +102,7 @@ pub(super) async fn run(
     acceptor: TlsAcceptor,
     stream: TcpStream,
     peer: std::net::SocketAddr,
-    permit: OwnedSemaphorePermit,
+    permit: super::server::Pending,
 ) {
     let limit = shared.config.write_timeout;
     let deadline = Instant::now() + shared.config.hello_timeout;

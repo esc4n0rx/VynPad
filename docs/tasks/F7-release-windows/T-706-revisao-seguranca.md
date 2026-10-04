@@ -6,7 +6,7 @@
 | Prioridade | P1 |
 | Estimativa | M |
 | Depende de | T-103, T-302 |
-| Status | ⬜ A fazer |
+| Status | ✅ Concluída |
 
 ## Objetivo
 Um app que injeta input no PC precisa ser seguro por padrão.
@@ -29,3 +29,8 @@ Um app que injeta input no PC precisa ser seguro por padrão.
 
 ## Fora de escopo
 - Pentest externo.
+
+## Fechamento
+- `docs/SEGURANCA.md`: modelo de ameaças (STRIDE) com a defesa e **o teste que a confere** em cada linha, o checklist concluído, os achados e os riscos que ficam.
+- Corrigido: um único endereço da LAN podia ocupar todas as vagas de conexão pendente (limite novo por endereço, `max_pending_per_ip`); a capability `opener:default` da webview, sem uso, foi removida.
+- Testes novos: flood de UDP (sessão desconhecida, tag inválida e malformados, com a sessão legítima recebendo 250 de 250 inputs), vagas por endereço e arquivos `.padprofile` hostis.

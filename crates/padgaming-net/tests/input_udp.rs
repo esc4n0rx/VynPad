@@ -593,3 +593,92 @@ fn an_old_ack_does_not_end_the_retransmission() {
     client.ack(first.rumble_id);
     assert!(client.recv_rumble(Duration::from_secs(1)).is_some());
 }
+
+// ------------------------------------------------------------------------------- flood (T-706)
+
+/// Um atacante que não conhece nenhuma chave inunda a porta de input com lixo de três tipos:
+/// sessão desconhecida, sessão conhecida com tag inválida e datagramas malformados. A sessão
+/// legítima, no mesmo socket, segue sendo atendida.
+#[test]
+fn a_flood_of_garbage_does_not_starve_the_legitimate_session() {
+    const LEGIT_INPUTS: u32 = 250; // 1 s a 250 Hz
+    let rig = rig();
+    let mut client = rig.connect(1);
+    client.send_input(pressed(Buttons::empty(), 0));
+    wait_until("1º input", || rig.driver.last_report(slot(0)).is_some());
+    let before = rig.server.stats().snapshot();
+
+    let target = rig.server.local_addr();
+    let stop = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let flooder = {
+        let stop = Arc::clone(&stop);
+        std::thread::spawn(move || {
+            let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
+            // O atacante sabe montar pacotes bem formados, mas não tem a chave de ninguém.
+            let wrong = Secret::new([0xEE; KEY_LEN]);
+            let mut to_known = Session::new(Role::Client, 101, &wrong);
+            let mut to_unknown = Session::new(Role::Client, 0xDEAD_0001, &wrong);
+            let mut buf = [0u8; MAX_PACKET_LEN];
+            let payload = Payload::Input(InputState::default());
+            let mut n = 0u32;
+            let mut sent = 0u64;
+            while !stop.load(std::sync::atomic::Ordering::Relaxed) {
+                n = n.wrapping_add(1);
+                // Um terço: sessão conhecida com tag inválida; um terço: sessão desconhecida;
+                // um terço: datagramas curtos demais.
+                let len = match n % 3 {
+                    0 => to_known.send(&payload, &mut buf).unwrap(),
+                    1 => to_unknown.send(&payload, &mut buf).unwrap(),
+                    _ => 7,
+                };
+                let _ = socket.send_to(&buf[..len], target);
+                sent += 1;
+                if sent.is_multiple_of(64) {
+                    // Sem dormir o laço não cede CPU à thread do server; ~64 pacotes a cada
+                    // 100 µs já é muito mais que qualquer celular legítimo.
+                    std::thread::sleep(Duration::from_micros(100));
+                }
+            }
+            sent
+        })
+    };
+
+    for i in 0..LEGIT_INPUTS {
+        client.send_input(pressed(Buttons::A, i16::try_from(i).unwrap()));
+        std::thread::sleep(Duration::from_millis(4));
+    }
+    stop.store(true, std::sync::atomic::Ordering::Relaxed);
+    let flood_packets = flooder.join().unwrap();
+
+    wait_until("inputs legítimos", || {
+        rig.server.stats().snapshot().inputs >= before.inputs + u64::from(LEGIT_INPUTS) * 95 / 100
+    });
+    let stats = rig.server.stats();
+    let after = stats.snapshot();
+    let delivered = after.inputs - before.inputs;
+    println!(
+        "flood: {flood_packets} pacotes de lixo; legítimos entregues {delivered}/{LEGIT_INPUTS}; \
+         descartes: desconhecida {}, auth {}, malformados {}; p99 {:?}",
+        after.dropped_unknown_session - before.dropped_unknown_session,
+        after.dropped_auth - before.dropped_auth,
+        after.dropped_malformed - before.dropped_malformed,
+        stats.processing.percentile(99.0)
+    );
+    assert!(
+        flood_packets > 10_000,
+        "o flood não foi pesado o bastante: {flood_packets}"
+    );
+    assert!(
+        delivered >= u64::from(LEGIT_INPUTS) * 95 / 100,
+        "entregues: {delivered}"
+    );
+    // O lixo foi descartado nas portas certas, e nenhum virou input.
+    assert!(after.dropped_unknown_session > before.dropped_unknown_session);
+    assert!(after.dropped_auth > before.dropped_auth);
+    assert!(after.dropped_malformed > before.dropped_malformed);
+    assert!(
+        stats.processing.percentile(99.0) < Duration::from_millis(2),
+        "p99 = {:?}",
+        stats.processing.percentile(99.0)
+    );
+}
