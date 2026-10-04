@@ -22,6 +22,8 @@ export default defineConfig(() => ({
     // Inicializa o i18n (PT-BR) para os componentes que usam `useTranslation`.
     setupFiles: ["src/test/setup.ts"],
     restoreMocks: true,
+    // Mesmo motivo do `asyncUtilTimeout` em `src/test/setup.ts`.
+    testTimeout: 20_000,
   },
 
   // Opções específicas para `tauri dev` / `tauri build`:

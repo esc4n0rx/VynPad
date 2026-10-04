@@ -29,7 +29,7 @@ const HIVES = [
 ];
 
 function installedVersion() {
-  for (const client of CLIENTS) {
+  for (const [index, client] of CLIENTS.entries()) {
     for (const hive of HIVES) {
       try {
         const text = execFileSync("reg", ["query", `${hive}\\${client}`, "/v", "pv"], {
@@ -37,7 +37,7 @@ function installedVersion() {
           stdio: ["ignore", "pipe", "ignore"],
         });
         const match = /pv\s+REG_SZ\s+(\d+\.\d+\.\d+\.\d+)/.exec(text);
-        if (match) return match[1];
+        if (match) return { version: match[1], source: index === 0 ? "WebView2 Runtime" : "Edge" };
       } catch {
         // chave ausente: tenta a próxima
       }
@@ -59,8 +59,12 @@ async function latestForMajor(major) {
   return Buffer.from(await response.arrayBuffer()).toString("utf16le").replace(/^﻿/, "").trim();
 }
 
-const version = installedVersion();
-console.log(`WebView2/Edge ${version}`);
+const { version, source } = installedVersion();
+console.log(`${source} ${version}`);
+if (source !== "WebView2 Runtime") {
+  // O app roda no WebView2, não no Edge; se as versões diferirem a sessão não abre.
+  console.warn("aviso: o WebView2 Runtime não foi achado no registro; usando a versão do Edge");
+}
 let zip = await download(version);
 if (!zip) {
   const fallback = await latestForMajor(version.split(".")[0]);

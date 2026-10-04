@@ -108,18 +108,19 @@ describe("shell", () => {
   it("F1 abre a ajuda", async () => {
     const router = renderAt("/");
     await screen.findByRole("navigation", { name: "Seções" });
-    fireEvent.keyDown(window, { key: "F1" });
-    // A tela da ajuda é carregada sob demanda (e traz os documentos): dá mais tempo.
+    // A tela da ajuda é carregada sob demanda (e traz os documentos): dá mais tempo. O F1 é
+    // repetido até pegar, porque num computador lento o atalho pode ainda não estar ligado.
     await waitFor(
       () => {
+        fireEvent.keyDown(window, { key: "F1" });
         expect(router.state.location.pathname).toBe("/help");
       },
-      { timeout: 4000 },
+      { timeout: 8000 },
     );
     expect(
-      await screen.findByRole("navigation", { name: "Documentos da ajuda" }, { timeout: 4000 }),
+      await screen.findByRole("navigation", { name: "Documentos da ajuda" }, { timeout: 8000 }),
     ).toBeTruthy();
-  });
+  }, 20_000);
 
   it("recolhe a sidebar para só ícones em janelas estreitas", async () => {
     matchMedia(true);

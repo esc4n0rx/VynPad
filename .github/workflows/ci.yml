@@ -144,12 +144,27 @@ jobs:
       - run: cargo install tauri-driver --locked
       # O msedgedriver precisa ter a versão do WebView2 do runner.
       - run: pnpm --filter @vynpad/e2e drivers
+      # Diagnóstico: abre o app sozinho por alguns segundos, com a saída visível, para o caso de o
+      # WebDriver não conseguir abrir a sessão.
+      - name: O app abre sozinho no runner
+        shell: pwsh
+        continue-on-error: true
+        env:
+          VYNPAD_E2E: "1"
+        run: |
+          $env:VYNPAD_DATA_DIR = Join-Path $env:RUNNER_TEMP "vynpad-smoke"
+          $p = Start-Process target/release/vynpad-desktop.exe -PassThru
+          Start-Sleep -Seconds 12
+          if ($p.HasExited) { "O app saiu sozinho com código $($p.ExitCode)" } else { "O app segue aberto (PID $($p.Id))"; Stop-Process -Id $p.Id -Force }
+          Get-ChildItem "$env:LOCALAPPDATA\VynPad\logs" -ErrorAction SilentlyContinue | ForEach-Object { "--- $($_.Name)"; Get-Content $_.FullName -Tail 25 }
       - run: pnpm --filter @vynpad/e2e e2e
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: e2e-screenshots
-          path: e2e/logs
+          name: e2e-diagnostico
+          path: |
+            e2e/logs
+            C:/Users/runneradmin/AppData/Local/VynPad/logs
           if-no-files-found: ignore
           retention-days: 7
 
@@ -173,7 +188,9 @@ jobs:
         with:
           node-version: 24
       # O dev_server só existe em debug; com --mock não toca no sistema.
-      - run: cargo build --locked -p vynpad-net --example dev_server -p vynpad-sim
+      # Dois comandos: o `--example` valeria para os dois pacotes e o simulador não seria compilado.
+      - run: cargo build --locked -p vynpad-net --example dev_server
+      - run: cargo build --locked -p vynpad-sim
       - name: Bench de 20 s com 4 clients a 250 Hz
         run: |
           target/debug/examples/dev_server --mock > dev_server.log 2>&1 &
