@@ -292,6 +292,7 @@ fn translate_control(event: &ControlEvent) -> Vec<Outbound> {
 pub fn spawn_pump<R: Runtime>(app: AppHandle<R>, core: &Arc<Core>) {
     let mut events = core.subscribe();
     let mut transparency = core.settings().get().transparency;
+    let mut autostart = core.settings().get().autostart;
     tauri::async_runtime::spawn(async move {
         loop {
             match events.recv().await {
@@ -302,6 +303,13 @@ pub fn spawn_pump<R: Runtime>(app: AppHandle<R>, core: &Arc<Core>) {
                     {
                         transparency = settings.transparency;
                         crate::window::reapply(&app, transparency);
+                    }
+                    // Iniciar com o sistema segue o interruptor, sem reiniciar o app.
+                    if let CoreEvent::Settings(settings) = &event
+                        && settings.autostart != autostart
+                    {
+                        autostart = settings.autostart;
+                        crate::autostart::apply(&app, autostart);
                     }
                     for outbound in translate(&event) {
                         outbound.emit(&app);

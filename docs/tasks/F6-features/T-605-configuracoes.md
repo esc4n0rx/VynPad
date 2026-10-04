@@ -6,7 +6,7 @@
 | Prioridade | P1 |
 | Estimativa | M |
 | Depende de | T-403, T-504 |
-| Status | 🟨 Pronta; falta conferir no app: o vidro ligando e desligando, o UAC do firewall, o reinício e o efeito de iniciar com o sistema/bandeja (a T-607 aplica) |
+| Status | 🟨 Pronta; falta conferir no app: o vidro ligando e desligando, o UAC do firewall, o reinício e o reinício |
 
 ## Objetivo
 Tela de preferências no estilo "Ajustes do Sistema" do macOS.
@@ -36,4 +36,4 @@ Sub-navegação lateral com as seções:
 - Rede: portas validadas como no backend, interfaces com IP copiável, "Testar conexão" (`firewall::self_test`) e firewall com status por porta, "Corrigir" (UAC) e aviso de rede pública.
 - Privacidade: "Limpar histórico" e "Regenerar identidade" (gera certificado novo, esquece os dispositivos, encerra as sessões e pede reiniciar), ambos com confirmação.
 - Sobre: versões, abrir a pasta de logs, licenças de terceiros (o `THIRD-PARTY-NOTICES.md`, incluindo o ViGEmBus). "Atualizações" (T-704) e "Exportar diagnóstico" (T-705) aparecem desabilitados como "Em breve".
-- Iniciar com o Windows, iniciar minimizado e fechar → bandeja são gravados aqui e passam a valer com a bandeja e o autostart da T-607.
+- Iniciar com o Windows, iniciar minimizado e fechar → bandeja são gravados aqui e aplicados pela T-607.

@@ -5,6 +5,7 @@
 //! `pnpm typecheck` até o frontend acompanhar. O `Core` (`padgaming-server`) mora no
 //! [`AppState`]; os commands só traduzem tipos e delegam a ele.
 
+mod autostart;
 mod commands;
 mod driver;
 mod dto;
@@ -12,8 +13,10 @@ mod error;
 mod events;
 mod live;
 mod logging;
+mod shell;
 mod state;
 mod system;
+mod tray;
 mod window;
 
 use std::sync::Arc;
@@ -26,7 +29,6 @@ use tauri_specta::{Builder, collect_commands, collect_events};
 use crate::events::InputLive;
 use crate::state::AppState;
 
-const MAIN_WINDOW: &str = "main";
 /// Quanto o app espera o `Core` se despedir dos clients ao fechar.
 const EXIT_GRACE: Duration = Duration::from_secs(3);
 /// Onde o `bindings.ts` é gerado, relativo à pasta `src-tauri`.
@@ -65,6 +67,7 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
             commands::get_slot_profiles,
             commands::set_slot_profile,
             commands::get_metrics,
+            shell::take_pending_navigation,
             commands::set_ui_visible,
             system::firewall_status,
             system::fix_firewall,
@@ -90,6 +93,8 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
             events::SettingsChanged,
             events::MetricsTick,
             window::WindowChromeChanged,
+            shell::TrayHint,
+            shell::TrayNavigate,
             events::SlotsChanged,
             events::DevicesChanged,
             events::DevicesPaired,
@@ -110,24 +115,6 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
         .error_handling(tauri_specta::ErrorHandlingMode::Throw)
 }
 
-/// Traz a janela principal para frente (usado quando uma segunda instância é aberta).
-fn focus_main_window(app: &tauri::AppHandle) {
-    if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
-        let _ = window.unminimize();
-        let _ = window.show();
-        let _ = window.set_focus();
-    }
-}
-
-/// Aplica o material (Mica/Acrylic/sólido) na janela principal e guarda o resultado para a UI.
-fn setup_window(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let window = app
-        .get_webview_window(MAIN_WINDOW)
-        .ok_or("a janela principal não existe")?;
-    app.manage(window::ChromeState::new(window::apply(&window, true)));
-    Ok(())
-}
-
 /// Sobe o `Core` e liga tudo o que depende dele à webview.
 fn start_core(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let data_dir = padgaming_storage::default_data_dir()
@@ -137,11 +124,18 @@ fn start_core(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let (core, live) = (Arc::clone(&state.core), Arc::clone(&state.live));
     app.manage(state);
 
-    // A preferência de transparência vale desde a abertura (o `setup_window` usou o padrão).
-    if !core.settings().get().transparency {
-        window::reapply(app.handle(), false);
-    }
+    // Autostart e bandeja dependem do `Core`; a janela, de ele estar de pé.
+    let settings = core.settings().get();
+    autostart::apply(app.handle(), settings.autostart);
     events::spawn_pump(app.handle().clone(), &core);
+    match tray::install(app.handle(), &core) {
+        Ok(icon) => tray::spawn_updater(app.handle().clone(), Arc::clone(&core), icon),
+        Err(error) => tracing::warn!(%error, "não consegui criar o ícone da bandeja"),
+    }
+    // Iniciar minimizado: a janela só nasce quando alguém pedir (bandeja ou segunda instância).
+    if !shell::should_start_minimized(std::env::args(), settings.start_minimized) {
+        shell::show_main_window(app.handle());
+    }
 
     // O `input:live` só é amostrado enquanto alguma tela assina.
     let handle = app.handle().clone();
@@ -179,7 +173,7 @@ pub fn run() {
     #[cfg(desktop)]
     let app_builder = app_builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
         tracing::info!("segunda instância aberta; focando a janela existente");
-        focus_main_window(app);
+        shell::show_main_window(app);
     }));
 
     // Lembra tamanho e posição da janela entre execuções.
@@ -190,13 +184,30 @@ pub fn run() {
         .invoke_handler(builder.invoke_handler())
         .setup(move |app| {
             builder.mount_events(app);
-            setup_window(app)?;
+            // O material real é aplicado quando a janela nasce (`shell::show_main_window`).
+            app.manage(window::ChromeState::new(window::FALLBACK_CHROME));
+            app.manage(shell::PendingNav::default());
             start_core(app)
         })
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None::<Vec<&str>>,
+        ))
+        .on_window_event(shell::on_window_event)
         .build(tauri::generate_context!())
         .expect("falha ao iniciar o PadGaming")
         .run(|app, event| {
+            // Com "fechar vai para a bandeja", fechar a última janela não encerra o app. Só o
+            // "Sair" da bandeja (que traz um código de saída) encerra.
+            if let RunEvent::ExitRequested {
+                code: None, api, ..
+            } = &event
+                && let Some(state) = app.try_state::<AppState>()
+                && state.core.settings().get().close_to_tray
+            {
+                api.prevent_exit();
+            }
             if let RunEvent::Exit = event
                 && let Some(state) = app.try_state::<AppState>()
             {
@@ -269,10 +280,13 @@ mod tests {
                 #[cfg(windows)]
                 xinput: None,
             });
-            let webview =
-                tauri::WebviewWindowBuilder::new(&app, MAIN_WINDOW, tauri::WebviewUrl::default())
-                    .build()
-                    .expect("janela de teste");
+            let webview = tauri::WebviewWindowBuilder::new(
+                &app,
+                crate::shell::MAIN_WINDOW,
+                tauri::WebviewUrl::default(),
+            )
+            .build()
+            .expect("janela de teste");
             Self {
                 webview,
                 state,

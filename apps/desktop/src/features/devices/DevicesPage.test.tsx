@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useApprovals, useLastPaired } from "@/lib/api/server";
 import type {
@@ -87,7 +88,7 @@ interface Options {
   log?: LogEntryDto[];
 }
 
-function setup(options: Options = {}) {
+function setup(options: Options = {}, route = "/") {
   commands.listDevices.mockResolvedValue(options.devices ?? []);
   commands.getNearbyDevices.mockResolvedValue(options.nearby ?? []);
   commands.listProfiles.mockResolvedValue([profile("padrao", "Padrão"), profile("fps", "FPS")]);
@@ -98,8 +99,10 @@ function setup(options: Options = {}) {
     <QueryClientProvider
       client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
     >
-      <DevicesPage />
-      <ApprovalDialog />
+      <MemoryRouter initialEntries={[route]}>
+        <DevicesPage />
+        <ApprovalDialog />
+      </MemoryRouter>
     </QueryClientProvider>,
   );
 }
@@ -138,6 +141,18 @@ describe("próximos na rede", () => {
     setup();
     expect(await screen.findByText("Nenhum dispositivo ainda")).toBeTruthy();
     expect(screen.getByText("Nenhum celular com o PadGaming aberto por perto.")).toBeTruthy();
+  });
+});
+
+describe("aberto pela bandeja", () => {
+  it("com ?pair=1 já mostra o código de pareamento", async () => {
+    setup({}, "/devices?pair=1");
+    expect(await screen.findByRole("img", { name: "QR code para parear" })).toBeTruthy();
+    expect(commands.startPairing).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+    await waitFor(() => {
+      expect(screen.queryByRole("img", { name: "QR code para parear" })).toBeNull();
+    });
   });
 });
 

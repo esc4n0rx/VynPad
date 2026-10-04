@@ -6,12 +6,13 @@ import { registerEventListeners } from "./events";
 import { keys } from "./keys";
 import { useLiveInput } from "./live";
 import { useMetrics } from "./metrics";
+import { useToasts } from "@/lib/toast";
 import { useApprovals } from "./server";
 import { useSlots } from "./slots";
 
 vi.mock("@/lib/bindings", async () => (await import("@/test/bindings-mock")).bindingsMock);
 
-const EVENT_COUNT = 16;
+const EVENT_COUNT = 17;
 
 const slots: SlotsDto = {
   free_count: 3,
@@ -90,6 +91,14 @@ describe("registerEventListeners", () => {
     // O slot que saiu do tick some do store.
     emit("metricsTick", { metrics: { slots: [metric(2)] } });
     expect(useMetrics.getState().bySlot[0]).toBeUndefined();
+  });
+
+  it("o aviso da bandeja vira um toast", () => {
+    useToasts.setState({ toasts: [] });
+    emit("trayHint");
+    expect(useToasts.getState().toasts.at(-1)?.message).toBe(
+      "O PadGaming continua rodando na bandeja.",
+    );
   });
 
   it("desfaz tudo e permite registrar de novo", async () => {

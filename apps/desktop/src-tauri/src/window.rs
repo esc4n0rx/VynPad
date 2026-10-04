@@ -138,6 +138,12 @@ fn transparency_enabled() -> bool {
         .map_or(true, |value| value != 0)
 }
 
+/// Antes de a janela existir (e de o material ser aplicado): fundo sólido e cantos pelo CSS.
+pub const FALLBACK_CHROME: WindowChrome = WindowChrome {
+    material: WindowMaterial::Solid,
+    corners: WindowCorners::Css,
+};
+
 /// O material aplicado na janela principal, guardado como estado do app (muda com a preferência
 /// de transparência).
 pub struct ChromeState(pub Mutex<WindowChrome>);

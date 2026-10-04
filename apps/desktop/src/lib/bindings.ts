@@ -55,6 +55,8 @@ export const commands = {
 	setSlotProfile: (slot: number, profileId: string) => __TAURI_INVOKE<string>("set_slot_profile", { slot, profileId }),
 	/**  As métricas de latência de cada slot com sessão, agora (o evento `metrics:tick` as mantém). */
 	getMetrics: () => __TAURI_INVOKE<MetricsDto>("get_metrics"),
+	/**  A UI pergunta se a bandeja pediu alguma tela (e a esquece). */
+	takePendingNavigation: () => __TAURI_INVOKE<string | null>("take_pending_navigation"),
 	/**  A janela está à vista ou escondida: escondida, as métricas saem a 0,2 Hz em vez de 4 Hz. */
 	setUiVisible: (visible: boolean) => __TAURI_INVOKE<void>("set_ui_visible", { visible }),
 	/**  Lê o estado do firewall (COM no Windows; em outros sistemas, "não se aplica"). */
@@ -124,6 +126,8 @@ export const events = {
 	sessionState: makeEvent<SessionState>("session-state"),
 	settingsChanged: makeEvent<SettingsChanged>("settings-changed"),
 	slotsChanged: makeEvent<SlotsChanged>("slots-changed"),
+	trayHint: makeEvent<TrayHint>("tray-hint"),
+	trayNavigate: makeEvent<TrayNavigate>("tray-navigate"),
 	windowChromeChanged: makeEvent<WindowChromeChanged>("window-chrome-changed"),
 };
 
@@ -189,6 +193,8 @@ export type AppSettings = {
 	transparency?: boolean,
 	/**  Reduz as animações da interface. */
 	reduce_motion?: boolean,
+	/**  O aviso "continua rodando na bandeja" já foi mostrado. */
+	tray_hint_shown?: boolean,
 };
 
 export type ApprovalPromptDto = {
@@ -750,6 +756,12 @@ export type Theme =
 "light" | 
 /**  Segue o sistema. */
 "system";
+
+/**  O aviso "o `PadGaming` continua rodando na bandeja" (`tray:hint`). */
+export type TrayHint = Record<string, never>;
+
+/**  Há uma navegação pedida pela bandeja esperando a UI (`tray:navigate`). */
+export type TrayNavigate = Record<string, never>;
 
 /**  Ajustes de um gatilho. */
 export type TriggerConfig = {

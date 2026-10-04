@@ -86,6 +86,8 @@ pub struct AppSettings {
     pub transparency: bool,
     /// Reduz as animações da interface.
     pub reduce_motion: bool,
+    /// O aviso "continua rodando na bandeja" já foi mostrado.
+    pub tray_hint_shown: bool,
 }
 
 impl Default for AppSettings {
@@ -111,6 +113,7 @@ impl Default for AppSettings {
             reservation_secs: 30,
             transparency: true,
             reduce_motion: false,
+            tray_hint_shown: false,
         }
     }
 }
@@ -162,7 +165,7 @@ impl AppSettings {
     }
 
     /// Cada campo como `(chave, JSON)`.
-    fn entries(&self) -> Result<[(&'static str, String); 15], serde_json::Error> {
+    fn entries(&self) -> Result<[(&'static str, String); 16], serde_json::Error> {
         Ok([
             ("language", serde_json::to_string(&self.language)?),
             ("theme", serde_json::to_string(&self.theme)?),
@@ -194,6 +197,10 @@ impl AppSettings {
             ),
             ("transparency", serde_json::to_string(&self.transparency)?),
             ("reduce_motion", serde_json::to_string(&self.reduce_motion)?),
+            (
+                "tray_hint_shown",
+                serde_json::to_string(&self.tray_hint_shown)?,
+            ),
         ])
     }
 
@@ -216,6 +223,7 @@ impl AppSettings {
             "reservation_secs" => self.reservation_secs = serde_json::from_str(json)?,
             "transparency" => self.transparency = serde_json::from_str(json)?,
             "reduce_motion" => self.reduce_motion = serde_json::from_str(json)?,
+            "tray_hint_shown" => self.tray_hint_shown = serde_json::from_str(json)?,
             _ => {}
         }
         Ok(())

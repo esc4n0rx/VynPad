@@ -668,8 +668,7 @@
     "title": "Boas-vindas"
   },
   "tray": {
-    "open": "Abrir PadGaming",
-    "quit": "Sair"
+    "hint": "O PadGaming continua rodando na bandeja."
   },
   "errors": {
     "internal": "Algo deu errado. Tente de novo; se continuar, envie o diagnóstico.",

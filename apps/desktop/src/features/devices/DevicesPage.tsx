@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router";
 import { Plus, Smartphone } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,9 @@ export function DevicesPage() {
   const devices = useDevices();
   const nearby = useNearbyDevices();
   const [pairing, setPairing] = useState<{ target?: string } | null>(null);
+  // O menu da bandeja abre esta tela com `?pair=1`: já mostra o código de pareamento.
+  const [params, setParams] = useSearchParams();
+  const wantsPair = params.get("pair") === "1";
 
   const paired = devices.data ?? [];
   const around = nearby.data ?? [];
@@ -55,9 +59,11 @@ export function DevicesPage() {
       <HistoryPanel devices={paired} />
 
       <PairDialog
-        open={pairing !== null}
+        open={pairing !== null || wantsPair}
         onOpenChange={(open) => {
-          if (!open) setPairing(null);
+          if (open) return;
+          setPairing(null);
+          if (wantsPair) setParams({}, { replace: true });
         }}
         target={pairing?.target}
       />

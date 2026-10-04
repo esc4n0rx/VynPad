@@ -27,6 +27,7 @@ const defaults: Settings = {
   reservation_secs: 30,
   transparency: true,
   reduce_motion: false,
+  tray_hint_shown: false,
 };
 
 const firewall = (patch: Partial<FirewallStatusDto> = {}): FirewallStatusDto => ({

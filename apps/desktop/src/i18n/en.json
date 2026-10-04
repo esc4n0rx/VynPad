@@ -668,8 +668,7 @@
     "title": "Welcome"
   },
   "tray": {
-    "open": "Open PadGaming",
-    "quit": "Quit"
+    "hint": "PadGaming keeps running in the tray."
   },
   "errors": {
     "internal": "Something went wrong. Try again; if it keeps happening, send the diagnostics.",

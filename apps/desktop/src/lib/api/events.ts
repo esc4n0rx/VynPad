@@ -1,7 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
+import { i18n } from "@/i18n";
 import { commands, events } from "@/lib/bindings";
 import { applyWindowChrome } from "@/lib/windowChrome";
 import { log } from "@/lib/log";
+import { useToasts } from "@/lib/toast";
 import { keys } from "./keys";
 import { resetLiveSubscriptions, useLiveInput } from "./live";
 import { appendMetrics } from "./latencyHistory";
@@ -68,6 +70,10 @@ async function register(queryClient: QueryClient): Promise<() => void> {
     }),
     events.driverChanged.listen((e) => {
       queryClient.setQueryData(keys.driver, e.payload.status);
+    }),
+    events.trayHint.listen(() => {
+      // O app vai para a bandeja em instantes: o aviso aparece na janela que está fechando.
+      useToasts.getState().push("info", i18n.t("hint", { ns: "tray" }));
     }),
     events.windowChromeChanged.listen((e) => {
       applyWindowChrome(e.payload.chrome);

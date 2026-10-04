@@ -59,6 +59,7 @@ beforeEach(() => {
   });
   commands.driverStatus.mockResolvedValue({ state: "ready" });
   commands.setUiVisible.mockResolvedValue(undefined);
+  commands.takePendingNavigation.mockResolvedValue(null);
 });
 
 describe("atalhos", () => {
