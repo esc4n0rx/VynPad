@@ -11,6 +11,10 @@ cargo run -p vynpad-net --example dev_server -- --mock  # só imprime
 cargo run -p vynpad-sim -- connect --insecure-dev --pattern circle
 cargo run -p vynpad-sim -- connect --insecure-dev --script exemplos/mira.toml
 cargo run -p vynpad-sim -- connect --insecure-dev --pattern stress --loss 10% --delay 20ms --jitter 5ms --reorder
+# pareamento de verdade (o PIN aparece em Dispositivos > Parear novo); --hold mantém o controle conectado
+cargo run -p vynpad-sim -- pair --pin 123456 --host 127.0.0.1 --name "Meu celular" --hold 60s
+cargo run -p vynpad-sim -- pair --uri "vynpad://pair?..." --save pareado.json
+
 cargo run -p vynpad-sim -- bench --insecure-dev --clients 4 --rate 250 --duration 60s --json bench.json
 cargo run -p vynpad-sim --features gamepad -- connect --insecure-dev --gamepad   # controle físico local
 

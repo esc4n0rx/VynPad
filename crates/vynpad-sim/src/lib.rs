@@ -24,6 +24,7 @@ pub mod client;
 pub mod control;
 pub mod discover;
 pub mod link;
+pub mod pair;
 pub mod report;
 pub mod source;
 pub mod units;

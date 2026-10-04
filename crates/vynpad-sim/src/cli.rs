@@ -39,18 +39,8 @@ pub enum Command {
     Discover(DiscoverArgs),
     /// Anuncia um client simulado por mDNS (aparece em "dispositivos próximos" do server).
     Announce(AnnounceArgs),
-    /// Pareia com um server e guarda o `device_token`. Requer o canal TLS (T-302).
-    Pair {
-        /// URI do QR code (`vynpad://pair?...`).
-        #[arg(long, conflicts_with = "pin")]
-        uri: Option<String>,
-        /// PIN de 6 dígitos (use com `--host`).
-        #[arg(long)]
-        pin: Option<String>,
-        /// Endereço do server (com `--pin`).
-        #[arg(long)]
-        host: Option<String>,
-    },
+    /// Pareia com um server pelo canal de controle (PIN ou URI do QR code).
+    Pair(crate::pair::PairArgs),
     /// Envia input simulado a um server.
     Connect(ConnectArgs),
     /// Gera carga com vários clients e mede o RTT.
@@ -497,7 +487,7 @@ fn announce(args: &AnnounceArgs) -> anyhow::Result<()> {
 }
 
 /// UUID v4 aleatório em texto minúsculo.
-fn random_uuid() -> String {
+pub(crate) fn random_uuid() -> String {
     let mut rng = crate::units::Rng::new(random_seed());
     let mut bytes = [0u8; 16];
     for chunk in bytes.chunks_mut(8) {
@@ -524,7 +514,7 @@ pub fn run(cli: &Cli) -> anyhow::Result<()> {
     match &cli.command {
         Command::Discover(args) => discover(args),
         Command::Announce(args) => announce(args),
-        Command::Pair { .. } => bail!("`pair` depende do canal de controle TLS do server (T-302)"),
+        Command::Pair(args) => crate::pair::run(args),
         Command::Connect(args) => connect(args),
         Command::Bench(args) => bench(args),
     }
@@ -627,7 +617,7 @@ mod tests {
     #[test]
     fn commands_that_need_later_tasks_say_so() {
         let err = |args: &[&str]| format!("{:#}", run(&parse(args).unwrap()).unwrap_err());
-        assert!(err(&["pair", "--pin", "123456"]).contains("T-302"));
+        assert!(err(&["pair"]).contains("--uri"));
         assert!(err(&["connect"]).contains("--insecure-dev"));
         assert!(err(&["bench", "--insecure-dev", "--clients", "9"]).contains("entre 1 e 4"));
         assert!(err(&["connect", "--insecure-dev", "--interactive"]).contains("interactive"));

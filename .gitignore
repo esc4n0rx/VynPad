@@ -8,6 +8,8 @@ node_modules/
 dist/
 *.tsbuildinfo
 .vite/
+e2e/.drivers/
+e2e/logs/
 
 # Android
 .gradle/

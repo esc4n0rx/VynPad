@@ -24,7 +24,13 @@ pub static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
 
 /// Pasta de dados do app: `%APPDATA%\VynPad` no Windows, `~/.local/share/vynpad` no Linux
 /// (ARQUITETURA §Dados). É onde ficam `vynpad.db` e a identidade TLS.
+///
+/// `VYNPAD_DATA_DIR` troca a pasta (os testes E2E usam uma temporária, para não tocar nos dados
+/// do usuário).
 pub fn default_data_dir() -> Option<PathBuf> {
+    if let Some(dir) = std::env::var_os("VYNPAD_DATA_DIR").filter(|v| !v.is_empty()) {
+        return Some(PathBuf::from(dir));
+    }
     let name = if cfg!(windows) { "VynPad" } else { "vynpad" };
     dirs::data_dir().map(|dir| dir.join(name))
 }

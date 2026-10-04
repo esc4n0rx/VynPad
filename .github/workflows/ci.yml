@@ -81,6 +81,74 @@ jobs:
       - run: cargo test --workspace --exclude vynpad-desktop --locked
       - run: cargo test -p vynpad-desktop --locked
 
+  coverage:
+    name: Cobertura (cargo-llvm-cov)
+    needs: [rust]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.98.1"
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: coverage
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # O desktop fica de fora: a webview não roda aqui e a UI tem Vitest e o E2E.
+      - run: cargo llvm-cov --workspace --exclude vynpad-desktop --locked --json --summary-only --output-path cov.json
+      # Mínimo de 80% de linhas nos crates de domínio; a tabela vai para o resumo do job.
+      - run: node scripts/coverage-gate.mjs cov.json
+      - run: cargo llvm-cov report --html --output-dir coverage-html
+        if: always()
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: |
+            cov.json
+            coverage-html
+          if-no-files-found: ignore
+          retention-days: 14
+
+  e2e:
+    name: E2E da interface (Windows)
+    needs: [rust]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.98.1"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: e2e
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # O app precisa do frontend embutido (custom-protocol); sem isso ele tentaria o servidor do Vite.
+      - run: pnpm --filter @vynpad/desktop build
+      - run: cargo build --release --locked -p vynpad-desktop --features tauri/custom-protocol
+      # O simulador faz o papel do celular nos testes de pareamento.
+      - run: cargo build --locked -p vynpad-sim
+      - run: cargo install tauri-driver --locked
+      # O msedgedriver precisa ter a versão do WebView2 do runner.
+      - run: pnpm --filter @vynpad/e2e drivers
+      - run: pnpm --filter @vynpad/e2e e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-screenshots
+          path: e2e/logs
+          if-no-files-found: ignore
+          retention-days: 7
+
   bench:
     name: Benchmark do server (gate de regressão)
     needs: [rust]

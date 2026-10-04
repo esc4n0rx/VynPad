@@ -6108,6 +6108,7 @@ version = "0.1.0"
 dependencies = [
  "arc-swap",
  "crossbeam-channel",
+ "proptest",
  "thiserror 2.0.21",
  "vynpad-driver",
  "vynpad-protocol",
@@ -6225,6 +6226,7 @@ dependencies = [
  "chacha20poly1305",
  "criterion",
  "hex",
+ "proptest",
  "serde",
  "serde_json",
 ]

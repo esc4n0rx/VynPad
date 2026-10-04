@@ -124,12 +124,32 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
         .error_handling(tauri_specta::ErrorHandlingMode::Throw)
 }
 
+/// Portas do modo E2E (`VYNPAD_E2E`): fora das padrão, para o teste não brigar com o `VynPad`
+/// que esteja aberto na máquina.
+pub const E2E_PORTS: vynpad_storage::Ports = vynpad_storage::Ports {
+    control: 47900,
+    input: 47901,
+    discovery: 47902,
+};
+
+/// Modo dos testes E2E (`VYNPAD_E2E` definido): portas próprias, sem anúncio mDNS e sem procurar
+/// atualização. Junto com `VYNPAD_DATA_DIR`, mantém o teste longe dos dados e da rede do usuário.
+pub fn e2e_mode() -> bool {
+    std::env::var_os("VYNPAD_E2E").is_some()
+}
+
 /// Sobe o `Core` e liga tudo o que depende dele à webview.
 fn start_core(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let data_dir = vynpad_storage::default_data_dir()
         .ok_or("não achei a pasta de dados do usuário para guardar o banco")?;
     tracing::info!(dir = %data_dir.display(), "pasta de dados");
-    let state = tauri::async_runtime::block_on(AppState::start(CoreConfig::new(data_dir)))?;
+    let mut config = CoreConfig::new(data_dir);
+    if e2e_mode() {
+        tracing::warn!("modo E2E: portas 47900-47902, sem mDNS");
+        config.ports_override = Some(E2E_PORTS);
+        config.mdns = false;
+    }
+    let state = tauri::async_runtime::block_on(AppState::start(config))?;
     let (core, live) = (Arc::clone(&state.core), Arc::clone(&state.live));
     app.manage(state);
 

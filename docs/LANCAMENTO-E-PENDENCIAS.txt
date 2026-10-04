@@ -1,0 +1,132 @@
+VYNPAD - REGRAS E FLUXOS DE LANCAMENTO
+=======================================
+Atualizado em 2026-10-04. Este arquivo reune o que depende de VOCE (chaves, segredos,
+repositorio) e as regras que o projeto segue. Nao coloque chaves nem senhas aqui.
+
+
+1. O QUE VOCE PRECISA FAZER (em ordem)
+--------------------------------------
+
+[ ] 1.1  Guardar a chave de assinatura das atualizacoes.
+         Arquivo: C:\Users\paulo\.vynpad\updater.key  (a publica esta no tauri.conf.json)
+         - Faca copia em um lugar seguro e offline (gerenciador de senhas ou pendrive).
+         - Se perder, nenhum app instalado consegue receber atualizacao nova.
+         - Foi gerada SEM senha, so para desenvolvimento. Antes do primeiro release publico,
+           gere a definitiva:
+               pnpm --filter @vynpad/desktop tauri signer generate -w <caminho>.key
+           e troque a "pubkey" em apps/desktop/src-tauri/tauri.conf.json.
+
+[ ] 1.2  Criar o repositorio novo (VynPad) no GitHub e migrar.
+         Fluxo sugerido:
+           a) Crie o repositorio vazio (sem README) em github.com/esc4n0rx/VynPad.
+           b) No clone atual:  git remote set-url origin https://github.com/esc4n0rx/VynPad.git
+           c) git push -u origin main
+           d) Se quiser levar as tags/branches:  git push origin --all  e  git push origin --tags
+           e) Confira em Settings > Actions que o CI rodou no repositorio novo.
+         O historico antigo traz commits com o nome PadGaming; isso e normal.
+
+[ ] 1.3  Cadastrar os segredos do CI no repositorio novo (Settings > Secrets and variables > Actions):
+           TAURI_SIGNING_PRIVATE_KEY            conteudo do arquivo updater.key
+           TAURI_SIGNING_PRIVATE_KEY_PASSWORD   so se a chave tiver senha
+         Para assinar o instalador (evita o alerta do SmartScreen), Azure Trusted Signing:
+           AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET
+           TRUSTED_SIGNING_ENDPOINT, TRUSTED_SIGNING_ACCOUNT, TRUSTED_SIGNING_PROFILE
+         Sem os segredos do Azure o release sai SEM assinatura de codigo (so avisa).
+         Sem a chave do updater o release FALHA de proposito.
+
+[ ] 1.4  Conferir o endpoint de atualizacao.
+         Arquivo: apps/desktop/src-tauri/tauri.conf.json  >  plugins.updater.endpoints
+         Deve apontar para o repositorio onde os releases serao publicados:
+           https://github.com/esc4n0rx/VynPad/releases/latest/download/latest.json
+
+[ ] 1.5  Refazer os icones e a identidade visual com o nome VynPad.
+         Pasta: apps/desktop/src-tauri/icons/ (os PNG/ICO/ICNS ainda sao os antigos).
+         Depois de trocar a imagem-fonte, gere os demais com:
+           pnpm --filter @vynpad/desktop tauri icon <imagem-1024.png>
+
+[ ] 1.6  Desinstalar o PadGaming antigo do seu PC (Configuracoes do Windows > Aplicativos).
+         O VynPad e outro app: outra chave de desinstalacao e outra pasta de dados
+         (%APPDATA%\VynPad). Os dados do PadGaming antigo nao sao migrados.
+
+[ ] 1.7  Testar o instalador numa VM limpa (criterio de aceite do T-703):
+           - instalar, abrir, parear, desinstalar marcando "apagar dados";
+           - conferir que nao sobra pasta, atalho, chave de autostart nem regra de firewall.
+
+[ ] 1.8  Testar a atualizacao de ponta a ponta (criterio de aceite do T-704):
+           - publique v0.1.0 e instale; publique v0.1.1; abra o app e use
+             Configuracoes > Sobre > Procurar atualizacoes;
+           - conferir que banco, perfis e pareamentos continuam depois de atualizar.
+
+[ ] 1.9  Conferir o primeiro CI no repositorio novo. Os jobs "coverage" (cobertura, minimo de
+         80% nos crates de dominio) e "e2e" (testes da interface, no Windows) sao novos e nunca
+         rodaram no GitHub. Se o e2e falhar, as capturas de tela ficam no artefato
+         "e2e-screenshots".
+
+[ ] 1.10 Executar e registrar o docs/QA-CHECKLIST.md antes do primeiro release (jogos reais,
+         instalador, atualizacao). E o que os testes automaticos nao conseguem cobrir.
+
+
+2. FLUXO DE RELEASE
+-------------------
+  1. Atualize a versao em apps/desktop/src-tauri/tauri.conf.json (e nos Cargo.toml, se mudar).
+  2. Commit na main com o CI verde.
+  3. Crie a tag IGUAL a versao, com "v" na frente:   git tag v0.1.1 && git push origin v0.1.1
+  4. O workflow release.yml: confere tag x versao, compila NSIS e MSI, assina, gera o .sig e o
+     latest.json, e publica o GitHub Release com o changelog automatico.
+  5. Os apps instalados veem a versao nova ao abrir ou em ate 6 horas.
+  6. Antes de cada release, execute e registre o checklist manual (docs/QA-CHECKLIST.md).
+
+
+3. REGRAS DO PROJETO
+--------------------
+  Atualizacao
+  - O app NUNCA instala atualizacao sozinho; so oferece.
+  - Com controle conectado, instalar exige confirmacao do usuario (o backend recusa sem ela).
+  - O instalador nao apaga os dados; so apaga se o usuario marcar a opcao ao desinstalar.
+  - O usuario pode desligar a procura automatica em Configuracoes > Sobre.
+
+  Seguranca
+  - Segredos (chaves, tokens, senhas) nunca vao para o repositorio nem para logs.
+  - A chave privada do updater so existe na sua maquina e no segredo do CI.
+  - Pacote UDP sempre autenticado (AEAD); nada de dispositivo nao pareado.
+
+  Protocolo (formato no fio, ja no nome novo)
+  - Magic do pacote UDP: "VP" (bytes 56 50).  Broadcast de descoberta: "VPDISC1".
+  - URI de pareamento: vynpad://   Servico mDNS: _vynpad._tcp
+  - Mudou o protocolo? Regenere os vetores (pnpm --filter @vynpad/protocol gen) e o app Kotlin
+    deve passar nos MESMOS vetores (protocol/test-vectors).
+
+  Qualidade (antes de qualquer commit/push; sao os mesmos comandos do CI)
+    cargo fmt --all --check
+    cargo clippy --workspace --all-targets --locked -- -D warnings
+    cargo test --workspace --exclude vynpad-desktop --locked
+    cargo test -p vynpad-desktop --locked
+    cargo deny check
+    pnpm format:check ; pnpm lint ; pnpm typecheck ; pnpm test
+    pnpm --filter @vynpad/protocol check
+  - Mudou comando, evento ou tipo em Rust?  UPDATE_BINDINGS=1 cargo test -p vynpad-desktop bindings_ts
+  - Mudou query do sqlx?  scripts/sqlx-prepare.sh
+
+  Fluxo de trabalho
+  - Uma task por vez; cada task fecha com commit proprio (feat(...): ... (T-xxx)).
+  - Mensagens de commit em portugues, no padrao conventional commits.
+
+
+4. SITUACAO DAS TASKS (resumo)
+------------------------------
+  Feitas ......... F0 a F6 completas; T-705, T-706.
+
+  Parciais ....... T-702 (falta medir com celular, pos-F9; RAM com a janela aberta passa da meta),
+                   T-703 (falta VM limpa e certificado), T-704 (falta o teste N -> N+1),
+                   T-707 (falta icones e repositorio novo).
+  Parciais ....... T-701 (jobs coverage e e2e ainda nao rodaram no GitHub; falta a 1a execucao do
+                   docs/QA-CHECKLIST.md).
+  A fazer ........ F8 Linux (T-801 a T-804), F9 Android (T-901 a T-910).
+
+
+5. LEMBRETES
+------------
+  - RAM com a janela aberta: 234 MB privados (meta 150 MB). Na bandeja: 23 MB. Abrir task de
+    otimizacao do WebView2.
+  - A extensao de perfil continua ".padprofile" (de "pad"); troque se quiser outra marca.
+  - Canal "beta" de atualizacao ficou de fora; so existe o canal estavel.

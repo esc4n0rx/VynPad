@@ -160,6 +160,9 @@ async fn check(app: &AppHandle) -> Result<Option<UpdateInfoDto>> {
 
 /// Procura atualização: ao abrir e a cada 6 h, enquanto `check_updates` estiver ligado.
 pub fn spawn_checker(app: AppHandle) {
+    if crate::e2e_mode() {
+        return;
+    }
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(FIRST_CHECK_DELAY).await;
         loop {

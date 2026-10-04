@@ -1263,3 +1263,111 @@ async fn slot_changes_reach_the_ui_and_shutdown_says_bye() {
         ControlMessage::Bye(b) if b.reason == ByeReason::Shutdown
     ));
 }
+
+// ------------------------------------------------------------------ `vynpad-sim pair`
+
+fn pair_args(save: Option<std::path::PathBuf>) -> vynpad_sim::pair::PairArgs {
+    vynpad_sim::pair::PairArgs {
+        uri: None,
+        pin: None,
+        host: None,
+        name: "Celular de teste".into(),
+        id: None,
+        hold: None,
+        save,
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_sim_pair_command_pairs_by_pin_and_saves_the_device_token() {
+    let rig = rig().await;
+    let saved = rig.dir.path().join("pareado.json");
+    let mut args = pair_args(Some(saved.clone()));
+    args.pin = Some(rig.core.start_pairing().unwrap().pin);
+    args.host = Some(rig.control_addr().to_string());
+    args.id = Some(who(5).device_id.as_str().to_owned());
+    tokio::task::spawn_blocking(move || vynpad_sim::pair::run(&args))
+        .await
+        .unwrap()
+        .unwrap();
+
+    let json: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&saved).unwrap()).unwrap();
+    assert_eq!(json["device_id"], who(5).device_id.as_str());
+    assert_eq!(json["device_token"].as_str().unwrap().len(), 64);
+    let fingerprint = rig
+        .core
+        .fingerprint()
+        .iter()
+        .fold(String::new(), |mut out, b| {
+            use std::fmt::Write as _;
+            let _ = write!(out, "{b:02x}");
+            out
+        });
+    assert_eq!(json["fingerprint"], fingerprint);
+    let stored = rig
+        .core
+        .devices()
+        .find(who(5).device_id.as_str())
+        .await
+        .unwrap();
+    assert_eq!(
+        stored.expect("o pareamento foi gravado").name,
+        "Celular de teste"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_sim_pair_command_pairs_by_uri_and_can_hold_the_session() {
+    let mut rig = rig().await;
+    let uri = PairingUri {
+        hosts: vec!["127.0.0.1".parse().unwrap()],
+        port: rig.core.ports().control,
+        fingerprint: rig.core.fingerprint(),
+        pairing_token: Secret::new(*rig.core.pairing().issue_pairing_token().expose()),
+        name: "PC de teste".into(),
+    };
+    let mut args = pair_args(None);
+    args.uri = Some(uri.encode().unwrap());
+    args.hold = Some(Duration::from_millis(700));
+    let run = tokio::task::spawn_blocking(move || vynpad_sim::pair::run(&args));
+
+    // Enquanto segura, o controle ocupa um slot e manda input.
+    next_matching(&mut rig.events, |e| {
+        matches!(e, CoreEvent::Control(ControlEvent::SessionStarted { .. })).then_some(())
+    })
+    .await;
+    run.await.unwrap().unwrap();
+    next_matching(&mut rig.events, |e| {
+        matches!(e, CoreEvent::Control(ControlEvent::SessionEnded { .. })).then_some(())
+    })
+    .await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_sim_pair_command_reports_a_wrong_pin_and_a_wrong_fingerprint() {
+    let rig = rig().await;
+    let mut wrong_pin = pair_args(None);
+    wrong_pin.pin = Some("000000".into());
+    wrong_pin.host = Some(rig.control_addr().to_string());
+    let error = tokio::task::spawn_blocking(move || vynpad_sim::pair::run(&wrong_pin))
+        .await
+        .unwrap()
+        .unwrap_err();
+    assert!(format!("{error:#}").contains("recusou"), "{error:#}");
+
+    // O QR diz um fingerprint e o server mostra outro: o TLS não deve nem completar.
+    let uri = PairingUri {
+        hosts: vec!["127.0.0.1".parse().unwrap()],
+        port: rig.core.ports().control,
+        fingerprint: [0xAA; 32],
+        pairing_token: Secret::new(*rig.core.pairing().issue_pairing_token().expose()),
+        name: "PC de teste".into(),
+    };
+    let mut forged = pair_args(None);
+    forged.uri = Some(uri.encode().unwrap());
+    let result = tokio::task::spawn_blocking(move || vynpad_sim::pair::run(&forged))
+        .await
+        .unwrap();
+    assert!(result.is_err(), "um certificado diferente do QR foi aceito");
+}

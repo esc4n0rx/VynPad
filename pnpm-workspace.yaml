@@ -1,6 +1,12 @@
 packages:
   - apps/desktop
   - protocol
+  - e2e
 allowBuilds:
   # Os hooks são instalados pelo script `prepare` da raiz.
   lefthook: false
+  # O E2E usa o tauri-driver e o msedgedriver próprios (e2e/scripts); o WebdriverIO não precisa baixar
+  # nem compilar os drivers dele.
+  edgedriver: false
+  geckodriver: false
+  esbuild: false

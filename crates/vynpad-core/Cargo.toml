@@ -15,6 +15,7 @@ thiserror = { workspace = true }
 
 [dev-dependencies]
 vynpad-driver = { workspace = true, features = ["mock"] }
+proptest = "1"
 
 [lints]
 workspace = true
