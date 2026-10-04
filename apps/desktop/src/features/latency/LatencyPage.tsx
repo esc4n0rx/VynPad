@@ -86,7 +86,7 @@ function SlotTiles({ metrics }: { metrics: SlotMetricsDto }) {
 
 /** Se a rede está boa para jogar e, quando não está, por quê. */
 export function LatencyPage() {
-  const { t } = useTranslation("latency");
+  const { t, i18n: language } = useTranslation("latency");
   const bySlot = useMetrics((s) => s.bySlot);
   const [windowSec, setWindowSec] = useState<WindowSeconds>(120);
   const [frozen, setFrozen] = useState(false);
@@ -111,14 +111,18 @@ export function LatencyPage() {
   };
 
   const copySummary = () => {
-    const text = summarize(connected, {
-      slot: (slot) => t("summary.slot", { slot: slot + 1 }),
-      quality: (m) =>
-        t("summary.quality", {
-          label: t(m.quality === null ? "quality.waiting" : `quality.${m.quality}`),
-        }),
-      line: (values) => t("summary.line", values),
-    });
+    const text = summarize(
+      connected,
+      {
+        slot: (slot) => t("summary.slot", { slot: slot + 1 }),
+        quality: (m) =>
+          t("summary.quality", {
+            label: t(m.quality === null ? "quality.waiting" : `quality.${m.quality}`),
+          }),
+        line: (values) => t("summary.line", values),
+      },
+      language.language,
+    );
     void navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       window.setTimeout(() => {

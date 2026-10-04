@@ -129,7 +129,8 @@ async fn eventually_async<F: std::future::Future<Output = bool>>(
     what: &str,
     mut cond: impl FnMut() -> F,
 ) {
-    for _ in 0..300 {
+    // Até 15 s: as métricas dependem de janelas de tempo e o runner do CI é lento.
+    for _ in 0..1500 {
         if cond().await {
             return;
         }

@@ -12,8 +12,10 @@ use tauri::{AppHandle, Manager, Runtime};
 use tauri_specta::Event;
 
 /// Primeiro build do Windows 11, a partir do qual o DWM arredonda os cantos e aceita o Mica.
+#[cfg_attr(not(windows), allow(dead_code))] // só o `apply` do Windows usa; os testes cobrem em todo SO
 const WINDOWS_11_BUILD: u32 = 22_000;
 /// Primeiro build do Windows 10 com `SetWindowCompositionAttribute` + acrylic (1803).
+#[cfg_attr(not(windows), allow(dead_code))] // só o `apply` do Windows usa; os testes cobrem em todo SO
 const ACRYLIC_MIN_BUILD: u32 = 17_134;
 /// Tint escuro do acrylic do Windows 10 (RGBA). Pouco opaco: o app já pinta `--bg-window` em cima.
 #[cfg(windows)]
@@ -50,6 +52,7 @@ pub struct WindowChrome {
 
 /// Escolhe o material a partir do build do Windows (`None` fora do Windows ou se não deu para
 /// ler) e de a transparência estar ligada nas configurações do sistema.
+#[cfg_attr(not(windows), allow(dead_code))] // só o `apply` do Windows usa; os testes cobrem em todo SO
 pub fn choose_material(build: Option<u32>, transparency_enabled: bool) -> WindowMaterial {
     match build {
         _ if !transparency_enabled => WindowMaterial::Solid,
@@ -60,6 +63,7 @@ pub fn choose_material(build: Option<u32>, transparency_enabled: bool) -> Window
 }
 
 /// Cantos conforme o material realmente aplicado e a versão do sistema.
+#[cfg_attr(not(windows), allow(dead_code))] // só o `apply` do Windows usa; os testes cobrem em todo SO
 pub fn choose_corners(build: Option<u32>, material: WindowMaterial) -> WindowCorners {
     match (build, material) {
         (Some(b), _) if b >= WINDOWS_11_BUILD => WindowCorners::Native,
