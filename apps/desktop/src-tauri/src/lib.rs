@@ -337,7 +337,15 @@ mod tests {
                     cmd: cmd.into(),
                     callback: CallbackFn(0),
                     error: CallbackFn(1),
-                    url: "http://tauri.localhost".parse().unwrap(),
+                    // A origem local do app: `http://tauri.localhost` no Windows e no Android,
+                    // `tauri://localhost` nos demais; qualquer outra o ACL trata como remota.
+                    url: if cfg!(any(windows, target_os = "android")) {
+                        "http://tauri.localhost"
+                    } else {
+                        "tauri://localhost"
+                    }
+                    .parse()
+                    .unwrap(),
                     body: InvokeBody::Json(args),
                     headers: tauri::http::HeaderMap::default(),
                     invoke_key: INVOKE_KEY.to_string(),

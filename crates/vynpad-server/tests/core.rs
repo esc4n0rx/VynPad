@@ -723,16 +723,23 @@ async fn metrics_report_rtt_rate_and_quality_per_slot() {
     let sender = hold(&rig, &session, 0.5, Arc::clone(&stop));
     let responder = answer_pings(session, Arc::clone(&stop));
 
-    eventually_async("métricas com RTT", || {
+    // Uma espera própria (e não o helper) para, se falhar no CI, mostrar o que foi observado.
+    let mut last = String::new();
+    let mut ready = false;
+    for _ in 0..1500 {
         let metrics = rig.core.metrics();
-        async move {
-            metrics
-                .slots
-                .first()
-                .is_some_and(|m| m.rtt_last.is_some() && m.rate_hz > 100.0 && m.quality.is_some())
+        last = format!("{:?}", metrics.slots.first());
+        if metrics
+            .slots
+            .first()
+            .is_some_and(|m| m.rtt_last.is_some() && m.rate_hz > 100.0 && m.quality.is_some())
+        {
+            ready = true;
+            break;
         }
-    })
-    .await;
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    assert!(ready, "métricas com RTT; último estado: {last}");
     let metrics = rig.core.metrics();
     let slot = &metrics.slots[0];
     assert_eq!(slot.slot, SlotId::new(0).unwrap());
