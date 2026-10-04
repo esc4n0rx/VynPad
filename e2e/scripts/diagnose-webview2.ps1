@@ -50,3 +50,24 @@ Get-ChildItem "$env:LOCALAPPDATA\VynPad\logs" -ErrorAction SilentlyContinue | Fo
 
 Stop-Process -Id $app.Id -Force -ErrorAction SilentlyContinue
 Get-Process msedgewebview2 -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+
+# --- testes diretos, sem o app: a plataforma aceita depuração remota?
+function Test-Port($label, $exePath, $argList, $port) {
+  "== $label"
+  if (-not (Test-Path $exePath)) { "não achei $exePath"; return }
+  $dir = Join-Path $env:RUNNER_TEMP ("probe-" + [guid]::NewGuid().ToString("N").Substring(0, 6))
+  $p = Start-Process $exePath -ArgumentList ($argList + @("--user-data-dir=$dir", "--remote-debugging-port=$port")) -PassThru
+  Start-Sleep -Seconds 8
+  try { (Invoke-RestMethod "http://127.0.0.1:$port/json/version" -TimeoutSec 5).Browser } catch { "sem resposta: $($_.Exception.Message)" }
+  Get-ChildItem $dir -Recurse -Filter DevToolsActivePort -ErrorAction SilentlyContinue | ForEach-Object { "DevToolsActivePort: " + $_.FullName }
+  Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+  Get-Process msedge, msedgewebview2 -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+}
+$edge = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"
+Test-Port "msedge.exe headless com --remote-debugging-port" $edge @("--headless=new", "--no-first-run", "about:blank") 9333
+$wv = Get-ChildItem "${env:ProgramFiles(x86)}\Microsoft\EdgeWebView\Application" -Directory | Where-Object { $_.Name -match '^\d' } | Select-Object -First 1
+Test-Port "msedgewebview2.exe com --remote-debugging-port" (Join-Path $wv.FullName "msedgewebview2.exe") @("--embedded-browser-webview=1", "--no-first-run") 9334
+
+"== o processo é administrador?"
+([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+(Get-CimInstance Win32_OperatingSystem).Caption
