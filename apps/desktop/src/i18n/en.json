@@ -104,7 +104,8 @@
       "pause": "Pause",
       "resume": "Resume",
       "disconnect": "Disconnect",
-      "latency": "View latency"
+      "latency": "View latency",
+      "testRumble": "Test vibration"
     },
     "swapped": "P{{from}} and P{{to}} swapped places.",
     "metrics": {
@@ -291,7 +292,8 @@
     "tabs": {
       "label": "Properties",
       "controls": "Controls",
-      "gyro": "Gyro"
+      "gyro": "Gyro",
+      "rumble": "Vibration"
     },
     "panel": {
       "empty": "Select a button, trigger or stick on the controller to adjust it.",
@@ -366,7 +368,14 @@
     },
     "percent": "{{value}}%",
     "hz": "{{value}} Hz",
-    "multiplier": "{{value}}×"
+    "multiplier": "{{value}}×",
+    "rumble": {
+      "title": "Vibration",
+      "enabled": "Pass vibration to the phone",
+      "intensity": "Intensity",
+      "hint": "The vibration the game asks for reaches the phone with this intensity. Above 100% it saturates at the maximum.",
+      "percent": "{{value}}%"
+    }
   },
   "latency": {
     "title": "Latency",

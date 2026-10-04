@@ -320,6 +320,16 @@ describe("dashboard", () => {
     });
   });
 
+  it("o menu testa a vibração do celular do slot", async () => {
+    commands.testRumble.mockResolvedValue(null);
+    setup([connected(0), slot(1), slot(2), slot(3)]);
+    openMenu(0);
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Testar vibração" }));
+    await waitFor(() => {
+      expect(commands.testRumble).toHaveBeenCalledWith(0);
+    });
+  });
+
   it("um slot pausado oferece retomar e mostra o selo", async () => {
     setup([connected(0, { paused: true }), slot(1), slot(2), slot(3)]);
     expect(within(card(0)).getByText("Pausado")).toBeTruthy();

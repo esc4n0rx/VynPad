@@ -38,6 +38,6 @@ pub use input::{Button, Gyro, RawInput};
 pub use pipeline::{Mapper, MapperState, ProfileCell, apply};
 pub use profile::{
     ButtonTarget, ButtonsConfig, Curve, DeadzoneShape, GyroAxis, GyroConfig, GyroMode, Profile,
-    ProfileError, SCHEMA_VERSION, Smoothing, StickConfig, StickSide, SticksConfig, TriggerConfig,
-    TriggersConfig, Turbo,
+    ProfileError, RumbleConfig, SCHEMA_VERSION, Smoothing, StickConfig, StickSide, SticksConfig,
+    TriggerConfig, TriggersConfig, Turbo,
 };

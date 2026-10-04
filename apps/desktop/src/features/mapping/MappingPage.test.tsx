@@ -371,6 +371,32 @@ describe("propriedades", () => {
     expect(gyro?.mode).toEqual({ type: "while_held", button: "left_shoulder" });
   });
 
+  it("a aba de vibração desliga o rumble e muda a intensidade", async () => {
+    await openFps();
+    fireEvent.click(screen.getByRole("radio", { name: "Vibração" }));
+    const slider = await screen.findByRole("slider", { name: "Intensidade" });
+    expect(screen.getByText("100%")).toBeTruthy();
+    for (let i = 0; i < 4; i++) fireEvent.keyDown(slider, { key: "ArrowRight" });
+    expect(await screen.findByText("120%")).toBeTruthy();
+    await waitFor(
+      () => {
+        expect(commands.saveProfile).toHaveBeenCalled();
+      },
+      { timeout: SAVE_DEBOUNCE_MS * 4 },
+    );
+    let calls = commands.saveProfile.mock.calls as [string, { profile: Profile }][];
+    expect(calls[calls.length - 1]?.[1].profile.rumble?.intensity).toBeCloseTo(1.2);
+
+    fireEvent.click(screen.getByRole("switch", { name: "Repassar a vibração ao celular" }));
+    await waitFor(() => {
+      calls = commands.saveProfile.mock.calls as [string, { profile: Profile }][];
+      expect(calls[calls.length - 1]?.[1].profile.rumble?.enabled).toBe(false);
+    });
+    expect(
+      screen.getByRole("slider", { name: "Intensidade" }).getAttribute("data-disabled"),
+    ).not.toBeNull();
+  });
+
   it("no perfil embutido todos os controles ficam desabilitados", async () => {
     const view = setup();
     await screen.findByText("Perfil embutido: duplique para editar.");

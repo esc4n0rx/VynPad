@@ -10,7 +10,9 @@ import {
   movePoint,
   pointsOf,
   remapOf,
+  rumbleOf,
   setGyro,
+  setRumble,
   setRemap,
   setStick,
   setSwapSticks,
@@ -151,6 +153,25 @@ describe("gyro", () => {
   it("os modos que dependem de botão levam o botão junto", () => {
     const profile = setGyro({}, { mode: { type: "while_held", button: "left_shoulder" } });
     expect(gyroOf(profile).mode).toEqual({ type: "while_held", button: "left_shoulder" });
+  });
+});
+
+describe("vibração", () => {
+  it("um perfil sem a seção usa o padrão: ligada, a 100%", () => {
+    expect(rumbleOf({})).toEqual({ enabled: true, intensity: 1 });
+  });
+
+  it("liga, desliga e muda a intensidade sem perder o resto", () => {
+    const half = setRumble({}, { intensity: 0.5 });
+    expect(rumbleOf(half)).toEqual({ enabled: true, intensity: 0.5 });
+    const off = setRumble(half, { enabled: false });
+    expect(rumbleOf(off)).toEqual({ enabled: false, intensity: 0.5 });
+  });
+
+  it("a intensidade fica entre 0 e 200%", () => {
+    expect(rumbleOf(setRumble({}, { intensity: 3 })).intensity).toBe(2);
+    expect(rumbleOf(setRumble({}, { intensity: -1 })).intensity).toBe(0);
+    expect(rumbleOf(setRumble({}, { intensity: 0.3333 })).intensity).toBe(0.33);
   });
 });
 

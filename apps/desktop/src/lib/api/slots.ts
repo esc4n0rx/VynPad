@@ -79,3 +79,8 @@ export function useSetSlotProfile() {
     },
   });
 }
+
+/** "Testar vibração": o celular do slot vibra por meio segundo. */
+export function useTestRumble() {
+  return useMutation({ mutationFn: (slot: number) => commands.testRumble(slot) });
+}

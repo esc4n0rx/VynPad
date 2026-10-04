@@ -13,6 +13,7 @@ import {
   useSlotProfiles,
   useSlots,
   useSwapSlots,
+  useTestRumble,
 } from "@/lib/api/slots";
 import { useToasts } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,7 @@ export function DashboardPage() {
   const setProfile = useSetSlotProfile();
   const pause = useSetSlotPaused();
   const disconnect = useDisconnectSlot();
+  const testRumble = useTestRumble();
 
   const address = server.data?.addresses[0];
   const goPair = () => {
@@ -104,6 +106,9 @@ export function DashboardPage() {
                 }}
                 onDisconnect={() => {
                   disconnect.mutate(slot.slot);
+                }}
+                onTestRumble={() => {
+                  testRumble.mutate(slot.slot);
                 }}
                 onLatency={() => {
                   void navigate("/latency");

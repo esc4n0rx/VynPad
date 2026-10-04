@@ -11,6 +11,7 @@ use padgaming_mapping::{CompiledProfile, ProfileCell};
 use padgaming_net::control::{
     ControlServer, PreferredFuture, SetupFuture, SlotProfiles, SlotSetup,
 };
+use padgaming_net::input::InputServer;
 use padgaming_protocol::control::{Config, Uuid};
 use padgaming_storage::seed::BUILTIN_PROFILE_ID;
 use padgaming_storage::{AppSettings, DeviceRepo, ProfileHost, ProfileService};
@@ -27,6 +28,7 @@ pub struct SlotRegistry {
     devices: DeviceRepo,
     profiles: OnceLock<Weak<ProfileService>>,
     control: OnceLock<Weak<ControlServer>>,
+    input: OnceLock<Weak<InputServer>>,
 }
 
 impl SlotRegistry {
@@ -41,6 +43,7 @@ impl SlotRegistry {
             devices,
             profiles: OnceLock::new(),
             control: OnceLock::new(),
+            input: OnceLock::new(),
         }
     }
 
@@ -52,6 +55,18 @@ impl SlotRegistry {
     /// Liga o servidor de controle (para reenviar `config` quando o gyro liga ou desliga).
     pub(crate) fn connect_control(&self, control: &Arc<ControlServer>) {
         let _ = self.control.set(Arc::downgrade(control));
+    }
+
+    /// Liga o servidor de input (para parar a vibração quando um perfil a desliga).
+    pub(crate) fn connect_input(&self, input: &Arc<InputServer>) {
+        let _ = self.input.set(Arc::downgrade(input));
+    }
+
+    /// A vibração pedida pelo jogo no `slot`, depois da intensidade do perfil do slot.
+    pub(crate) fn scale_rumble(&self, slot: SlotId, large: u8, small: u8) -> (u8, u8) {
+        self.cells()[usize::from(slot.index())]
+            .load()
+            .scale_rumble(large, small)
     }
 
     fn cells(&self) -> std::sync::MutexGuard<'_, [Arc<ProfileCell>; 4]> {
@@ -67,8 +82,7 @@ impl SlotRegistry {
             slot: slot.index(),
             send_rate_hz: self.send_rate_hz.load(Ordering::Relaxed),
             gyro_enabled: compiled.gyro_enabled(),
-            // O rumble chega com a T-204.
-            rumble_enabled: false,
+            rumble_enabled: compiled.rumble_enabled(),
             touch_haptics: true,
         }
     }
@@ -114,6 +128,17 @@ impl SlotRegistry {
         }
     }
 
+    /// Um perfil que desliga a vibração para o que estiver vibrando agora.
+    fn silence_if_off(&self, slot: SlotId, compiled: &CompiledProfile) {
+        if compiled.rumble_enabled() {
+            return;
+        }
+        let session = self.slots.snapshot().slots[usize::from(slot.index())].session;
+        if let (Some(session), Some(input)) = (session, self.input.get().and_then(Weak::upgrade)) {
+            input.set_rumble(session, 0, 0);
+        }
+    }
+
     /// O perfil que cada slot está usando (`None` onde nunca houve um dispositivo).
     pub(crate) fn assigned_profiles(&self) -> [Option<String>; 4] {
         self.assigned().clone()
@@ -126,6 +151,7 @@ impl SlotRegistry {
         let resolved = profiles.resolve_or_default(Some(id)).await;
         let index = usize::from(slot.index());
         self.cells()[index].store(Arc::clone(&resolved.compiled));
+        self.silence_if_off(slot, &resolved.compiled);
         self.assigned()[index] = Some(resolved.id.clone());
         if let Some(control) = self.control.get().and_then(Weak::upgrade) {
             control.send_config(slot, self.config_for(&resolved.compiled, slot));
@@ -199,6 +225,7 @@ impl ProfileHost for SlotRegistry {
     fn apply(&self, id: &str, compiled: Arc<CompiledProfile>) {
         for slot in self.slots_with(id) {
             self.cells()[usize::from(slot.index())].store(Arc::clone(&compiled));
+            self.silence_if_off(slot, &compiled);
             // O gyro pode ter ligado ou desligado: o client passa a mandar (ou parar de mandar)
             // pacotes com motion.
             if let Some(control) = self.control.get().and_then(Weak::upgrade) {

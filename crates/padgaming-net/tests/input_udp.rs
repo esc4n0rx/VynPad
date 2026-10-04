@@ -10,7 +10,8 @@ use padgaming_mapping::{CompiledProfile, ProfileCell};
 use padgaming_net::input::{InputConfig, InputServer, SessionSpec};
 use padgaming_protocol::control::Uuid;
 use padgaming_protocol::{
-    Buttons, InputState, KEY_LEN, MAX_PACKET_LEN, Motion, Payload, Ping, Role, Secret, Session,
+    Buttons, InputState, KEY_LEN, MAX_PACKET_LEN, Motion, Payload, Ping, Role, Rumble, Secret,
+    Session,
 };
 
 const KEY: [u8; KEY_LEN] = [0x5A; KEY_LEN];
@@ -470,4 +471,125 @@ fn session_metrics_count_loss_out_of_order_and_battery() {
     assert_eq!(s.battery, Some(79));
     assert!(s.processing_p[1] > Duration::ZERO);
     assert_eq!(s.rtt_last, None, "o RTT vem do canal de controle");
+}
+
+// ------------------------------------------------------------------------------- rumble (T-204)
+
+impl Client {
+    /// O próximo `Rumble` que chegar em até `timeout`; `None` se nada vier.
+    fn recv_rumble(&mut self, timeout: Duration) -> Option<padgaming_protocol::Rumble> {
+        self.socket.set_read_timeout(Some(timeout)).unwrap();
+        let mut buf = [0u8; 256];
+        let (n, _) = self.socket.recv_from(&mut buf).ok()?;
+        match self.session.receive(&buf[..n]).ok()?.payload {
+            Payload::Rumble(rumble) => Some(rumble),
+            other => panic!("esperava Rumble, veio {other:?}"),
+        }
+    }
+
+    fn ack(&mut self, rumble_id: u16) {
+        self.send_input(InputState {
+            rumble_ack_id: rumble_id,
+            ..pressed(Buttons::empty(), 0)
+        });
+    }
+}
+
+/// Registra a sessão e faz o server conhecer o endereço do client (com um primeiro input).
+fn rumble_rig() -> (Rig, Client, u32) {
+    let rig = rig();
+    let mut client = rig.connect(1);
+    client.send_input(pressed(Buttons::empty(), 0));
+    wait_until("1º input", || rig.driver.last_report(slot(0)).is_some());
+    (rig, client, 101)
+}
+
+#[test]
+fn rumble_reaches_the_client_and_is_resent_every_100_ms_until_acked() {
+    let (rig, mut client, session) = rumble_rig();
+    rig.server.set_rumble(session, 200, 50);
+
+    let first = client
+        .recv_rumble(Duration::from_secs(1))
+        .expect("1º rumble");
+    assert_eq!((first.rumble_id, first.large, first.small), (1, 200, 50));
+    // Sem o `ack`, o mesmo estado volta, no ritmo de 100 ms.
+    let started = Instant::now();
+    let again = client
+        .recv_rumble(Duration::from_secs(1))
+        .expect("retransmissão");
+    assert_eq!(again.rumble_id, 1);
+    let gap = started.elapsed();
+    assert!(
+        gap >= Duration::from_millis(60) && gap <= Duration::from_millis(400),
+        "{gap:?}"
+    );
+
+    client.ack(1);
+    // Confirmado: o que ainda estava a caminho chega, e depois silêncio.
+    while client.recv_rumble(Duration::from_millis(350)).is_some() {}
+    assert!(client.recv_rumble(Duration::from_millis(350)).is_none());
+}
+
+#[test]
+fn a_change_gets_a_new_id_and_turning_it_off_is_delivered_too() {
+    let (rig, mut client, session) = rumble_rig();
+    rig.server.set_rumble(session, 255, 255);
+    let on = client.recv_rumble(Duration::from_secs(1)).unwrap();
+    client.ack(on.rumble_id);
+    // Repetir o mesmo estado não gera pacote novo.
+    rig.server.set_rumble(session, 255, 255);
+
+    rig.server.set_rumble(session, 0, 0);
+    let off = loop {
+        let r = client
+            .recv_rumble(Duration::from_secs(1))
+            .expect("desligar");
+        if r.rumble_id != on.rumble_id {
+            break r;
+        }
+    };
+    assert_eq!((off.large, off.small), (0, 0));
+    assert_eq!(off.rumble_id, Rumble::next_id(on.rumble_id));
+}
+
+#[test]
+fn the_motor_never_stays_on_when_packets_are_lost() {
+    let (rig, mut client, session) = rumble_rig();
+    rig.server.set_rumble(session, 180, 90);
+    // O client "perde" os 3 primeiros pacotes (lê e descarta sem confirmar).
+    for _ in 0..3 {
+        assert!(client.recv_rumble(Duration::from_secs(1)).is_some());
+    }
+    // O quarto chega e é confirmado: a retransmissão para.
+    let kept = client.recv_rumble(Duration::from_secs(1)).unwrap();
+    client.ack(kept.rumble_id);
+    while client.recv_rumble(Duration::from_millis(350)).is_some() {}
+
+    // Desligar com perda também chega: o server insiste até o `ack` do estado "parado".
+    rig.server.set_rumble(session, 0, 0);
+    for _ in 0..3 {
+        assert!(client.recv_rumble(Duration::from_secs(1)).is_some());
+    }
+    let off = client.recv_rumble(Duration::from_secs(1)).unwrap();
+    assert_eq!((off.large, off.small), (0, 0));
+    client.ack(off.rumble_id);
+    let snap = rig.server.stats().snapshot();
+    assert!(snap.rumble_sent >= 8, "{}", snap.rumble_sent);
+}
+
+#[test]
+fn an_old_ack_does_not_end_the_retransmission() {
+    let (rig, mut client, session) = rumble_rig();
+    rig.server.set_rumble(session, 100, 100);
+    let first = client.recv_rumble(Duration::from_secs(1)).unwrap();
+    client.ack(first.rumble_id);
+    while client.recv_rumble(Duration::from_millis(350)).is_some() {}
+
+    rig.server.set_rumble(session, 10, 10);
+    let second = client.recv_rumble(Duration::from_secs(1)).unwrap();
+    assert_ne!(second.rumble_id, first.rumble_id);
+    // O client ainda confirma o estado antigo: o novo continua sendo reenviado.
+    client.ack(first.rumble_id);
+    assert!(client.recv_rumble(Duration::from_secs(1)).is_some());
 }

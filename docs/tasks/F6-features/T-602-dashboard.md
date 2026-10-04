@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | T-203, T-505, T-506 |
-| Status | 🟨 Pronta; falta "Testar vibração" (depende da T-204) e conferir os 4 simuladores no app |
+| Status | 🟨 Pronta; falta conferir os 4 simuladores no app |
 
 ## Objetivo
 Visão imediata de quem está jogando em cada controle.
@@ -35,4 +35,4 @@ Visão imediata de quem está jogando em cada controle.
 - Arrastar e soltar usa HTML5 DnD, então a janela ganhou `dragDropEnabled: false` (o Tauri engolia o evento no Windows); a troca também existe no menu (Trocar de slot → Trocar com Pn).
 - O input ao vivo vem do `Gamepad` (T-505), que assina só os slots conectados.
 - Bateria, latência e qualidade da conexão vêm das métricas da T-305 (`useSlotMetrics`).
-- Fora desta entrega: "Testar vibração" (precisa do rumble da T-204), que entra no menu `…` quando existir.
+- "Testar vibração" no menu `…` vem da T-204.

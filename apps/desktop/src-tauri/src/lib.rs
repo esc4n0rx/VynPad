@@ -65,6 +65,7 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
             commands::disconnect_slot,
             commands::set_slot_paused,
             commands::swap_slots,
+            commands::test_rumble,
             commands::get_slot_profiles,
             commands::set_slot_profile,
             commands::get_metrics,

@@ -913,6 +913,145 @@ async fn regenerating_the_identity_forgets_every_device_and_ends_their_sessions(
     .await;
 }
 
+/// O client simulado de `hold`, mas juntando a vibração que o server manda.
+fn hold_listening(
+    session: &ControlSession,
+    stop: Arc<AtomicBool>,
+) -> (
+    std::thread::JoinHandle<()>,
+    std::sync::mpsc::Receiver<(u8, u8)>,
+) {
+    let w = &session.welcome;
+    let config = ClientConfig {
+        server: SocketAddr::new("127.0.0.1".parse().unwrap(), w.udp_port),
+        session_id: w.session_id,
+        key: w.udp_key.expose().0,
+        rate_hz: 250,
+        fault: FaultConfig::default(),
+        seed: 1,
+    };
+    let (tx, rx) = std::sync::mpsc::channel();
+    let thread = std::thread::spawn(move || {
+        let mut script = Script::parse(
+            "[[step]]
+duration = \"60s\"
+lx = 0.0
+",
+        )
+        .unwrap();
+        client::run(&config, &mut script, &stop, None, &mut |event| {
+            if let client::Event::Rumble { large, small } = event {
+                let _ = tx.send((large, small));
+            }
+        })
+        .unwrap();
+    });
+    (thread, rx)
+}
+
+fn next_rumble(rx: &std::sync::mpsc::Receiver<(u8, u8)>) -> (u8, u8) {
+    rx.recv_timeout(Duration::from_secs(3))
+        .expect("o rumble não chegou ao celular")
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_vibration_a_game_asks_for_reaches_the_phone_scaled_by_the_profile() {
+    let rig = rig().await;
+    let session = welcomed(&rig, 1).await;
+    let stop = Arc::new(AtomicBool::new(false));
+    let (client, rumble) = hold_listening(&session, Arc::clone(&stop));
+    let slot = SlotId::new(0).unwrap();
+    eventually("sessão com input", || {
+        rig.core.slots().snapshot().slots[0].session.is_some()
+    })
+    .await;
+
+    // Perfil Padrão: a vibração passa como veio.
+    rig.driver.inject_rumble(slot, 200, 100);
+    assert_eq!(next_rumble(&rumble), (200, 100));
+
+    // Metade da intensidade.
+    let half = rig
+        .core
+        .profiles()
+        .create(profile_input("Suave", |p| p.rumble.intensity = 0.5))
+        .await
+        .unwrap();
+    rig.core
+        .set_slot_profile(slot, &half.summary.id)
+        .await
+        .unwrap();
+    rig.driver.inject_rumble(slot, 200, 100);
+    assert_eq!(next_rumble(&rumble), (100, 50));
+
+    // Com o rumble desligado no perfil, o que estava vibrando para na hora e o jogo não vibra mais.
+    let off = rig
+        .core
+        .profiles()
+        .create(profile_input("Mudo", |p| p.rumble.enabled = false))
+        .await
+        .unwrap();
+    rig.core
+        .set_slot_profile(slot, &off.summary.id)
+        .await
+        .unwrap();
+    assert_eq!(next_rumble(&rumble), (0, 0));
+    rig.driver.inject_rumble(slot, 255, 255);
+    assert!(rumble.recv_timeout(Duration::from_millis(600)).is_err());
+
+    stop.store(true, Ordering::Relaxed);
+    client.join().unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_config_tells_the_client_whether_the_profile_has_rumble() {
+    let rig = rig().await;
+    let session = welcomed(&rig, 1).await;
+    assert!(session.welcome.config.rumble_enabled);
+    let off = rig
+        .core
+        .profiles()
+        .create(profile_input("Mudo", |p| p.rumble.enabled = false))
+        .await
+        .unwrap();
+    rig.core
+        .set_slot_profile(SlotId::new(0).unwrap(), &off.summary.id)
+        .await
+        .unwrap();
+    let config = tokio::task::spawn_blocking(move || {
+        let mut session = session;
+        loop {
+            if let ControlMessage::Config(config) = session.recv(Duration::from_secs(3)).unwrap() {
+                return config;
+            }
+        }
+    })
+    .await
+    .unwrap();
+    assert!(!config.rumble_enabled);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn testing_the_vibration_pulses_the_phone_and_then_stops() {
+    let rig = rig().await;
+    let session = welcomed(&rig, 1).await;
+    let stop = Arc::new(AtomicBool::new(false));
+    let (client, rumble) = hold_listening(&session, Arc::clone(&stop));
+    eventually("sessão com input", || {
+        rig.core.slots().snapshot().slots[0].session.is_some()
+    })
+    .await;
+
+    rig.core.test_rumble(SlotId::new(0).unwrap()).unwrap();
+    assert_eq!(next_rumble(&rumble), (255, 255));
+    assert_eq!(next_rumble(&rumble), (0, 0), "o teste para sozinho");
+    // Um slot sem celular não tem o que vibrar.
+    assert!(rig.core.test_rumble(SlotId::new(3).unwrap()).is_err());
+
+    stop.store(true, Ordering::Relaxed);
+    client.join().unwrap();
+}
+
 // ------------------------------------------------------------------ confirmação e configurações
 
 #[tokio::test(flavor = "multi_thread")]

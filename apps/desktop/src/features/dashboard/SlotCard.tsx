@@ -9,6 +9,7 @@ import {
   Plus,
   Power,
   Smartphone,
+  Vibrate,
   Wifi,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -49,6 +50,7 @@ interface SlotCardProps {
   onPause: (paused: boolean) => void;
   onDisconnect: () => void;
   onLatency: () => void;
+  onTestRumble: () => void;
   /** Troca este slot com `other` (menu ou arrastar e soltar). */
   onSwap: (other: number) => void;
 }
@@ -184,6 +186,12 @@ export function SlotCard(props: SlotCardProps) {
       onSelect: () => {
         props.onPause(!slot.paused);
       },
+    },
+    {
+      key: "rumble",
+      label: t("actions.testRumble"),
+      icon: <Vibrate />,
+      onSelect: props.onTestRumble,
     },
     {
       key: "latency",

@@ -78,6 +78,10 @@ export const GYRO_DEFAULTS = {
   mix_with_stick: true,
 } as const satisfies ResolvedGyro;
 
+export const RUMBLE_DEFAULTS = { enabled: true, intensity: 1 } as const;
+/** Intensidade máxima da vibração (200%). */
+export const RUMBLE_MAX = 2;
+
 export const TURBO_DEFAULT_HZ = 10;
 export const TURBO_MIN_HZ = 1;
 export const TURBO_MAX_HZ = 30;
@@ -177,6 +181,13 @@ export function gyroOf(profile: Profile): ResolvedGyro {
   };
 }
 
+export function rumbleOf(profile: Profile): { enabled: boolean; intensity: number } {
+  return {
+    enabled: profile.rumble?.enabled ?? RUMBLE_DEFAULTS.enabled,
+    intensity: profile.rumble?.intensity ?? RUMBLE_DEFAULTS.intensity,
+  };
+}
+
 // ------------------------------------------------------------------ escrita (imutável)
 
 export function setStick(
@@ -212,6 +223,14 @@ export function setTrigger(
     else next.full_point = snap(Math.min(1, next.deadzone + 0.05));
   }
   return { ...profile, triggers: { ...profile.triggers, [side]: next } };
+}
+
+export function setRumble(
+  profile: Profile,
+  patch: Partial<{ enabled: boolean; intensity: number }>,
+): Profile {
+  const next = { ...rumbleOf(profile), ...patch };
+  return { ...profile, rumble: { ...next, intensity: clamp(snap(next.intensity), 0, RUMBLE_MAX) } };
 }
 
 export function setGyro(profile: Profile, patch: Partial<ResolvedGyro>): Profile {

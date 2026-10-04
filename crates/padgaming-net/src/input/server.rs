@@ -43,6 +43,11 @@ impl Default for InputConfig {
 enum Command {
     Add(Box<SessionEntry>),
     Remove(u32),
+    Rumble {
+        session_id: u32,
+        large: u8,
+        small: u8,
+    },
 }
 
 /// O servidor de input em execução.
@@ -102,6 +107,16 @@ impl InputServer {
     /// Remove a sessão; os pacotes dela passam a ser descartados.
     pub fn remove_session(&self, session_id: u32) {
         let _ = self.commands.send(Command::Remove(session_id));
+    }
+
+    /// Manda o celular da sessão vibrar (`0, 0` para). A thread de input envia o `Rumble` e o
+    /// retransmite a cada 100 ms até o client confirmar (T-204).
+    pub fn set_rumble(&self, session_id: u32, large: u8, small: u8) {
+        let _ = self.commands.send(Command::Rumble {
+            session_id,
+            large,
+            small,
+        });
     }
 
     /// Modo de desenvolvimento (só em builds de debug): registra a sessão fixa
@@ -171,6 +186,13 @@ fn drain(engine: &mut InputEngine, inbox: &Receiver<Command>) {
                 }
             }
             Command::Remove(id) => engine.remove_session(id),
+            Command::Rumble {
+                session_id,
+                large,
+                small,
+            } => {
+                engine.set_rumble(session_id, large, small);
+            }
         }
     }
 }
@@ -203,5 +225,10 @@ fn run(socket: &UdpSocket, mut engine: InputEngine, inbox: &Receiver<Command>, s
                 }
             },
         }
+        // A vibração devida (nova ou ainda sem confirmação) sai a cada volta: a espera do socket
+        // limita o atraso ao `poll_interval`.
+        engine.send_rumble(Instant::now(), &mut out, |bytes, to| {
+            let _ = socket.send_to(bytes, to);
+        });
     }
 }

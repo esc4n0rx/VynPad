@@ -11,7 +11,9 @@ mod platform;
 mod server;
 mod stats;
 
-pub use engine::{Handled, InputEngine, MAX_SESSIONS, SessionActivity, SessionEntry, SessionSpec};
+pub use engine::{
+    Handled, InputEngine, MAX_SESSIONS, RUMBLE_RESEND, SessionActivity, SessionEntry, SessionSpec,
+};
 pub use metrics::{MetricsSnapshot, SessionMetrics};
 pub use platform::RealtimeTuning;
 pub use server::{DEFAULT_PORT, InputConfig, InputServer};

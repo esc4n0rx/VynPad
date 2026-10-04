@@ -49,6 +49,8 @@ export const commands = {
 	setSlotPaused: (slot: number, paused: boolean) => __TAURI_INVOKE<null>("set_slot_paused", { slot, paused }),
 	/**  Troca dois slots de lugar, com o controle e o perfil de cada um. */
 	swapSlots: (a: number, b: number) => __TAURI_INVOKE<null>("swap_slots", { a, b }),
+	/**  "Testar vibração": o celular do slot vibra por meio segundo e para. */
+	testRumble: (slot: number) => __TAURI_INVOKE<null>("test_rumble", { slot }),
 	/**  O perfil de cada slot (`id`), na ordem P1–P4; `null` onde não houve dispositivo ainda. */
 	getSlotProfiles: () => __TAURI_INVOKE<(string | null)[]>("get_slot_profiles"),
 	/**  Troca o perfil do slot na hora (vale só até o dispositivo desconectar). Devolve o `id` aplicado. */
@@ -579,6 +581,8 @@ export type Profile = {
 	gyro?: GyroConfig,
 	/**  Botões. */
 	buttons?: ButtonsConfig,
+	/**  Vibração. */
+	rumble?: RumbleConfig,
 };
 
 /**  Um perfil completo, com a configuração de mapeamento. */
@@ -612,6 +616,14 @@ export type QualityDto = "excellent" | "good" | "unstable" | "poor";
 /**  A reserva de um slot venceu. */
 export type ReservationExpired = {
 	slot: number,
+};
+
+/**  Vibração: o que o jogo pede chega ao celular com esta intensidade. */
+export type RumbleConfig = {
+	/**  Repassa a vibração ao celular. Desligada, os motores ficam parados. */
+	enabled?: boolean,
+	/**  Multiplicador do que o jogo pede, de 0 a 2 (200%). Acima de 1,0 satura em 255. */
+	intensity?: number | null,
 };
 
 export type ServerInfoDto = {

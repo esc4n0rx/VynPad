@@ -343,6 +343,28 @@ pub struct ButtonsConfig {
     pub turbo: Vec<Turbo>,
 }
 
+// ---------------------------------------------------------------------- rumble
+
+/// Vibração: o que o jogo pede chega ao celular com esta intensidade.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
+#[serde(default)]
+pub struct RumbleConfig {
+    /// Repassa a vibração ao celular. Desligada, os motores ficam parados.
+    pub enabled: bool,
+    /// Multiplicador do que o jogo pede, de 0 a 2 (200%). Acima de 1,0 satura em 255.
+    pub intensity: f32,
+}
+
+impl Default for RumbleConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            intensity: 1.0,
+        }
+    }
+}
+
 // ---------------------------------------------------------------------- perfil
 
 /// Perfil de mapeamento completo.
@@ -362,6 +384,8 @@ pub struct Profile {
     pub gyro: GyroConfig,
     /// Botões.
     pub buttons: ButtonsConfig,
+    /// Vibração.
+    pub rumble: RumbleConfig,
 }
 
 impl Default for Profile {
@@ -380,6 +404,7 @@ impl Profile {
             triggers: TriggersConfig::default(),
             gyro: GyroConfig::default(),
             buttons: ButtonsConfig::default(),
+            rumble: RumbleConfig::default(),
         }
     }
 
@@ -423,6 +448,11 @@ impl Profile {
         validate_trigger("triggers.left", &self.triggers.left)?;
         validate_trigger("triggers.right", &self.triggers.right)?;
         validate_gyro(&self.gyro)?;
+        check(
+            "rumble.intensity",
+            self.rumble.intensity.is_finite() && (0.0..=2.0).contains(&self.rumble.intensity),
+            "deve estar entre 0 e 2",
+        )?;
         for turbo in &self.buttons.turbo {
             check(
                 "buttons.turbo.hz",

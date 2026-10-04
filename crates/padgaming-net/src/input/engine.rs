@@ -13,7 +13,7 @@ use arc_swap::ArcSwapOption;
 use padgaming_core::SlotManager;
 use padgaming_mapping::{Mapper, ProfileCell, RawInput};
 use padgaming_protocol::{
-    KEY_LEN, MAX_PACKET_LEN, Payload, Pong, ProtoError, Role, Secret, Session, parse_header,
+    KEY_LEN, MAX_PACKET_LEN, Payload, Pong, ProtoError, Role, Rumble, Secret, Session, parse_header,
 };
 
 use super::metrics::SessionMetrics;
@@ -63,6 +63,48 @@ impl SessionActivity {
     }
 }
 
+/// De quanto em quanto tempo o estado de vibração ainda não confirmado é reenviado (PROTOCOLO §8).
+pub const RUMBLE_RESEND: Duration = Duration::from_millis(100);
+
+/// A vibração que o server mandou a uma sessão e o que o client já confirmou.
+#[derive(Debug, Default)]
+struct RumbleState {
+    /// `rumble_id` do estado atual (`0` = nunca houve vibração).
+    id: u16,
+    large: u8,
+    small: u8,
+    /// Último `rumble_id` que o client devolveu em `rumble_ack_id`.
+    acked: u16,
+    last_sent: Option<Instant>,
+}
+
+impl RumbleState {
+    /// Muda o estado. Devolve `false` se não mudou nada (inclusive "desligar" quando já está
+    /// desligado desde o começo). Cada mudança ganha um `rumble_id` novo.
+    fn set(&mut self, large: u8, small: u8) -> bool {
+        if (self.large, self.small) == (large, small) {
+            return false;
+        }
+        self.large = large;
+        self.small = small;
+        self.id = Rumble::next_id(self.id);
+        self.last_sent = None;
+        true
+    }
+
+    /// Há um estado que o client ainda não confirmou.
+    const fn pending(&self) -> bool {
+        self.id != 0 && self.acked != self.id
+    }
+
+    fn on_ack(&mut self, ack: u16) {
+        // Só vale a confirmação do estado atual: um `ack` de um estado antigo não encerra nada.
+        if ack == self.id {
+            self.acked = ack;
+        }
+    }
+}
+
 /// O que registrar para uma sessão nova.
 pub struct SessionSpec {
     /// `session_id` do `welcome`.
@@ -81,6 +123,7 @@ pub struct SessionEntry {
     /// Origem do último pacote autêntico (cópia local, para só publicar mudanças).
     peer: Option<SocketAddr>,
     last_input: Option<Instant>,
+    rumble: RumbleState,
 }
 
 impl SessionEntry {
@@ -93,6 +136,7 @@ impl SessionEntry {
             activity: Arc::clone(&activity),
             peer: None,
             last_input: None,
+            rumble: RumbleState::default(),
         };
         (entry, activity)
     }
@@ -167,6 +211,51 @@ impl InputEngine {
         self.sessions.iter().flatten().count()
     }
 
+    /// Muda a vibração que a sessão deve receber. Devolve `false` se a sessão não existe ou se
+    /// nada mudou. O envio (e a retransmissão até o `ack`) fica por conta de [`Self::send_rumble`].
+    pub fn set_rumble(&mut self, session_id: u32, large: u8, small: u8) -> bool {
+        self.sessions
+            .iter_mut()
+            .flatten()
+            .find(|s| s.session.session_id() == session_id)
+            .is_some_and(|entry| entry.rumble.set(large, small))
+    }
+
+    /// Manda os `Rumble` que estão devidos: o estado novo, e o atual de novo a cada
+    /// [`RUMBLE_RESEND`] até o client confirmar com `rumble_ack_id`. Vale também para `0, 0`, o
+    /// que garante o desligamento mesmo com perda de pacotes.
+    pub fn send_rumble(
+        &mut self,
+        now: Instant,
+        out: &mut [u8; MAX_PACKET_LEN],
+        mut send: impl FnMut(&[u8], SocketAddr),
+    ) {
+        for entry in self.sessions.iter_mut().flatten() {
+            let Some(to) = entry.peer else { continue };
+            if !entry.rumble.pending() {
+                continue;
+            }
+            let due = entry
+                .rumble
+                .last_sent
+                .is_none_or(|at| now.saturating_duration_since(at) >= RUMBLE_RESEND);
+            if !due {
+                continue;
+            }
+            let payload = Payload::Rumble(Rumble {
+                rumble_id: entry.rumble.id,
+                large: entry.rumble.large,
+                small: entry.rumble.small,
+            });
+            // Sem `seq` de envio sobrando, a sessão precisa ser renovada: sem vibração até lá.
+            if let Ok(len) = entry.session.send(&payload, out) {
+                send(&out[..len], to);
+                entry.rumble.last_sent = Some(now);
+                self.stats.rumble_sent.fetch_add(1, Ordering::Relaxed);
+            }
+        }
+    }
+
     /// Processa um datagrama recebido de `src` no instante `rx`.
     ///
     /// Respostas (Pong) são escritas em `out`; o chamador as envia conforme o [`Handled`].
@@ -213,6 +302,7 @@ impl InputEngine {
         let handled = match packet.payload {
             Payload::Input(state) => {
                 entry.activity.metrics.set_battery(state.battery);
+                entry.rumble.on_ack(state.rumble_ack_id);
                 Self::deliver(
                     &self.slots,
                     &self.stats,
@@ -224,6 +314,7 @@ impl InputEngine {
             }
             Payload::InputMotion(state, motion) => {
                 entry.activity.metrics.set_battery(state.battery);
+                entry.rumble.on_ack(state.rumble_ack_id);
                 Self::deliver(
                     &self.slots,
                     &self.stats,

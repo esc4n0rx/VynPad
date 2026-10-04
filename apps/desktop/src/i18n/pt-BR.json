@@ -104,7 +104,8 @@
       "pause": "Pausar",
       "resume": "Retomar",
       "disconnect": "Desconectar",
-      "latency": "Ver latência"
+      "latency": "Ver latência",
+      "testRumble": "Testar vibração"
     },
     "swapped": "P{{from}} e P{{to}} trocaram de lugar.",
     "metrics": {
@@ -291,7 +292,8 @@
     "tabs": {
       "label": "Propriedades",
       "controls": "Controles",
-      "gyro": "Gyro"
+      "gyro": "Gyro",
+      "rumble": "Vibração"
     },
     "panel": {
       "empty": "Selecione um botão, gatilho ou analógico no controle para ajustar.",
@@ -366,7 +368,14 @@
     },
     "percent": "{{value}}%",
     "hz": "{{value}} Hz",
-    "multiplier": "{{value}}×"
+    "multiplier": "{{value}}×",
+    "rumble": {
+      "title": "Vibração",
+      "enabled": "Repassar a vibração ao celular",
+      "intensity": "Intensidade",
+      "hint": "A vibração que o jogo pede chega ao celular com esta intensidade. Acima de 100% ela satura no máximo.",
+      "percent": "{{value}}%"
+    }
   },
   "latency": {
     "title": "Latência",

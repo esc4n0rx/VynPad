@@ -193,6 +193,8 @@ pub struct InputStats {
     pub dropped_replay: AtomicU64,
     /// Inputs válidos que o `SlotManager` recusou (driver indisponível, sessão suspensa...).
     pub submit_errors: AtomicU64,
+    /// Pacotes `Rumble` enviados (inclui as retransmissões).
+    pub rumble_sent: AtomicU64,
     /// Tempo de processamento por datagrama (da chegada até o `update` do driver).
     pub processing: LatencyHistogram,
 }
@@ -216,6 +218,8 @@ pub struct StatsSnapshot {
     pub dropped_replay: u64,
     /// Recusados pelo `SlotManager`.
     pub submit_errors: u64,
+    /// `Rumble` enviados.
+    pub rumble_sent: u64,
 }
 
 impl StatsSnapshot {
@@ -241,6 +245,7 @@ impl InputStats {
             dropped_auth: get(&self.dropped_auth),
             dropped_replay: get(&self.dropped_replay),
             submit_errors: get(&self.submit_errors),
+            rumble_sent: get(&self.rumble_sent),
         }
     }
 }

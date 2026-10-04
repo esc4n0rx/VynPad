@@ -20,12 +20,13 @@ import { useSlots } from "@/lib/api/slots";
 import type { ProfileDto } from "@/lib/bindings";
 import { ButtonPanel, StickPanel, TriggerPanel } from "./ControlPanels";
 import { GyroPanel } from "./GyroPanel";
+import { RumblePanel } from "./RumblePanel";
 import { ProfileIcon } from "./ProfileIcon";
 import { PROFILE_ICON_NAMES } from "./profileIcons";
 import { ProfileList } from "./ProfileList";
 import { useProfileEditor, type SaveState } from "./useProfileEditor";
 
-type Tab = "controls" | "gyro";
+type Tab = "controls" | "gyro" | "rumble";
 
 const isButton = (element: GamepadElement): element is ButtonElement =>
   (BUTTON_ELEMENTS as readonly string[]).includes(element);
@@ -205,11 +206,14 @@ function Editor({ dto }: { dto: ProfileDto }) {
           options={[
             { value: "controls", label: t("tabs.controls") },
             { value: "gyro", label: t("tabs.gyro") },
+            { value: "rumble", label: t("tabs.rumble") },
           ]}
         />
         <Card>
           {tab === "gyro" ? (
             <GyroPanel profile={draft.profile} readOnly={readOnly} edit={editor.edit} />
+          ) : tab === "rumble" ? (
+            <RumblePanel profile={draft.profile} readOnly={readOnly} edit={editor.edit} />
           ) : (
             panel
           )}

@@ -199,6 +199,7 @@ impl Core {
             .await?,
         );
         registry.connect_control(&control);
+        registry.connect_input(&input);
         control.set_require_approval(current.require_approval);
 
         let (events, _) = broadcast::channel(EVENT_BACKLOG);
@@ -293,6 +294,35 @@ impl Core {
             Arc::clone(&self.slots),
             self.settings.subscribe(),
         )));
+        // A vibração que o jogo pede chega ao celular (T-204).
+        let (events, stop) = (self.driver.rumble_events(), Arc::clone(&self.stop));
+        let (slots, registry, input) = (
+            Arc::clone(&self.slots),
+            Arc::clone(&self.registry),
+            Arc::clone(&self.input),
+        );
+        if let Ok(thread) = std::thread::Builder::new()
+            .name("rumble-pump".into())
+            .spawn(move || {
+                while !stop.load(Ordering::Relaxed) {
+                    match events.recv_timeout(POLL) {
+                        Ok(event) => {
+                            let session =
+                                slots.snapshot().slots[usize::from(event.slot.index())].session;
+                            if let Some(session) = session {
+                                let (large, small) =
+                                    registry.scale_rumble(event.slot, event.large, event.small);
+                                input.set_rumble(session, large, small);
+                            }
+                        }
+                        Err(crossbeam_channel::RecvTimeoutError::Timeout) => {}
+                        Err(crossbeam_channel::RecvTimeoutError::Disconnected) => break,
+                    }
+                }
+            })
+        {
+            self.threads.push(thread);
+        }
         // Métricas de latência dos slots.
         self.tasks.push(tokio::spawn(metrics_pump(
             Arc::clone(&self.shared),
@@ -553,6 +583,24 @@ impl Core {
             )))
     }
 
+    /// "Testar vibração": o celular do `slot` vibra por meio segundo, no máximo, e para.
+    /// Vale mesmo que o perfil desligue o rumble (testa o caminho até o celular).
+    pub fn test_rumble(&self, slot: SlotId) -> Result<(), CoreError> {
+        let session = self.slots.snapshot().slots[usize::from(slot.index())].session;
+        let Some(session) = session else {
+            return Err(CoreError::Data(padgaming_storage::DataError::NotFound(
+                "slot",
+            )));
+        };
+        self.input.set_rumble(session, 255, 255);
+        let input = Arc::clone(&self.input);
+        tokio::spawn(async move {
+            tokio::time::sleep(TEST_RUMBLE).await;
+            input.set_rumble(session, 0, 0);
+        });
+        Ok(())
+    }
+
     /// Apaga o histórico de conexões. Devolve quantas linhas saíram.
     pub async fn clear_history(&self) -> Result<u64, CoreError> {
         Ok(self.shared.log.clear().await?)
@@ -761,6 +809,9 @@ async fn settings_pump(
         }
     }
 }
+
+/// Quanto dura o "Testar vibração".
+const TEST_RUMBLE: Duration = Duration::from_millis(500);
 
 /// Intervalo das métricas com a janela à vista.
 const METRICS_EVERY: Duration = Duration::from_millis(250);

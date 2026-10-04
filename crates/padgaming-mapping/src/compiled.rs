@@ -4,7 +4,7 @@
 use crate::input::{BUTTON_COUNT, Button};
 use crate::profile::{
     ButtonTarget, Curve, DeadzoneShape, GyroAxis, GyroConfig, GyroMode, Profile, ProfileError,
-    Smoothing, StickConfig, StickSide, TriggerConfig,
+    RumbleConfig, Smoothing, StickConfig, StickSide, TriggerConfig,
 };
 
 /// Divisões da LUT das curvas (a tabela tem `LUT_STEPS + 1` entradas).
@@ -81,6 +81,7 @@ pub struct CompiledProfile {
     pub(crate) targets: [Target; BUTTON_COUNT],
     /// Frequência do turbo por botão (0 = sem turbo).
     pub(crate) turbo_hz: [f32; BUTTON_COUNT],
+    pub(crate) rumble: RumbleConfig,
 }
 
 /// Rad/s que levam o analógico ao fim do curso com sensibilidade 1,0 (~115°/s).
@@ -95,6 +96,26 @@ impl CompiledProfile {
     /// O gyro está ligado neste perfil (o server só pede pacotes com motion se estiver).
     pub const fn gyro_enabled(&self) -> bool {
         self.gyro.enabled
+    }
+
+    /// O perfil repassa a vibração ao celular.
+    pub const fn rumble_enabled(&self) -> bool {
+        self.rumble.enabled
+    }
+
+    /// A vibração pedida pelo jogo (`large`, `small`) depois da intensidade do perfil. Desligada,
+    /// devolve `(0, 0)`; acima de 100% satura em 255.
+    pub fn scale_rumble(&self, large: u8, small: u8) -> (u8, u8) {
+        if !self.rumble.enabled {
+            return (0, 0);
+        }
+        let scale = |v: u8| {
+            // `intensity` ≤ 2 e `v` ≤ 255: o resultado cabe em u8 depois do `min`.
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            let scaled = (f32::from(v) * self.rumble.intensity).round().min(255.0) as u8;
+            scaled
+        };
+        (scale(large), scale(small))
     }
 
     /// Valida e compila um perfil.
@@ -125,6 +146,7 @@ impl CompiledProfile {
             gyro: compile_gyro(&profile.gyro),
             targets,
             turbo_hz,
+            rumble: profile.rumble,
         })
     }
 
@@ -294,5 +316,71 @@ mod tests {
         let gyro = CompiledProfile::compile(&profile).unwrap().gyro;
         assert_eq!(gyro.gain_x, 2.0 / GYRO_FULL_SCALE_RAD_S);
         assert_eq!(gyro.gain_y, -1.0 / GYRO_FULL_SCALE_RAD_S);
+    }
+}
+
+#[cfg(test)]
+mod rumble_tests {
+    use super::*;
+
+    fn with(rumble: RumbleConfig) -> CompiledProfile {
+        CompiledProfile::compile(&Profile {
+            rumble,
+            ..Profile::identity()
+        })
+        .unwrap()
+    }
+
+    #[test]
+    fn the_default_profile_passes_the_vibration_through() {
+        let p = CompiledProfile::identity();
+        assert!(p.rumble_enabled());
+        assert_eq!(p.scale_rumble(200, 17), (200, 17));
+        assert_eq!(p.scale_rumble(0, 0), (0, 0));
+    }
+
+    #[test]
+    fn intensity_scales_and_saturates_at_255() {
+        let half = with(RumbleConfig {
+            enabled: true,
+            intensity: 0.5,
+        });
+        assert_eq!(half.scale_rumble(200, 101), (100, 51));
+        let double = with(RumbleConfig {
+            enabled: true,
+            intensity: 2.0,
+        });
+        assert_eq!(double.scale_rumble(100, 200), (200, 255));
+        assert_eq!(double.scale_rumble(255, 0), (255, 0));
+    }
+
+    #[test]
+    fn turning_it_off_silences_the_motors() {
+        let off = with(RumbleConfig {
+            enabled: false,
+            intensity: 1.0,
+        });
+        assert!(!off.rumble_enabled());
+        assert_eq!(off.scale_rumble(255, 255), (0, 0));
+    }
+
+    #[test]
+    fn the_intensity_is_validated() {
+        for bad in [-0.1, 2.1, f32::NAN, f32::INFINITY] {
+            let profile = Profile {
+                rumble: RumbleConfig {
+                    enabled: true,
+                    intensity: bad,
+                },
+                ..Profile::identity()
+            };
+            assert!(profile.validate().is_err(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn old_profiles_without_a_rumble_section_still_load() {
+        let profile = Profile::from_json(r#"{"schema_version":1,"name":"Antigo"}"#).unwrap();
+        assert_eq!(profile.rumble, RumbleConfig::default());
     }
 }

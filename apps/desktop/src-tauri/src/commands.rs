@@ -283,6 +283,13 @@ pub fn swap_slots(state: State<'_, AppState>, a: u8, b: u8) -> Result<()> {
     Ok(state.core.swap_slots(slot_id(a)?, slot_id(b)?)?)
 }
 
+/// "Testar vibração": o celular do slot vibra por meio segundo e para.
+#[tauri::command]
+#[specta::specta]
+pub fn test_rumble(state: State<'_, AppState>, slot: u8) -> Result<()> {
+    Ok(state.core.test_rumble(slot_id(slot)?)?)
+}
+
 /// O perfil de cada slot (`id`), na ordem P1–P4; `null` onde não houve dispositivo ainda.
 #[tauri::command]
 #[specta::specta]
