@@ -2,7 +2,7 @@ name: Fuzz
 
 # O cargo-fuzz (libFuzzer) não linka no Windows/MSVC sem a runtime do ASan do Visual Studio,
 # então o fuzzing roda aqui, no Linux. Localmente: `cargo +nightly fuzz run <alvo>` em
-# crates/padgaming-protocol/fuzz (Linux/WSL).
+# crates/vynpad-protocol/fuzz (Linux/WSL).
 
 on:
   workflow_dispatch:
@@ -27,18 +27,18 @@ jobs:
         target: [udp_decode, udp_roundtrip, control_frame]
     defaults:
       run:
-        working-directory: crates/padgaming-protocol/fuzz
+        working-directory: crates/vynpad-protocol/fuzz
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: crates/padgaming-protocol/fuzz
+          workspaces: crates/vynpad-protocol/fuzz
       - run: cargo +nightly install cargo-fuzz --locked
       - run: cargo +nightly fuzz run ${{ matrix.target }} -- -max_total_time=${{ inputs.seconds || '600' }}
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: fuzz-artifacts-${{ matrix.target }}
-          path: crates/padgaming-protocol/fuzz/artifacts
+          path: crates/vynpad-protocol/fuzz/artifacts
           retention-days: 30

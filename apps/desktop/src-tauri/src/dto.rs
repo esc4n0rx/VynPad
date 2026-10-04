@@ -4,15 +4,15 @@
 
 use std::time::Instant;
 
-use padgaming_core::{SlotView, SlotsSnapshot};
-use padgaming_driver::XReport;
-use padgaming_mapping::Profile;
-use padgaming_net::control::{ControlConfig, SessionHealth};
-use padgaming_net::discovery::{InterfaceInfo, NearbyDevice};
-use padgaming_server::{ApprovalPrompt, MetricsSnapshot, PairingOffer, Quality};
-use padgaming_storage::{Device, DeviceDefaults, LogEntry, LogQuery, ProfileInput, ProfileSummary};
 use serde::{Deserialize, Serialize};
 use specta::Type;
+use vynpad_core::{SlotView, SlotsSnapshot};
+use vynpad_driver::XReport;
+use vynpad_mapping::Profile;
+use vynpad_net::control::{ControlConfig, SessionHealth};
+use vynpad_net::discovery::{InterfaceInfo, NearbyDevice};
+use vynpad_server::{ApprovalPrompt, MetricsSnapshot, PairingOffer, Quality};
+use vynpad_storage::{Device, DeviceDefaults, LogEntry, LogQuery, ProfileInput, ProfileSummary};
 
 // ------------------------------------------------------------------ slots
 
@@ -169,8 +169,8 @@ pub struct ProfileDto {
     pub profile: Profile,
 }
 
-impl From<padgaming_storage::StoredProfile> for ProfileDto {
-    fn from(p: padgaming_storage::StoredProfile) -> Self {
+impl From<vynpad_storage::StoredProfile> for ProfileDto {
+    fn from(p: vynpad_storage::StoredProfile) -> Self {
         Self {
             summary: p.summary.into(),
             profile: p.profile,
@@ -391,7 +391,7 @@ pub struct ServerInfoDto {
     pub input_port: u16,
     pub discovery_port: u16,
     /// Portas configuradas que só valem depois de reiniciar o app.
-    pub ports_pending_restart: Option<padgaming_storage::Ports>,
+    pub ports_pending_restart: Option<vynpad_storage::Ports>,
     pub addresses: Vec<AddressDto>,
     pub free_slots: u8,
 }

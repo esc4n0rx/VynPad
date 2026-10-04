@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://padgaming.local/schemas/udp-vectors.schema.json",
+  "$id": "https://vynpad.local/schemas/udp-vectors.schema.json",
   "title": "Test vectors UDP (protocol/test-vectors/udp.json)",
   "description": "PROTOCOLO.md §11.",
   "type": "object",

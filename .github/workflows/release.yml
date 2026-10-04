@@ -60,13 +60,13 @@ jobs:
           fi
           cargo install trusted-signing-cli --locked
           node -e '
-            const cmd = `trusted-signing-cli -e ${process.env.SIGNING_ENDPOINT} -a ${process.env.SIGNING_ACCOUNT} -c ${process.env.SIGNING_PROFILE} -d PadGaming %1`;
+            const cmd = `trusted-signing-cli -e ${process.env.SIGNING_ENDPOINT} -a ${process.env.SIGNING_ACCOUNT} -c ${process.env.SIGNING_PROFILE} -d VynPad %1`;
             require("fs").writeFileSync("signing.json", JSON.stringify({ bundle: { windows: { signCommand: cmd } } }));
           '
           echo "signed=true" >> "$GITHUB_OUTPUT"
 
       # NSIS (por usuário, sem admin) e MSI para empresas.
-      - run: pnpm --filter @padgaming/desktop tauri build --bundles nsis,msi --config "${{ github.workspace }}/signing.json"
+      - run: pnpm --filter @vynpad/desktop tauri build --bundles nsis,msi --config "${{ github.workspace }}/signing.json"
 
       - name: Confere a assinatura
         if: steps.signing.outputs.signed == 'true'
@@ -82,6 +82,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           # O changelog sai dos commits e PRs desde a tag anterior.
-          gh release create "$GITHUB_REF_NAME" --generate-notes --title "PadGaming $GITHUB_REF_NAME" \
+          gh release create "$GITHUB_REF_NAME" --generate-notes --title "VynPad $GITHUB_REF_NAME" \
             target/release/bundle/nsis/*.exe \
             target/release/bundle/msi/*.msi

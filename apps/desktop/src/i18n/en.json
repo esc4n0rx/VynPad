@@ -93,7 +93,7 @@
       "stalled": "No signal from the phone",
       "physical": {
         "title": "Physical controller",
-        "hint": "A physical controller is using Windows index {{slot}}. It is not from PadGaming."
+        "hint": "A physical controller is using Windows index {{slot}}. It is not from VynPad."
       },
       "paused": "Paused",
       "gyro": "Gyro",
@@ -134,7 +134,7 @@
     "pairNew": "Pair new",
     "nearby": {
       "title": "Nearby on the network",
-      "empty": "No phone with PadGaming open nearby.",
+      "empty": "No phone with VynPad open nearby.",
       "seenNow": "seen now",
       "seenAgo": "seen {{seconds}} s ago",
       "state": {
@@ -180,7 +180,7 @@
     },
     "pair": {
       "title": "Pair a new device",
-      "description": "Open PadGaming on your phone and scan the code or type the PIN.",
+      "description": "Open VynPad on your phone and scan the code or type the PIN.",
       "tabs": "Pairing method",
       "qr": "QR code",
       "pin": "PIN",
@@ -223,7 +223,7 @@
     },
     "empty": {
       "title": "No devices yet",
-      "description": "Open PadGaming on your phone, on the same Wi-Fi network, and pair with a QR code or PIN."
+      "description": "Open VynPad on your phone, on the same Wi-Fi network, and pair with a QR code or PIN."
     }
   },
   "mapping": {
@@ -465,7 +465,7 @@
       },
       "autostart": {
         "label": "Start with Windows",
-        "hint": "Opens PadGaming when you sign in to Windows."
+        "hint": "Opens VynPad when you sign in to Windows."
       },
       "startMinimized": {
         "label": "Start minimized",
@@ -497,7 +497,7 @@
       },
       "firewall": {
         "label": "Windows Firewall",
-        "hint": "PadGaming needs inbound rules so the phone can reach the PC."
+        "hint": "VynPad needs inbound rules so the phone can reach the PC."
       },
       "driver": {
         "label": "Virtual controller driver (ViGEmBus)",
@@ -553,7 +553,7 @@
       },
       "updates": {
         "label": "Updates",
-        "hint": "Look for a new PadGaming version."
+        "hint": "Look for a new VynPad version."
       },
       "diagnostic": {
         "label": "Export diagnostics",
@@ -561,7 +561,7 @@
       },
       "licenses": {
         "label": "Third-party licenses",
-        "hint": "Third-party components PadGaming uses, including ViGEmBus."
+        "hint": "Third-party components VynPad uses, including ViGEmBus."
       },
       "notifyConnections": {
         "label": "Phone connections",
@@ -615,7 +615,7 @@
         "noNetwork": "No local network to test."
       },
       "firewall": {
-        "ok": "The firewall does not block PadGaming.",
+        "ok": "The firewall does not block VynPad.",
         "off": "The firewall is off.",
         "blocked": "Some ports are blocked.",
         "notApplicable": "This system doesn’t use the Windows Firewall.",
@@ -727,12 +727,12 @@
     },
     "welcome": {
       "title": "Your phone is the controller",
-      "description": "PadGaming turns your phone into an Xbox 360 controller for Windows games. Let’s get everything ready in a few steps.",
+      "description": "VynPad turns your phone into an Xbox 360 controller for Windows games. Let’s get everything ready in a few steps.",
       "language": "Language"
     },
     "driver": {
       "title": "Virtual controller driver",
-      "what": "Games only see real controllers. ViGEmBus is a free driver that creates virtual Xbox 360 controllers, and it’s how PadGaming delivers what the phone sends.",
+      "what": "Games only see real controllers. ViGEmBus is a free driver that creates virtual Xbox 360 controllers, and it’s how VynPad delivers what the phone sends.",
       "checking": "Checking…",
       "ready": "Driver installed and working.",
       "missing": "The driver isn’t installed yet.",
@@ -740,8 +740,8 @@
       "stopped": "The driver is installed but stopped. Restart the PC or the ViGEmBus service.",
       "error": "I couldn’t check the driver: {{message}}",
       "download": "Download ViGEmBus",
-      "afterInstall": "After installing, come back here: PadGaming notices on its own.",
-      "warning": "Without the driver, PadGaming can’t create controllers for games."
+      "afterInstall": "After installing, come back here: VynPad notices on its own.",
+      "warning": "Without the driver, VynPad can’t create controllers for games."
     },
     "network": {
       "title": "Network",
@@ -750,7 +750,7 @@
       "address": "Address",
       "noAddress": "No local network. Connect the PC to Wi-Fi or a wired network.",
       "firewallOk": "The firewall lets the phone connect.",
-      "firewallBlocked": "The Windows Firewall is blocking PadGaming.",
+      "firewallBlocked": "The Windows Firewall is blocking VynPad.",
       "firewallOff": "The firewall is off.",
       "notApplicable": "This system doesn’t use the Windows Firewall.",
       "allow": "Allow connections",
@@ -764,10 +764,10 @@
     },
     "connect": {
       "title": "Connect your phone",
-      "description": "Open PadGaming on your phone, on the same Wi-Fi network, and scan the code or type the PIN.",
+      "description": "Open VynPad on your phone, on the same Wi-Fi network, and scan the code or type the PIN.",
       "getApp": "Don’t have the app yet? It’s coming soon to the Play Store.",
       "nearby": "Phones nearby",
-      "nearbyEmpty": "No phone with PadGaming open nearby yet.",
+      "nearbyEmpty": "No phone with VynPad open nearby yet.",
       "successHint": "Controller P1 is already responding. Press a button on the phone."
     },
     "done": {
@@ -780,14 +780,14 @@
       "pending": "pending",
       "tipsTitle": "Tips",
       "tipWifi": "Use 5 GHz Wi-Fi for less delay.",
-      "tipTray": "Closing the window leaves PadGaming in the tray; right-click the icon to see the controllers.",
+      "tipTray": "Closing the window leaves VynPad in the tray; right-click the icon to see the controllers.",
       "tipShortcuts": "Ctrl+1 to Ctrl+5 switch sections.",
       "autostart": "Start with Windows",
       "startMinimized": "Start minimized to the tray"
     }
   },
   "tray": {
-    "hint": "PadGaming keeps running in the tray."
+    "hint": "VynPad keeps running in the tray."
   },
   "errors": {
     "internal": "Something went wrong. Try again; if it keeps happening, send the diagnostics.",
@@ -796,7 +796,7 @@
     "not_found": "I couldn't find the requested item. It may have been removed.",
     "builtin_profile": "The Default profile belongs to the app and can't be edited or deleted. Duplicate it to customize.",
     "profile_in_use": "This profile is in use.",
-    "import_invalid": "The file is not a valid PadGaming profile.",
+    "import_invalid": "The file is not a valid VynPad profile.",
     "no_network": "No local network found. Connect the PC to Wi-Fi or a wired network.",
     "cancelled": "The Windows permission was declined."
   }

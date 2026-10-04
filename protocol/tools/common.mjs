@@ -10,7 +10,7 @@ export const PROTOCOL_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const SCHEMAS_DIR = join(PROTOCOL_DIR, "schemas");
 export const VECTORS_DIR = join(PROTOCOL_DIR, "test-vectors");
 
-const BASE_ID = "https://padgaming.local/schemas/";
+const BASE_ID = "https://vynpad.local/schemas/";
 
 export function loadAjv() {
   const ajv = new Ajv2020({ allErrors: true, strict: true });

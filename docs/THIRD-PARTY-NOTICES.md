@@ -1,6 +1,6 @@
 # Avisos de terceiros
 
-Componentes de terceiros usados pelo `PadGaming`. A tela "Sobre" (T-605) deve exibir este arquivo.
+Componentes de terceiros usados pelo `VynPad`. A tela "Sobre" (T-605) deve exibir este arquivo.
 
 ## ViGEmBus (driver de barramento de gamepad virtual)
 

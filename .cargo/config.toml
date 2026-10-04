@@ -1,6 +1,6 @@
 # As macros `query!` do sqlx (T-403) leem os metadados versionados em `.sqlx/` em vez de
 # consultar um banco: o CI e quem clona o repositório compilam sem `DATABASE_URL`.
 # Para regenerar os metadados depois de mudar uma query ou uma migration, veja
-# crates/padgaming-storage/README.md (é preciso desligar esta variável naquele comando).
+# crates/vynpad-storage/README.md (é preciso desligar esta variável naquele comando).
 [env]
 SQLX_OFFLINE = "true"

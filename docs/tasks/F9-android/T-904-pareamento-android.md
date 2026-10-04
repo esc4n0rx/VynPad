@@ -12,7 +12,7 @@
 Parear com o PC em segundos e com segurança.
 
 ## Escopo
-- Scanner de QR (CameraX + ML Kit Barcode) lendo `padgaming://pair?...`; deep link também funciona (QR lido pela câmera nativa abre o app).
+- Scanner de QR (CameraX + ML Kit Barcode) lendo `vynpad://pair?...`; deep link também funciona (QR lido pela câmera nativa abre o app).
 - Entrada de PIN (6 dígitos, teclado numérico) exibindo o fingerprint curto para conferência.
 - Cliente TLS (OkHttp não se aplica, então `SSLSocket` com `TrustManager` customizado) fazendo **pinning** do fingerprint.
 - Handshake `hello`/`welcome`/`reject` com mensagens de erro traduzidas.

@@ -1,4 +1,4 @@
-# Protocolo PadGaming v1
+# Protocolo VynPad v1
 
 > **Status: v1 congelado** (T-101, 2026-09-27). Toda mudança segue a [política de versionamento](#10-versionamento).
 > Contrato entre o server (Rust, T-102) e o client Android (Kotlin, T-902). Os [test vectors](#11-test-vectors) em `protocol/test-vectors/` são normativos: em caso de divergência entre este texto e os vectors, abra uma issue — nenhum dos dois "ganha" sozinho.
@@ -21,7 +21,7 @@ Palavras **DEVE**, **NÃO DEVE** e **PODE** têm o sentido da RFC 2119.
 | 47800 | TCP + TLS 1.3 | Canal de controle (pareamento, handshake, configuração) |
 | 47801 | UDP | Input e ping (client → server), rumble e pong (server → client) |
 | 47802 | UDP broadcast | Descoberta de fallback |
-| 5353 | mDNS | Serviço `_padgaming._tcp.local.` |
+| 5353 | mDNS | Serviço `_vynpad._tcp.local.` |
 
 As portas 47800/47801 podem mudar nas configurações do server; o client sempre usa as portas anunciadas (mDNS/broadcast/QR) e a `udp_port` do `welcome`.
 
@@ -29,7 +29,7 @@ As portas 47800/47801 podem mudar nas configurações do server; o client sempre
 
 ### 3.1 mDNS / DNS-SD
 
-O server anuncia `_padgaming._tcp.local.` na porta TCP de controle, com TXT (todos os valores são texto UTF-8):
+O server anuncia `_vynpad._tcp.local.` na porta TCP de controle, com TXT (todos os valores são texto UTF-8):
 
 | Chave | Exemplo | Significado |
 |---|---|---|
@@ -41,20 +41,20 @@ O server anuncia `_padgaming._tcp.local.` na porta TCP de controle, com TXT (tod
 | `free` | `3` | Slots livres (0–4) |
 | `fp` | `3fa1…` (16 hex) | 8 primeiros bytes do fingerprint do certificado, em hex |
 
-O client anuncia `_padgaming-client._tcp.local.` enquanto está na tela de conexão, com TXT `id` (device_id), `name`, `model`. A porta anunciada é a da socket UDP local do client e é **só informativa** (o server nunca se conecta a ela).
+O client anuncia `_vynpad-client._tcp.local.` enquanto está na tela de conexão, com TXT `id` (device_id), `name`, `model`. A porta anunciada é a da socket UDP local do client e é **só informativa** (o server nunca se conecta a ela).
 
-> Nota: o nome `_padgaming-client` passa dos 15 caracteres que a RFC 6763 recomenda para o tipo de serviço. O server (`mdns-sd`) é configurado para aceitá-lo; o client Android deve conferir se o `NsdManager` também aceita (T-903).
+> Nota: o nome `_vynpad-client` passa dos 15 caracteres que a RFC 6763 recomenda para o tipo de serviço. O server (`mdns-sd`) é configurado para aceitá-lo; o client Android deve conferir se o `NsdManager` também aceita (T-903).
 
 ### 3.2 Broadcast (fallback)
 
-- O client envia os 7 bytes ASCII `PGDISC1` para `255.255.255.255:47802`.
+- O client envia os 7 bytes ASCII `VPDISC1` para `255.255.255.255:47802`.
 - O server responde em **unicast** para a origem com um JSON UTF-8 (sem framing) que segue `protocol/schemas/discovery-response.schema.json`:
 
 ```json
 {"id":"5b0c8a1e-2f4d-4c7a-9e1b-0d3f6a7b8c9d","name":"PC-Sala","ver":1,"tcp":47800,"udp":47801,"os":"windows","free":3,"fp":"3fa1c2d4e5f60718"}
 ```
 
-Datagramas diferentes de `PGDISC1` são ignorados. A resposta é só uma dica: a confiança vem do TLS com pinning (§4).
+Datagramas diferentes de `VPDISC1` são ignorados. A resposta é só uma dica: a confiança vem do TLS com pinning (§4).
 
 ## 4. Pareamento e TLS
 
@@ -67,7 +67,7 @@ Datagramas diferentes de `PGDISC1` são ignorados. A resposta é só uma dica: a
 ### 4.2 URI do QR code
 
 ```
-padgaming://pair?v=1&h=192.168.0.10,10.0.0.5&p=47800&fp=<32 B base64url>&t=<16 B base64url>&n=PC%20Sala
+vynpad://pair?v=1&h=192.168.0.10,10.0.0.5&p=47800&fp=<32 B base64url>&t=<16 B base64url>&n=PC%20Sala
 ```
 
 | Parâmetro | Obrigatório | Regra |
@@ -81,7 +81,7 @@ padgaming://pair?v=1&h=192.168.0.10,10.0.0.5&p=47800&fp=<32 B base64url>&t=<16 B
 
 - O encoder DEVE usar `%20` para espaço e NÃO DEVE usar `+` (o `Uri` do Android não converte `+` em espaço); o decoder NÃO DEVE converter `+`.
 - Parâmetros desconhecidos são ignorados; parâmetros repetidos → `bad_param`.
-- Erros de parsing: `bad_scheme` (esquema ≠ `padgaming` ou ação ≠ `pair`), `missing_param`, `bad_param`, `unsupported_version`.
+- Erros de parsing: `bad_scheme` (esquema ≠ `vynpad` ou ação ≠ `pair`), `missing_param`, `bad_param`, `unsupported_version`.
 
 ### 4.3 Credenciais
 
@@ -157,7 +157,7 @@ Toda mensagem tem o discriminador `"type"`. O schema normativo é `protocol/sche
 
 | Offset | Tipo | Campo | Valor |
 |---|---|---|---|
-| 0 | u16 | `magic` | `0x4750` (bytes `50 47` = ASCII "PG") |
+| 0 | u16 | `magic` | `0x5056` (bytes `56 50` = ASCII "VP") |
 | 2 | u8 | `ver` | `1` |
 | 3 | u8 | `type` | ver tabela abaixo |
 | 4 | u32 | `session_id` | do `welcome` |
@@ -258,7 +258,7 @@ Quem recebe DEVE validar nesta ordem e descartar o pacote no primeiro erro, em s
 | # | Checagem | Erro |
 |---|---|---|
 | 1 | Tamanho ≥ 12 | `too_short` |
-| 2 | `magic == 0x4750` | `bad_magic` |
+| 2 | `magic == 0x5056` | `bad_magic` |
 | 3 | `ver == 1` | `bad_version` |
 | 4 | `type` conhecido | `unknown_type` |
 | 5 | `type` é da direção que este lado recebe | `wrong_direction` |
@@ -274,7 +274,7 @@ Os decoders DEVEM entregar `buttons` mascarado com `0xF7FF` e `flags` mascarado 
 
 ## 7. Botões (bitmask XInput)
 
-| Bit | Nome XInput | Nome no PadGaming |
+| Bit | Nome XInput | Nome no VynPad |
 |---|---|---|
 | `0x0001` | `XINPUT_GAMEPAD_DPAD_UP` | `dpad_up` |
 | `0x0002` | `XINPUT_GAMEPAD_DPAD_DOWN` | `dpad_down` |
@@ -328,7 +328,7 @@ O client aplica todo Rumble válido que receber (a ordem já é garantida pelo `
 
 ## 11. Test vectors
 
-Ficam em `protocol/test-vectors/` e são **gerados** por `protocol/tools/gen.mjs` (implementação de referência em Node, usando o ChaCha20-Poly1305 do OpenSSL — independente da RustCrypto e do `javax.crypto`). `pnpm --filter @padgaming/protocol check` confere que os arquivos commitados batem com o gerador, validam nos schemas e que o decoder de referência produz o resultado esperado. Não edite os JSON à mão.
+Ficam em `protocol/test-vectors/` e são **gerados** por `protocol/tools/gen.mjs` (implementação de referência em Node, usando o ChaCha20-Poly1305 do OpenSSL — independente da RustCrypto e do `javax.crypto`). `pnpm --filter @vynpad/protocol check` confere que os arquivos commitados batem com o gerador, validam nos schemas e que o decoder de referência produz o resultado esperado. Não edite os JSON à mão.
 
 | Arquivo | Conteúdo | Schema |
 |---|---|---|

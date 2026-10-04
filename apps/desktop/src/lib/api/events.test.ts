@@ -97,7 +97,7 @@ describe("registerEventListeners", () => {
     useToasts.setState({ toasts: [] });
     emit("trayHint");
     expect(useToasts.getState().toasts.at(-1)?.message).toBe(
-      "O PadGaming continua rodando na bandeja.",
+      "O VynPad continua rodando na bandeja.",
     );
   });
 

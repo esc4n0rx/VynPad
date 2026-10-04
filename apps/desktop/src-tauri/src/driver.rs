@@ -7,12 +7,12 @@
 
 use std::time::Duration;
 
-use padgaming_core::{XInputOccupant, classify_xinput};
-use padgaming_driver::{DriverStatus, VIGEM_DOWNLOAD_URL};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::{AppHandle, Manager, State};
 use tauri_specta::Event;
+use vynpad_core::{XInputOccupant, classify_xinput};
+use vynpad_driver::{DriverStatus, VIGEM_DOWNLOAD_URL};
 
 use crate::error::AppError;
 #[cfg(not(windows))]
@@ -82,7 +82,7 @@ pub fn open_vigem_download() -> Result<(), AppError> {
             url = VIGEM_DOWNLOAD_URL,
             "abrindo a página de download do ViGEmBus"
         );
-        Ok(padgaming_driver::setup::open_download_page()?)
+        Ok(vynpad_driver::setup::open_download_page()?)
     }
     #[cfg(not(windows))]
     {
@@ -127,16 +127,13 @@ pub fn xinput_slots(state: State<'_, AppState>) -> Vec<XInputSlotDto> {
     let connected = state
         .xinput
         .as_ref()
-        .map_or([false; 4], padgaming_driver::xinput::XInputProbe::connected);
+        .map_or([false; 4], vynpad_driver::xinput::XInputProbe::connected);
     #[cfg(not(windows))]
     let connected = [false; 4];
     xinput_dtos(connected, &state.core.slots().snapshot())
 }
 
-fn xinput_dtos(
-    connected: [bool; 4],
-    snapshot: &padgaming_core::SlotsSnapshot,
-) -> Vec<XInputSlotDto> {
+fn xinput_dtos(connected: [bool; 4], snapshot: &vynpad_core::SlotsSnapshot) -> Vec<XInputSlotDto> {
     classify_xinput(connected, snapshot)
         .into_iter()
         .enumerate()
@@ -184,8 +181,8 @@ pub fn spawn_watcher(app: &AppHandle) {
 
 #[cfg(test)]
 mod tests {
-    use padgaming_driver::MockDriver;
     use serde_json::json;
+    use vynpad_driver::MockDriver;
 
     use super::*;
 
@@ -236,7 +233,7 @@ mod tests {
 
     #[test]
     fn xinput_dtos_lists_all_four_indices() {
-        let slots = padgaming_core::SlotManager::new(std::sync::Arc::new(MockDriver::default()));
+        let slots = vynpad_core::SlotManager::new(std::sync::Arc::new(MockDriver::default()));
         let dtos = xinput_dtos([true, false, false, true], &slots.snapshot());
         assert_eq!(dtos.len(), 4);
         assert_eq!(dtos[0].occupant, XInputOccupantDto::Physical);

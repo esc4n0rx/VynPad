@@ -1,4 +1,4 @@
-# SPEC — PadGaming
+# SPEC — VynPad
 
 > Versão 0.1 · 2026-09-26 · Status: rascunho aprovado para planejamento
 

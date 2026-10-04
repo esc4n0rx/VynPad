@@ -36,7 +36,7 @@ flowchart LR
 ## 2. Estrutura do monorepo
 
 ```
-PadGaming/
+VynPad/
 ├─ apps/
 │  ├─ desktop/                 # App Tauri
 │  │  ├─ src/                  # React + TS (UI)
@@ -49,15 +49,15 @@ PadGaming/
 │  │  └─ src-tauri/            # shell Tauri: commands, eventos, tray, janela
 │  └─ android/                 # F9 — Kotlin + Compose
 ├─ crates/
-│  ├─ padgaming-protocol/      # formatos de pacote, (de)serialização, AEAD
-│  ├─ padgaming-driver/        # trait VirtualPadDriver + vigem (win) + uinput (linux)
-│  ├─ padgaming-mapping/       # pipeline puro de mapeamento
-│  ├─ padgaming-net/           # UDP loop, TLS control, descoberta
-│  ├─ padgaming-storage/       # sqlx, migrations, repositórios
-│  ├─ padgaming-core/          # slots (SlotManager), relógio, XInput
-│  ├─ padgaming-server/        # composição: junta driver, slots, rede, descoberta, storage e pareamento (`Core`)
-│  ├─ padgaming-sim/           # client simulador CLI
-│  └─ padgaming-dbprep/        # ferramenta de dev: banco só com o schema para gerar o .sqlx/
+│  ├─ vynpad-protocol/      # formatos de pacote, (de)serialização, AEAD
+│  ├─ vynpad-driver/        # trait VirtualPadDriver + vigem (win) + uinput (linux)
+│  ├─ vynpad-mapping/       # pipeline puro de mapeamento
+│  ├─ vynpad-net/           # UDP loop, TLS control, descoberta
+│  ├─ vynpad-storage/       # sqlx, migrations, repositórios
+│  ├─ vynpad-core/          # slots (SlotManager), relógio, XInput
+│  ├─ vynpad-server/        # composição: junta driver, slots, rede, descoberta, storage e pareamento (`Core`)
+│  ├─ vynpad-sim/           # client simulador CLI
+│  └─ vynpad-dbprep/        # ferramenta de dev: banco só com o schema para gerar o .sqlx/
 ├─ protocol/
 │  └─ test-vectors/            # JSON compartilhado Rust ↔ Kotlin
 └─ docs/
@@ -82,7 +82,7 @@ Hot path: **sem alocação**, buffers pré-alocados, estado dos slots em arrays 
 sequenceDiagram
   participant A as Android
   participant S as Server
-  A->>S: mDNS browse _padgaming._tcp
+  A->>S: mDNS browse _vynpad._tcp
   A->>S: TLS connect :47800 (pin do fingerprint vindo do QR)
   A->>S: hello {device_id, name, proto_ver, pairing_token | device_token}
   S-->>A: welcome {session_id, udp_port, udp_key, slot, device_token?}
@@ -105,7 +105,7 @@ sequenceDiagram
 
 | SO | Banco | Logs |
 |---|---|---|
-| Windows | `%APPDATA%\PadGaming\padgaming.db` | `%LOCALAPPDATA%\PadGaming\logs\` |
-| Linux | `~/.local/share/padgaming/padgaming.db` | `~/.local/state/padgaming/logs/` |
+| Windows | `%APPDATA%\VynPad\vynpad.db` | `%LOCALAPPDATA%\VynPad\logs\` |
+| Linux | `~/.local/share/vynpad/vynpad.db` | `~/.local/state/vynpad/logs/` |
 
 Os caminhos são resolvidos via `app.path()` do Tauri.

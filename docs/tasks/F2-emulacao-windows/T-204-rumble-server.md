@@ -6,7 +6,7 @@
 | Prioridade | P1 |
 | Estimativa | M |
 | Depende de | T-202, T-301 |
-| Status | 🟨 Pronta; falta ver o rumble do XInput Test chegando ao `padgaming-sim` com o ViGEmBus real e conferir o "Testar vibração" com um celular |
+| Status | 🟨 Pronta; falta ver o rumble do XInput Test chegando ao `vynpad-sim` com o ViGEmBus real e conferir o "Testar vibração" com um celular |
 
 ## Objetivo
 Repassar a vibração pedida pelo jogo para o celular do slot correspondente.
@@ -19,7 +19,7 @@ Repassar a vibração pedida pelo jogo para o celular do slot correspondente.
 - Teste de vibração pela UI (botão "Testar vibração" no card do slot).
 
 ## Critérios de aceite
-- [ ] Com o simulador, o rumble do "XInput Test" aparece no log do `padgaming-sim`.
+- [ ] Com o simulador, o rumble do "XInput Test" aparece no log do `vynpad-sim`.
 - [ ] Com 10% de perda simulada, o motor nunca fica "preso" ligado.
 - [ ] O botão de teste funciona.
 

@@ -35,7 +35,7 @@ import type {
 import { cn } from "@/lib/utils";
 import { secondsLeft, type SlotCardKind } from "./slotView";
 
-export const DRAG_TYPE = "application/x-padgaming-slot";
+export const DRAG_TYPE = "application/x-vynpad-slot";
 
 interface SlotCardProps {
   slot: SlotDto;

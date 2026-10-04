@@ -1,4 +1,4 @@
-# PadGaming
+# VynPad
 
 Transforma um celular Android em um **controle Xbox 360 nativo** para PC. O client Android envia o input pela rede local; o server (Windows / Linux) cria um controle virtual que funciona em qualquer jogo XInput.
 
@@ -18,8 +18,8 @@ Requisitos: Rust (versão fixada em `rust-toolchain.toml`), Node ≥ 22 e pnpm.
 
 ```sh
 cargo build --workspace
-cargo test --workspace --exclude padgaming-desktop
-cargo test -p padgaming-desktop   # separado: ver a nota no ci.yml (CRT estática do Tauri)
+cargo test --workspace --exclude vynpad-desktop
+cargo test -p vynpad-desktop   # separado: ver a nota no ci.yml (CRT estática do Tauri)
 pnpm install
 ```
 

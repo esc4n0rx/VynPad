@@ -14,7 +14,7 @@ Criar a estrutura do repositório descrita em [ARQUITETURA.md](../../00-visao-ge
 ## Escopo
 - `git init`, `.gitignore` (Rust, Node, Tauri, Android, `.env`), `.gitattributes` (LF).
 - `Cargo.toml` raiz com `[workspace]` e `resolver = "2"`, incluindo `crates/*` (o `apps/desktop/src-tauri` entra na T-002, já que o Cargo não aceita membro inexistente).
-- Crates vazios com `lib.rs` e README de uma linha: `padgaming-protocol`, `padgaming-driver`, `padgaming-mapping`, `padgaming-net`, `padgaming-storage`, `padgaming-core`, `padgaming-sim` (bin).
+- Crates vazios com `lib.rs` e README de uma linha: `vynpad-protocol`, `vynpad-driver`, `vynpad-mapping`, `vynpad-net`, `vynpad-storage`, `vynpad-core`, `vynpad-sim` (bin).
 - `[workspace.dependencies]` centralizando versões (tokio, serde, thiserror, tracing, anyhow).
 - `[workspace.lints]` com `clippy::pedantic` em warn (exceto regras ruidosas) e `unsafe_code = "deny"` (liberado só no driver).
 - `rust-toolchain.toml` fixando o stable atual + componentes `clippy`, `rustfmt`.
@@ -24,7 +24,7 @@ Criar a estrutura do repositório descrita em [ARQUITETURA.md](../../00-visao-ge
 
 ## Detalhes técnicos
 - Perfil `release`: `lto = "fat"`, `codegen-units = 1`, `panic = "abort"` apenas no binário (não nos testes), `strip = true`.
-- Perfil `dev` com `opt-level = 1` para `padgaming-mapping` e `padgaming-protocol` (hot path mais realista em debug).
+- Perfil `dev` com `opt-level = 1` para `vynpad-mapping` e `vynpad-protocol` (hot path mais realista em debug).
 
 ## Critérios de aceite
 - [x] `cargo build --workspace` e `cargo test --workspace` passam num checkout limpo.

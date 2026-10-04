@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "PadGaming",
+  "productName": "VynPad",
   "version": "0.1.0",
-  "identifier": "com.padgaming.server",
+  "identifier": "com.vynpad.server",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -14,7 +14,7 @@
       {
         "label": "main",
         "create": false,
-        "title": "PadGaming",
+        "title": "VynPad",
         "width": 1100,
         "height": 720,
         "minWidth": 900,
@@ -41,7 +41,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "publisher": "PadGaming",
+    "publisher": "VynPad",
     "shortDescription": "Use o celular como controle de Xbox 360 no PC",
     "windows": {
       "webviewInstallMode": { "type": "downloadBootstrapper" },

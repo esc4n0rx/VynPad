@@ -16,13 +16,13 @@ App desktop abrindo uma janela com React renderizado, pronto para receber o desi
 - Tailwind CSS v4 via plugin `@tailwindcss/vite` (dispensa PostCSS); alias `@/` → `src/`.
 - Dependências base: `react-router` (ou TanStack Router), `zustand`, `@tanstack/react-query`, `motion`, `lucide-react`, `clsx`, `tailwind-merge`, `class-variance-authority`, `@radix-ui/*` via shadcn/ui CLI.
 - Fonte Inter empacotada localmente (sem CDN; o app funciona offline).
-- `tauri.conf.json`: identificador `com.padgaming.server`, nome de produto "PadGaming", janela 1100×720 (mínimo 900×600), `decorations: false`, `transparent: true` (o visual em si fica na T-502).
+- `tauri.conf.json`: identificador `com.vynpad.server`, nome de produto "VynPad", janela 1100×720 (mínimo 900×600), `decorations: false`, `transparent: true` (o visual em si fica na T-502).
 - Capabilities do Tauri 2 (`capabilities/default.json`) com o mínimo necessário.
 - Plugins iniciais: `tauri-plugin-single-instance` (reforça a janela existente), `tauri-plugin-log` *(removido na T-004, ver D-19)*.
 - Scripts: `pnpm dev`, `pnpm build`, `pnpm tauri dev`, `pnpm tauri build`.
 
 ## Detalhes técnicos
-- `src-tauri` depende de `padgaming-core` (ainda vazio) para já validar a ligação entre os crates.
+- `src-tauri` depende de `vynpad-core` (ainda vazio) para já validar a ligação entre os crates.
 - CSP restritiva em `tauri.conf.json`.
 
 ## Critérios de aceite
@@ -38,5 +38,5 @@ App desktop abrindo uma janela com React renderizado, pronto para receber o desi
 - Roteador em **hash** (`createHashRouter`) para não depender de fallback de rotas no protocolo de assets do Tauri.
 - Barra de título **provisória** (`src/components/TitleBar.tsx`) para a janela sem moldura ser arrastável e fechável; o visual final é da T-502.
 - shadcn/ui: só o `components.json` e o `cn()`. Os componentes entram via CLI na T-501.
-- Command `app_info` valida a ponte React → Rust → `padgaming-core`.
+- Command `app_info` valida a ponte React → Rust → `vynpad-core`.
 - `pnpm tauri build` gera o instalador NSIS e o MSI em `target/release/bundle/`.

@@ -12,8 +12,8 @@
 O usuário abre o app e vê o PC na lista, sem digitar nada.
 
 ## Escopo
-- `NsdManager` descobrindo `_padgaming._tcp` + fallback de broadcast `PGDISC1` (com `WifiManager.MulticastLock` enquanto busca).
-- Anunciar `_padgaming-client._tcp` enquanto a tela Conectar está aberta (aparece em "Próximos" no server).
+- `NsdManager` descobrindo `_vynpad._tcp` + fallback de broadcast `VPDISC1` (com `WifiManager.MulticastLock` enquanto busca).
+- Anunciar `_vynpad-client._tcp` enquanto a tela Conectar está aberta (aparece em "Próximos" no server).
 - Lista de servers com ícone do SO, nome, slots livres, "pareado" ou "novo".
 - Adicionar manualmente por IP:porta.
 - Servers pareados salvos com reconexão em um toque (e opção "conectar automaticamente ao abrir").

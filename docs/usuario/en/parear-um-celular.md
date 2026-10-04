@@ -5,7 +5,7 @@ Pairing introduces the phone to the PC once. After that it reconnects by itself.
 ## With the QR code or the PIN {#qr-ou-pin}
 
 1. Open **Devices** and click **Pair new**.
-2. On the phone, open PadGaming and choose **Pair**.
+2. On the phone, open VynPad and choose **Pair**.
 3. Scan the **QR code** on the PC screen. If you prefer, switch to the **PIN** tab and type the six numbers on the phone.
 4. Check that the **fingerprint** shown on the phone is the same as on the PC screen. It guarantees you’re talking to the right PC.
 
@@ -13,7 +13,7 @@ The code changes by itself while the window is open and lasts a few minutes. The
 
 ## Phones nearby {#por-perto}
 
-**Devices → Nearby on the network** lists the phones with PadGaming open on the same network. A **new** device has a **Pair** button. If it doesn’t show up within a few seconds, see [The phone can’t find the PC](#o-celular-nao-encontra-o-pc).
+**Devices → Nearby on the network** lists the phones with VynPad open on the same network. A **new** device has a **Pair** button. If it doesn’t show up within a few seconds, see [The phone can’t find the PC](#o-celular-nao-encontra-o-pc).
 
 ## Ask before accepting {#aprovacao}
 

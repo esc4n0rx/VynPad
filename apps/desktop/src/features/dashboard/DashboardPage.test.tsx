@@ -277,7 +277,7 @@ describe("dashboard", () => {
 
   it("soltar o card em cima dele mesmo não troca nada", () => {
     setup([connected(0), slot(1), slot(2), slot(3)]);
-    const data = new Map<string, string>([["application/x-padgaming-slot", "0"]]);
+    const data = new Map<string, string>([["application/x-vynpad-slot", "0"]]);
     const dataTransfer = {
       getData: (type: string) => data.get(type) ?? "",
       get types() {

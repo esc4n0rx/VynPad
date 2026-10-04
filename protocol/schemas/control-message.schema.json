@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://padgaming.local/schemas/control-message.schema.json",
-  "title": "Mensagem do canal de controle PadGaming v1",
+  "$id": "https://vynpad.local/schemas/control-message.schema.json",
+  "title": "Mensagem do canal de controle VynPad v1",
   "description": "PROTOCOLO.md §5.2. Campos desconhecidos são permitidos (e ignorados). Mensagens de type desconhecido não são validadas por este schema: são ignoradas.",
   "type": "object",
   "required": ["type"],

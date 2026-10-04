@@ -1,4 +1,4 @@
-# T-102 — Crate `padgaming-protocol`
+# T-102 — Crate `vynpad-protocol`
 
 | Campo | Valor |
 |---|---|

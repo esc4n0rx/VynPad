@@ -62,7 +62,7 @@ export default tseslint.config(
         "error",
         {
           mode: "jsx-only",
-          words: { exclude: ["PadGaming", "[0-9\s.,:;·/|()+\-–—•…]*", "P[1-4]"] },
+          words: { exclude: ["VynPad", "[0-9\s.,:;·/|()+\-–—•…]*", "P[1-4]"] },
         },
       ],
     },

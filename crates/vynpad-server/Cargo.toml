@@ -1,0 +1,33 @@
+[package]
+name = "vynpad-server"
+description = "Composição do server: junta driver, slots, rede, descoberta, persistência e pareamento."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+vynpad-core = { workspace = true }
+vynpad-driver = { workspace = true }
+vynpad-mapping = { workspace = true }
+vynpad-net = { workspace = true }
+vynpad-protocol = { workspace = true }
+vynpad-storage = { workspace = true }
+crossbeam-channel = "0.5"
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+
+[dev-dependencies]
+vynpad-driver = { workspace = true, features = ["mock"] }
+vynpad-sim = { path = "../vynpad-sim" }
+tempfile = "3"
+
+[target.'cfg(windows)'.dev-dependencies]
+windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_System_Threading"] }
+
+[lints]
+workspace = true

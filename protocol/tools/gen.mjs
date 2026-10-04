@@ -1,4 +1,4 @@
-// Gera protocol/test-vectors/*.json. Uso: pnpm --filter @padgaming/protocol gen
+// Gera protocol/test-vectors/*.json. Uso: pnpm --filter @vynpad/protocol gen
 
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";

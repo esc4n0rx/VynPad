@@ -12,7 +12,7 @@
 Rodar sem root, com um passo de configuração guiado.
 
 ## Escopo
-- Regra udev `60-padgaming.rules`: `KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"` (+ carregar o módulo `uinput` via `/etc/modules-load.d/padgaming.conf`).
+- Regra udev `60-vynpad.rules`: `KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"` (+ carregar o módulo `uinput` via `/etc/modules-load.d/vynpad.conf`).
 - Instalação pelos pacotes deb/rpm (T-804); no AppImage, o passo do onboarding executa com `pkexec`.
 - O passo "Driver" do onboarding vira "Permissões" no Linux: detecta, explica e corrige.
 - Firewall: detectar `ufw`/`firewalld` ativos e oferecer o comando (ou executar via `pkexec`) para abrir as portas.

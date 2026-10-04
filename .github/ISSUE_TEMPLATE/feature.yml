@@ -1,5 +1,5 @@
 name: Sugestão de recurso
-description: Uma ideia para melhorar o PadGaming
+description: Uma ideia para melhorar o VynPad
 labels: [enhancement]
 body:
   - type: textarea

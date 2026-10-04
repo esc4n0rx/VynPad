@@ -274,9 +274,9 @@ function udpVectors() {
     }),
     udpInvalid(
       "bad_magic_big_endian",
-      "magic gravado em big-endian (bytes 47 50): erro clássico de endianness.",
+      "magic gravado em big-endian (bytes 50 56): erro clássico de endianness.",
       "bad_magic",
-      { packet: build({ type: PacketType.INPUT, payload: typical, seq: 42, magic: 0x5047 }) },
+      { packet: build({ type: PacketType.INPUT, payload: typical, seq: 42, magic: 0x5650 }) },
     ),
     udpInvalid("bad_version", "ver = 2 (pacote bem formado e selado).", "bad_version", {
       packet: build({ type: PacketType.INPUT, payload: typical, seq: 42, ver: 2 }),
@@ -395,7 +395,7 @@ function udpVectors() {
     $schema: "../schemas/udp-vectors.schema.json",
     format: 1,
     description:
-      "Pacotes UDP do protocolo PadGaming v1 (PROTOCOLO.md §6). Gerado por protocol/tools/gen.mjs — não edite à mão.",
+      "Pacotes UDP do protocolo VynPad v1 (PROTOCOLO.md §6). Gerado por protocol/tools/gen.mjs — não edite à mão.",
     vectors: [...valid, ...invalid],
   };
 }
@@ -405,7 +405,7 @@ function udpVectors() {
 const DEVICE_ID = "3f2b8c1a-9d4e-4b7f-8a6c-1e2d3c4b5a69";
 const SERVER_ID = "5b0c8a1e-2f4d-4c7a-9e1b-0d3f6a7b8c9d";
 const PAIRING_TOKEN = Buffer.from("101112131415161718191a1b1c1d1e1f", "hex");
-const DEVICE_TOKEN = createHash("sha256").update("padgaming device token").digest();
+const DEVICE_TOKEN = createHash("sha256").update("vynpad device token").digest();
 const UDP_KEY = KEY;
 const CONFIG = {
   slot: 1,
@@ -444,7 +444,7 @@ function controlVectors(validate) {
     $schema: "../schemas/control-vectors.schema.json",
     format: 1,
     description:
-      "Frames do canal de controle PadGaming v1 (PROTOCOLO.md §5). Gerado por protocol/tools/gen.mjs — não edite à mão.",
+      "Frames do canal de controle VynPad v1 (PROTOCOLO.md §5). Gerado por protocol/tools/gen.mjs — não edite à mão.",
     vectors: [
       ok("hello_pairing_token", "hello do primeiro pareamento via QR code.", HELLO),
       ok("hello_pin", "hello do pareamento por PIN (zero à esquerda preservado).", {
@@ -608,7 +608,7 @@ function controlVectors(validate) {
 
 // ---------------------------------------------------------------- URI de pareamento
 
-const FINGERPRINT = createHash("sha256").update("padgaming test certificate").digest();
+const FINGERPRINT = createHash("sha256").update("vynpad test certificate").digest();
 const FP = FINGERPRINT.toString("base64url");
 const TK = PAIRING_TOKEN.toString("base64url");
 
@@ -620,7 +620,7 @@ function uri(name, description, value, expected) {
 }
 
 function pairingUriVectors() {
-  const base = `padgaming://pair?v=1&h=192.168.0.10&p=47800&fp=${FP}&t=${TK}&n=PC-Sala`;
+  const base = `vynpad://pair?v=1&h=192.168.0.10&p=47800&fp=${FP}&t=${TK}&n=PC-Sala`;
   return {
     $schema: "../schemas/pairing-uri-vectors.schema.json",
     format: 1,
@@ -631,13 +631,13 @@ function pairingUriVectors() {
       uri(
         "multiple_hosts_utf8_name",
         "Vários IPv4 em ordem de preferência e nome UTF-8 com espaços (%20).",
-        `padgaming://pair?v=1&h=192.168.0.10,10.0.0.5,172.16.1.2&p=47800&fp=${FP}&t=${TK}&n=Sala%20de%20Jogos%20%E2%80%94%20Jo%C3%A3o`,
+        `vynpad://pair?v=1&h=192.168.0.10,10.0.0.5,172.16.1.2&p=47800&fp=${FP}&t=${TK}&n=Sala%20de%20Jogos%20%E2%80%94%20Jo%C3%A3o`,
         "ok",
       ),
       uri(
         "any_param_order_and_unknown_param",
         "Ordem dos parâmetros é livre e parâmetros desconhecidos são ignorados.",
-        `padgaming://pair?n=PC-Sala&x=future&t=${TK}&fp=${FP}&p=50000&h=10.0.0.1&v=1`,
+        `vynpad://pair?n=PC-Sala&x=future&t=${TK}&fp=${FP}&p=50000&h=10.0.0.1&v=1`,
         "ok",
       ),
       uri(
@@ -648,8 +648,8 @@ function pairingUriVectors() {
       ),
       uri(
         "wrong_scheme",
-        "Esquema https em vez de padgaming.",
-        base.replace("padgaming://", "https://"),
+        "Esquema https em vez de vynpad.",
+        base.replace("vynpad://", "https://"),
         "bad_scheme",
       ),
       uri(

@@ -48,6 +48,6 @@ Congelar o contrato binário entre client e server para que o server (Rust) e o 
 - **Timeouts:** a queda do TLS encerra a sessão e reserva o slot por 30 s. O silêncio do UDP só leva ao estado neutro (250 ms) e a "suspensa" (5 s). T-302 e T-304 foram alinhadas a isso.
 - **Vectors:**
   - São gerados por `protocol/tools/gen.mjs`, uma implementação de referência em Node com o ChaCha20-Poly1305 do OpenSSL (D-21).
-  - `pnpm --filter @padgaming/protocol check` roda no job de lint do CI.
+  - `pnpm --filter @vynpad/protocol check` roda no job de lint do CI.
   - Conferência cruzada manual: os 11 pacotes UDP válidos abrem com a crate `chacha20poly1305` (RustCrypto) e batem com `payload_plain_hex`, e os 5 `bad_tag` são rejeitados.
-- `protocol/` virou pacote do workspace pnpm (`@padgaming/protocol`, com `ajv` e `prettier`), com job de prettier próprio no lefthook.
+- `protocol/` virou pacote do workspace pnpm (`@vynpad/protocol`, com `ajv` e `prettier`), com job de prettier próprio no lefthook.

@@ -1,6 +1,6 @@
 # Getting started {#primeiros-passos}
 
-PadGaming turns your phone into an Xbox 360 controller for Windows games. The phone talks to this PC over Wi-Fi, and PadGaming creates a virtual controller that any game can see.
+VynPad turns your phone into an Xbox 360 controller for Windows games. The phone talks to this PC over Wi-Fi, and VynPad creates a virtual controller that any game can see.
 
 ## What you need {#o-que-voce-precisa}
 
@@ -10,9 +10,9 @@ PadGaming turns your phone into an Xbox 360 controller for Windows games. The ph
 
 ## Step by step {#passo-a-passo}
 
-1. Open PadGaming. The first time, the **introduction** walks you through five steps: language, driver, network, phone and summary.
+1. Open VynPad. The first time, the **introduction** walks you through five steps: language, driver, network, phone and summary.
 2. In the **Network** step, click **Allow connections** if the Windows firewall is blocking. Windows asks for administrator permission once.
-3. In the **Phone** step, open PadGaming on the phone and scan the QR code (or type the PIN).
+3. In the **Phone** step, open VynPad on the phone and scan the QR code (or type the PIN).
 4. Done: the controller shows up as **P1** on the dashboard and already works in games.
 
 You can redo the introduction at any time in **Settings → General → Redo the introduction**.
@@ -25,6 +25,6 @@ Drag one card onto another to swap the two controllers.
 
 ## In the tray {#na-bandeja}
 
-Closing the window leaves PadGaming running in the **system tray**, so phones stay connected. Click the icon to open the window; right-click shows the controllers and quick actions. To really quit, use **Quit** in the tray menu.
+Closing the window leaves VynPad running in the **system tray**, so phones stay connected. Click the icon to open the window; right-click shows the controllers and quick actions. To really quit, use **Quit** in the tray menu.
 
 In **Settings → General** you can start with Windows and start minimized.

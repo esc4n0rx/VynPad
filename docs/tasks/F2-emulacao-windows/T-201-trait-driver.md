@@ -29,7 +29,7 @@ pub trait VirtualPadDriver: Send + Sync {
 - Seleção do backend por `cfg(target_os)` numa factory `default_driver()`.
 
 ## Critérios de aceite
-- [x] O `padgaming-core` compila e testa usando só o `MockDriver`.
+- [x] O `vynpad-core` compila e testa usando só o `MockDriver`.
 - [x] `update()` não aloca (verificado no teste com um allocator contador).
 
 ## Fora de escopo

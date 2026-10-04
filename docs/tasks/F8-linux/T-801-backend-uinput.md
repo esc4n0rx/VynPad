@@ -21,7 +21,7 @@ No Linux, criar um controle que jogos, Steam e Proton reconheçam como um Xbox 3
 ## Critérios de aceite
 - [ ] `evtest` e `jstest-gtk` mostram todos os eixos e botões corretos.
 - [ ] Steam reconhece como "Xbox 360 Controller"; funciona em um jogo nativo e em um jogo via Proton.
-- [ ] Rumble chega ao `padgaming-sim` com `fftest`.
+- [ ] Rumble chega ao `vynpad-sim` com `fftest`.
 
 ## Fora de escopo
 - Permissões (T-802).

@@ -261,7 +261,7 @@ export function UiGallery() {
   const [accent, setAccent] = useState<string>(DEFAULT_ACCENT);
   const [simulating, setSimulating] = useState(false);
 
-  // Gera um padrão circular nos 4 slots (como `padgaming-sim --pattern circle`), direto no store.
+  // Gera um padrão circular nos 4 slots (como `vynpad-sim --pattern circle`), direto no store.
   useEffect(() => {
     if (!simulating) return;
     let frame = 0;

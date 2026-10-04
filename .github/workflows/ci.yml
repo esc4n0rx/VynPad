@@ -37,7 +37,7 @@ jobs:
       # Hooks, stores e a ligação com os eventos do backend (bindings dublados).
       - run: pnpm test
       # Test vectors em dia com o gerador, válidos nos schemas e coerentes com a referência.
-      - run: pnpm --filter @padgaming/protocol check
+      - run: pnpm --filter @vynpad/protocol check
 
   deps:
     name: Dependências (cargo-deny, cargo-machete)
@@ -73,13 +73,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # O generate_context! do Tauri exige o frontend compilado em apps/desktop/dist.
-      - run: pnpm --filter @padgaming/desktop build
+      - run: pnpm --filter @vynpad/desktop build
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       # O desktop roda separado: no Windows, o tauri-build põe um msvcrt.lib vazio (CRT
       # estática) no caminho de busca do linker, e o cargo o repassa aos doctests das outras
       # crates da mesma invocação, que então ficam sem CRT (LNK1120).
-      - run: cargo test --workspace --exclude padgaming-desktop --locked
-      - run: cargo test -p padgaming-desktop --locked
+      - run: cargo test --workspace --exclude vynpad-desktop --locked
+      - run: cargo test -p vynpad-desktop --locked
 
   bench:
     name: Benchmark do server (gate de regressão)
@@ -101,12 +101,12 @@ jobs:
         with:
           node-version: 24
       # O dev_server só existe em debug; com --mock não toca no sistema.
-      - run: cargo build --locked -p padgaming-net --example dev_server -p padgaming-sim
+      - run: cargo build --locked -p vynpad-net --example dev_server -p vynpad-sim
       - name: Bench de 20 s com 4 clients a 250 Hz
         run: |
           target/debug/examples/dev_server --mock > dev_server.log 2>&1 &
           sleep 2
-          target/debug/padgaming-sim bench --insecure-dev --clients 4 --rate 250 --duration 20s --json bench.json
+          target/debug/vynpad-sim bench --insecure-dev --clients 4 --rate 250 --duration 20s --json bench.json
       - run: node scripts/bench-gate.mjs bench.json docs/benchmarks/baseline.json
       - uses: actions/upload-artifact@v4
         if: always()
@@ -144,7 +144,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # Sem assinatura: a assinatura e a publicação ficam no release.yml (T-703).
-      - run: pnpm --filter @padgaming/desktop tauri build
+      - run: pnpm --filter @vynpad/desktop tauri build
       - uses: actions/upload-artifact@v4
         with:
           name: bundle-${{ matrix.os }}

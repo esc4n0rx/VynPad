@@ -5,14 +5,14 @@
 
 use std::sync::Arc;
 
-use padgaming_net::control::ControlEvent;
-use padgaming_server::{ApprovalEvent, Core, CoreEvent};
-use padgaming_storage::AppSettings;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::{AppHandle, Runtime};
 use tauri_specta::Event;
 use tokio::sync::broadcast::error::RecvError;
+use vynpad_net::control::ControlEvent;
+use vynpad_server::{ApprovalEvent, Core, CoreEvent};
+use vynpad_storage::AppSettings;
 
 use crate::driver::DriverStatusDto;
 use crate::dto::{
@@ -166,10 +166,8 @@ impl Outbound {
 }
 
 /// O texto estável do motivo de fim de sessão.
-const fn end_reason(reason: padgaming_net::control::SessionEnd) -> &'static str {
-    use padgaming_net::control::SessionEnd::{
-        ClientBye, Dropped, Kicked, Revoked, Shutdown, Timeout,
-    };
+const fn end_reason(reason: vynpad_net::control::SessionEnd) -> &'static str {
+    use vynpad_net::control::SessionEnd::{ClientBye, Dropped, Kicked, Revoked, Shutdown, Timeout};
     match reason {
         Dropped => "dropped",
         Timeout => "timeout",
@@ -180,8 +178,8 @@ const fn end_reason(reason: padgaming_net::control::SessionEnd) -> &'static str 
     }
 }
 
-fn reject_reason(reason: padgaming_protocol::control::RejectReason) -> &'static str {
-    use padgaming_protocol::control::RejectReason::{
+fn reject_reason(reason: vynpad_protocol::control::RejectReason) -> &'static str {
+    use vynpad_protocol::control::RejectReason::{
         BadAuth, BadRequest, Locked, NoSlot, Revoked, Unknown, Version,
     };
     match reason {
@@ -331,9 +329,9 @@ pub fn spawn_pump<R: Runtime>(app: AppHandle<R>, core: &Arc<Core>) {
 mod tests {
     use std::net::IpAddr;
 
-    use padgaming_core::SlotManager;
-    use padgaming_driver::{MockDriver, SlotId};
-    use padgaming_protocol::control::{RejectReason, Uuid};
+    use vynpad_core::SlotManager;
+    use vynpad_driver::{MockDriver, SlotId};
+    use vynpad_protocol::control::{RejectReason, Uuid};
 
     use super::*;
 
@@ -374,14 +372,14 @@ mod tests {
             session_id: 5,
             slot: slot(2),
             device_id: id(),
-            reason: padgaming_net::control::SessionEnd::Revoked,
+            reason: vynpad_net::control::SessionEnd::Revoked,
         }));
         assert!(matches!(&ended[..], [Outbound::SessionEnded(e)] if e.reason == "revoked"));
 
         let state = translate(&CoreEvent::Control(ControlEvent::SessionState {
             session_id: 5,
             slot: slot(2),
-            health: padgaming_net::control::SessionHealth::Stalled,
+            health: vynpad_net::control::SessionHealth::Stalled,
         }));
         assert!(matches!(
             &state[..],
@@ -411,7 +409,7 @@ mod tests {
     #[test]
     fn the_drivers_own_monitor_is_not_duplicated() {
         let out = translate(&CoreEvent::Control(ControlEvent::DriverRechecked(
-            padgaming_driver::DriverStatus::Ready,
+            vynpad_driver::DriverStatus::Ready,
         )));
         assert!(out.is_empty());
     }

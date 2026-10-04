@@ -34,7 +34,7 @@ Receber o input dos celulares e entregá-lo ao driver com a menor latência e o 
 - Handshake (T-302). Timeouts (T-304).
 
 ## Implementação
-- `padgaming-net::input`: `InputEngine` (núcleo sem socket: cabeçalho → sessão pelo `session_id` numa tabela fixa de 8 entradas → replay + AEAD → mapeamento → `SlotManager::submit`; Ping → Pong com `t_server_rx_us` e `server_proc_us`), `InputServer` (thread `input-rx`, comandos `add_session`/`remove_session` por canal, parada em até `poll_interval`) e `InputStats` (contadores atômicos + histograma de 164 faixas, erro ≤ 25%).
+- `vynpad-net::input`: `InputEngine` (núcleo sem socket: cabeçalho → sessão pelo `session_id` numa tabela fixa de 8 entradas → replay + AEAD → mapeamento → `SlotManager::submit`; Ping → Pong com `t_server_rx_us` e `server_proc_us`), `InputServer` (thread `input-rx`, comandos `add_session`/`remove_session` por canal, parada em até `poll_interval`) e `InputStats` (contadores atômicos + histograma de 164 faixas, erro ≤ 25%).
 - `SessionActivity` expõe `idle_for()` e o último endereço de origem por sessão, para os timeouts da T-304. O endereço acompanha a troca de IP/porta (roaming) e o Pong segue o novo endereço.
 - Windows: MMCSS ("Games") e prioridade `ABOVE_NORMAL` na thread (`input/platform.rs`, o único `unsafe` da crate, com duas chamadas FFI documentadas). O erro `ConnectionReset` do UDP no Windows (ICMP de um envio anterior) é ignorado.
 - Modo dev (só em debug): `InputServer::add_insecure_dev_session` + `DEV_SESSION_ID`/`DEV_KEY`. A flag `--insecure-dev` de linha de comando fica para quem montar o processo (T-302/T-307).

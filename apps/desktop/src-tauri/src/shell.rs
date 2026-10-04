@@ -20,7 +20,7 @@ pub const MAIN_WINDOW: &str = "main";
 /// Quanto a janela espera, na primeira vez que fecha para a bandeja, para o aviso ser lido.
 const HINT_VISIBLE: Duration = Duration::from_millis(2200);
 
-/// O aviso "o `PadGaming` continua rodando na bandeja" (`tray:hint`).
+/// O aviso "o `VynPad` continua rodando na bandeja" (`tray:hint`).
 #[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
 pub struct TrayHint {}
 
@@ -172,14 +172,11 @@ mod tests {
 
     #[test]
     fn iniciar_minimizado_vem_da_opcao_ou_da_flag() {
-        assert!(!should_start_minimized(["padgaming.exe"], false));
-        assert!(should_start_minimized(["padgaming.exe"], true));
-        assert!(should_start_minimized(
-            ["padgaming.exe", "--minimized"],
-            false
-        ));
+        assert!(!should_start_minimized(["vynpad.exe"], false));
+        assert!(should_start_minimized(["vynpad.exe"], true));
+        assert!(should_start_minimized(["vynpad.exe", "--minimized"], false));
         assert!(!should_start_minimized(
-            ["padgaming.exe", "--minimizedx"],
+            ["vynpad.exe", "--minimizedx"],
             false
         ));
     }

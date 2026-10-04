@@ -1,8 +1,8 @@
 {
-  "name": "@padgaming/protocol",
+  "name": "@vynpad/protocol",
   "private": true,
   "version": "0.1.0",
-  "description": "Schemas, test vectors e implementação de referência do protocolo PadGaming v1.",
+  "description": "Schemas, test vectors e implementação de referência do protocolo VynPad v1.",
   "type": "module",
   "scripts": {
     "gen": "node tools/gen.mjs",

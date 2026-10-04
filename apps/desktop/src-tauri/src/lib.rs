@@ -2,7 +2,7 @@
 //!
 //! A ponte (T-506) é gerada por `tauri-specta`: os commands (`commands.rs`) e os eventos
 //! (`events.rs`) viram `src/lib/bindings.ts`, então mudar uma assinatura em Rust quebra o
-//! `pnpm typecheck` até o frontend acompanhar. O `Core` (`padgaming-server`) mora no
+//! `pnpm typecheck` até o frontend acompanhar. O `Core` (`vynpad-server`) mora no
 //! [`AppState`]; os commands só traduzem tipos e delegam a ele.
 
 mod autostart;
@@ -23,9 +23,9 @@ mod window;
 use std::sync::Arc;
 use std::time::Duration;
 
-use padgaming_server::CoreConfig;
 use tauri::{Manager, RunEvent};
 use tauri_specta::{Builder, collect_commands, collect_events};
+use vynpad_server::CoreConfig;
 
 use crate::events::InputLive;
 use crate::state::AppState;
@@ -121,7 +121,7 @@ fn specta_builder<R: tauri::Runtime>() -> Builder<R> {
 
 /// Sobe o `Core` e liga tudo o que depende dele à webview.
 fn start_core(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let data_dir = padgaming_storage::default_data_dir()
+    let data_dir = vynpad_storage::default_data_dir()
         .ok_or("não achei a pasta de dados do usuário para guardar o banco")?;
     tracing::info!(dir = %data_dir.display(), "pasta de dados");
     let state = tauri::async_runtime::block_on(AppState::start(CoreConfig::new(data_dir)))?;
@@ -160,9 +160,9 @@ pub fn run() {
     logging::init();
     tracing::info!(
         app = env!("CARGO_PKG_VERSION"),
-        core = padgaming_core::VERSION,
+        core = vynpad_core::VERSION,
         logs = ?logging::log_dir(),
-        "PadGaming iniciando"
+        "VynPad iniciando"
     );
 
     let builder = specta_builder::<tauri::Wry>();
@@ -202,7 +202,7 @@ pub fn run() {
         ))
         .on_window_event(shell::on_window_event)
         .build(tauri::generate_context!())
-        .expect("falha ao iniciar o PadGaming")
+        .expect("falha ao iniciar o VynPad")
         .run(|app, event| {
             // Com "fechar vai para a bandeja", fechar a última janela não encerra o app. Só o
             // "Sair" da bandeja (que traz um código de saída) encerra.
@@ -231,14 +231,14 @@ pub fn run() {
 mod tests {
     use std::sync::Arc;
 
-    use padgaming_driver::MockDriver;
-    use padgaming_storage::Ports;
     use serde_json::{Value, json};
     use tauri::ipc::{CallbackFn, InvokeBody};
     use tauri::test::{
         INVOKE_KEY, MockRuntime, get_ipc_response, mock_builder, mock_context, noop_assets,
     };
     use tauri::webview::InvokeRequest;
+    use vynpad_driver::MockDriver;
+    use vynpad_storage::Ports;
 
     use super::*;
 
@@ -263,7 +263,7 @@ mod tests {
                 discovery: 0,
             });
             config.mdns = false;
-            let core = tauri::async_runtime::block_on(padgaming_server::Core::start(config))
+            let core = tauri::async_runtime::block_on(vynpad_server::Core::start(config))
                 .expect("core de teste");
             let state = Arc::new(AppState::with_core(core));
 
@@ -336,7 +336,7 @@ mod tests {
         let h = Harness::new();
         let info = h.ok("app_info", json!({}));
         assert_eq!(info["app_version"], env!("CARGO_PKG_VERSION"));
-        assert_eq!(info["core_version"], padgaming_core::VERSION);
+        assert_eq!(info["core_version"], vynpad_core::VERSION);
     }
 
     #[test]
@@ -457,7 +457,7 @@ mod tests {
         let h = Harness::new();
         let full = h.ok(
             "get_profile",
-            json!({ "id": padgaming_storage::seed::BUILTIN_PROFILE_ID }),
+            json!({ "id": vynpad_storage::seed::BUILTIN_PROFILE_ID }),
         );
         let created = h.ok(
             "save_profile",
@@ -466,7 +466,7 @@ mod tests {
         let id = created["summary"]["id"].as_str().unwrap().to_owned();
         // Um dispositivo pareado com esse perfil como padrão.
         tauri::async_runtime::block_on(async {
-            use padgaming_storage::{DeviceDefaults, NewPairing};
+            use vynpad_storage::{DeviceDefaults, NewPairing};
             let devices = h.state.core.devices();
             devices
                 .upsert_pairing(&NewPairing {
@@ -578,12 +578,7 @@ mod tests {
             Ok(offer) => {
                 assert!(offer["qr_svg"].as_str().unwrap().contains("<svg"));
                 assert_eq!(offer["pin"].as_str().unwrap().len(), 6);
-                assert!(
-                    offer["uri"]
-                        .as_str()
-                        .unwrap()
-                        .starts_with("padgaming://pair?")
-                );
+                assert!(offer["uri"].as_str().unwrap().starts_with("vynpad://pair?"));
                 h.ok("cancel_pairing", json!({}));
             }
             Err(err) => assert_eq!(err["code"], "no_network"),
@@ -619,7 +614,7 @@ mod tests {
     }
 
     /// O `bindings.ts` versionado é o que o gerador produz hoje. Se este teste falha, um command,
-    /// evento ou tipo mudou em Rust: rode `UPDATE_BINDINGS=1 cargo test -p padgaming-desktop
+    /// evento ou tipo mudou em Rust: rode `UPDATE_BINDINGS=1 cargo test -p vynpad-desktop
     /// bindings` e versione o resultado.
     #[test]
     fn bindings_ts_esta_em_dia() {
@@ -643,7 +638,7 @@ mod tests {
             .replace("\r\n", "\n");
         assert!(
             current == generated,
-            "src/lib/bindings.ts está desatualizado; rode `UPDATE_BINDINGS=1 cargo test -p padgaming-desktop bindings_ts`"
+            "src/lib/bindings.ts está desatualizado; rode `UPDATE_BINDINGS=1 cargo test -p vynpad-desktop bindings_ts`"
         );
     }
 }

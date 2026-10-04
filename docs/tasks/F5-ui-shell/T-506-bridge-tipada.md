@@ -13,7 +13,7 @@ Comunicação entre frontend e backend 100% tipada, sem strings mágicas.
 
 ## Escopo
 - `tauri-specta` (+ `specta`) gerando `src/lib/bindings.ts` com commands **e** eventos tipados no build de dev.
-- `AppState` no `src-tauri` com handle para o `padgaming-core` (`Arc<Core>`).
+- `AppState` no `src-tauri` com handle para o `vynpad-core` (`Arc<Core>`).
 - Camada `src/lib/api/`: hooks React Query por domínio (`useSettings`, `useProfiles`, `useDevices`…).
 - Stores `zustand` para dados de alta frequência (`useLiveInput`, `useMetrics`, `useSlots`), alimentados por listeners de eventos registrados uma única vez no boot.
 - Assinatura sob demanda do `input:live`: o frontend chama `subscribe_live_input(slot)` / `unsubscribe` para o backend só emitir quando há alguém vendo.
@@ -30,8 +30,8 @@ Comunicação entre frontend e backend 100% tipada, sem strings mágicas.
 
 **Backend** (`apps/desktop/src-tauri`):
 - `tauri-specta 2.0.0-rc.25` + `specta 2.0.0-rc.25` + `specta-typescript` (só existem release candidates; as versões são fixadas com `=`). `Builder` em `lib.rs` com `error_handling(Throw)` (os commands lançam o `AppError` no TS, o que combina com o React Query) e `dangerously_cast_bigints_to_number` (timestamps em epoch ms cabem em `number`).
-- `bindings.ts` é gerado em debug ao iniciar o app **e** por `UPDATE_BINDINGS=1 cargo test -p padgaming-desktop bindings_ts`. O teste `bindings_ts_esta_em_dia` falha no CI se o arquivo versionado não bate com o gerador. Verificado: mudar a assinatura de `rename_device` e regenerar quebra o `pnpm typecheck` (`Expected 3 arguments, but got 2`).
-- `AppState { core: Arc<Core>, live }`: o `Core` sobe no `setup` (pasta de dados `%APPDATA%\PadGaming`) e é encerrado (`Core::stop`, com `bye{shutdown}` e goodbye do mDNS) em `RunEvent::Exit`.
+- `bindings.ts` é gerado em debug ao iniciar o app **e** por `UPDATE_BINDINGS=1 cargo test -p vynpad-desktop bindings_ts`. O teste `bindings_ts_esta_em_dia` falha no CI se o arquivo versionado não bate com o gerador. Verificado: mudar a assinatura de `rename_device` e regenerar quebra o `pnpm typecheck` (`Expected 3 arguments, but got 2`).
+- `AppState { core: Arc<Core>, live }`: o `Core` sobe no `setup` (pasta de dados `%APPDATA%\VynPad`) e é encerrado (`Core::stop`, com `bye{shutdown}` e goodbye do mDNS) em `RunEvent::Exit`.
 - 33 commands (os da T-403 e os do server: slots, pareamento, descoberta, interfaces, input ao vivo) e 14 eventos tipados (`SettingsChanged`, `SlotsChanged`, `DevicesChanged`, `DevicesPaired`, `DevicesDiscovered`, `SessionStarted/Ended/State`, `ConnectionRejected`, `ReservationExpired`, `ApprovalRequested/Resolved`, `DriverChanged`, `InputLive`). Os tipos que cruzam a ponte são DTOs do app; o perfil e as configurações usam o `specta::Type` opcional dos crates `mapping` e `storage` (feature `specta`).
 - `AppError` com `code` estável (`internal`, `invalid_input`, `unsupported`, `not_found`, `builtin_profile`, `profile_in_use` com `in_use`, `import_invalid`, `no_network`) e `message_key`.
 - **`input:live` sob demanda** (`live.rs`): `subscribe_live_input`/`unsubscribe_live_input` contam assinaturas por slot; a tarefa dorme sem assinantes e, com alguma, lê a ~60 Hz o último estado do pad (`SlotManager::live_report`, duas escritas atômicas no hot path) e só emite o que mudou. `reset_live_input` zera a contagem ao recarregar a janela.

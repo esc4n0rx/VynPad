@@ -33,12 +33,12 @@ Padronizar erros e logs em todos os crates para facilitar o suporte e a depuraç
 - Pacote de diagnóstico exportável (T-705).
 
 ## Notas de implementação
-- `src-tauri/src/logging.rs`: filtro padrão `warn,padgaming=info,frontend=info` (sobrescrito por `RUST_LOG`); arquivo com rotação diária, 7 arquivos mantidos; saída também no terminal.
+- `src-tauri/src/logging.rs`: filtro padrão `warn,vynpad=info,frontend=info` (sobrescrito por `RUST_LOG`); arquivo com rotação diária, 7 arquivos mantidos; saída também no terminal.
 - A escrita no arquivo é **síncrona** de propósito: o volume é baixo e garante que a mensagem de pânico chegue ao disco antes do `panic = "abort"` do release.
-- Os nomes dos arquivos e os timestamps usam **UTC** (ex.: `padgaming.2026-09-27.log`).
+- Os nomes dos arquivos e os timestamps usam **UTC** (ex.: `vynpad.2026-09-27.log`).
 - `src-tauri/src/error.rs`: `AppError { code, message_key, details? }`; qualquer `std::error::Error` convertido vira `internal` e é logado com a causa.
 - Frontend: `src/lib/errors.ts` (tipo + `isAppError`) e `src/lib/log.ts` (`log.info/warn/error/debug` e captura de `error`/`unhandledrejection`). O backend recusa mensagens acima de 8 KB (`invalid_input`).
-- `Secret<T>` fica em `padgaming-protocol::secret`, o crate mais baixo da árvore.
+- `Secret<T>` fica em `vynpad-protocol::secret`, o crate mais baixo da árvore.
 - **Testes no Windows:** o `build.rs` embute o manifest do Windows em todos os alvos. Sem isso, os binários de teste que usam o Tauri falham com `STATUS_ENTRYPOINT_NOT_FOUND`.
 - Convenção: `thiserror` nos crates de biblioteca e `anyhow` só em binários. A dependência entra em cada crate quando ele ganhar o primeiro erro.
-- **Doctests no Windows:** para usar a CRT estática, o `tauri-build` grava um `msvcrt.lib` vazio no `OUT_DIR` do desktop. O cargo repassa esse caminho aos doctests das outras crates quando elas rodam na mesma invocação, e o link falha com `LNK1120` (aconteceu no primeiro doctest, na T-102). Por isso os testes do desktop rodam separados: `cargo test --workspace --exclude padgaming-desktop` e `cargo test -p padgaming-desktop`.
+- **Doctests no Windows:** para usar a CRT estática, o `tauri-build` grava um `msvcrt.lib` vazio no `OUT_DIR` do desktop. O cargo repassa esse caminho aos doctests das outras crates quando elas rodam na mesma invocação, e o link falha com `LNK1120` (aconteceu no primeiro doctest, na T-102). Por isso os testes do desktop rodam separados: `cargo test --workspace --exclude vynpad-desktop` e `cargo test -p vynpad-desktop`.

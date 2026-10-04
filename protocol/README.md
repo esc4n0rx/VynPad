@@ -1,6 +1,6 @@
 # protocol
 
-Artefatos do protocolo PadGaming v1 compartilhados entre o server (Rust) e o client Android (Kotlin). A especificação normativa está em [docs/00-visao-geral/PROTOCOLO.md](../docs/00-visao-geral/PROTOCOLO.md).
+Artefatos do protocolo VynPad v1 compartilhados entre o server (Rust) e o client Android (Kotlin). A especificação normativa está em [docs/00-visao-geral/PROTOCOLO.md](../docs/00-visao-geral/PROTOCOLO.md).
 
 | Pasta           | Conteúdo                                                                                              |
 | --------------- | ----------------------------------------------------------------------------------------------------- |
@@ -11,8 +11,8 @@ Artefatos do protocolo PadGaming v1 compartilhados entre o server (Rust) e o cli
 ## Comandos
 
 ```sh
-pnpm --filter @padgaming/protocol gen     # regrava test-vectors/*.json
-pnpm --filter @padgaming/protocol check   # confere os vectors (roda no CI)
+pnpm --filter @vynpad/protocol gen     # regrava test-vectors/*.json
+pnpm --filter @vynpad/protocol check   # confere os vectors (roda no CI)
 ```
 
 O `check` confirma que o ChaCha20-Poly1305 do Node bate com a RFC 8439, que os arquivos commitados são idênticos à saída do gerador, que eles validam nos schemas e que o decoder de referência produz exatamente o `expect` de cada vector.

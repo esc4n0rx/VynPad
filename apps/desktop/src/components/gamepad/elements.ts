@@ -1,6 +1,6 @@
 import type { InputReportDto } from "@/lib/bindings";
 
-/** Máscara de botões `XInput` de cada elemento do desenho (espelha `Buttons` em padgaming-protocol). */
+/** Máscara de botões `XInput` de cada elemento do desenho (espelha `Buttons` em vynpad-protocol). */
 export const BUTTON_MASKS = {
   "btn-a": 0x1000,
   "btn-b": 0x2000,

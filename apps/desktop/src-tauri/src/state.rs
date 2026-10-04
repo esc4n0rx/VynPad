@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use padgaming_server::{Core, CoreConfig, CoreError};
+use vynpad_server::{Core, CoreConfig, CoreError};
 
 use crate::live::LiveInput;
 
@@ -13,7 +13,7 @@ pub struct AppState {
     /// Assinaturas do `input:live`.
     pub live: Arc<LiveInput>,
     #[cfg(windows)]
-    pub xinput: Option<padgaming_driver::xinput::XInputProbe>,
+    pub xinput: Option<vynpad_driver::xinput::XInputProbe>,
 }
 
 impl AppState {
@@ -28,7 +28,7 @@ impl AppState {
             core: Arc::new(core),
             live: Arc::new(LiveInput::default()),
             #[cfg(windows)]
-            xinput: padgaming_driver::xinput::XInputProbe::load(),
+            xinput: vynpad_driver::xinput::XInputProbe::load(),
         }
     }
 }

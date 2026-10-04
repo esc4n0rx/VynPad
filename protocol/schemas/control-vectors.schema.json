@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://padgaming.local/schemas/control-vectors.schema.json",
+  "$id": "https://vynpad.local/schemas/control-vectors.schema.json",
   "title": "Test vectors do canal de controle (protocol/test-vectors/control.json)",
   "description": "PROTOCOLO.md §11.",
   "type": "object",

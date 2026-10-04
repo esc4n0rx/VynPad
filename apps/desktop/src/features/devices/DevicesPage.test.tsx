@@ -59,7 +59,7 @@ const nearby = (patch: Partial<NearbyDto> = {}): NearbyDto => ({
 });
 
 const offer = (patch: Partial<PairingOfferDto> = {}): PairingOfferDto => ({
-  uri: "padgaming://pair?x=1",
+  uri: "vynpad://pair?x=1",
   qr_svg: '<svg viewBox="0 0 2 2"><rect width="2" height="2"/></svg>',
   pin: "482913",
   token_ttl_s: 120,
@@ -140,7 +140,7 @@ describe("próximos na rede", () => {
   it("sem nada por perto nem pareado, mostra o estado vazio", async () => {
     setup();
     expect(await screen.findByText("Nenhum dispositivo ainda")).toBeTruthy();
-    expect(screen.getByText("Nenhum celular com o PadGaming aberto por perto.")).toBeTruthy();
+    expect(screen.getByText("Nenhum celular com o VynPad aberto por perto.")).toBeTruthy();
   });
 });
 

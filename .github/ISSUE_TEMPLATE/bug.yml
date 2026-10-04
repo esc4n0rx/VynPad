@@ -14,14 +14,14 @@ body:
     attributes:
       label: Passos para reproduzir
       placeholder: |
-        1. Abrir o PadGaming
+        1. Abrir o VynPad
         2. ...
     validations:
       required: true
   - type: input
     id: versao
     attributes:
-      label: Versão do PadGaming
+      label: Versão do VynPad
       placeholder: "0.1.0"
     validations:
       required: true

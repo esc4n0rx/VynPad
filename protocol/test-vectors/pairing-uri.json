@@ -6,7 +6,7 @@
     {
       "name": "single_host",
       "description": "URI mínima com um IPv4.",
-      "uri": "padgaming://pair?v=1&h=192.168.0.10&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
+      "uri": "vynpad://pair?v=1&h=192.168.0.10&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
       "expect": {
         "result": "ok",
         "params": {
@@ -15,7 +15,7 @@
             "192.168.0.10"
           ],
           "port": 47800,
-          "fingerprint_hex": "44efc52c26e12a924baed650350cfe190c913d5c1ed4970aee29c91802bd7f30",
+          "fingerprint_hex": "af8beea5aef0bef6b2c549c2e17e9f2aad865e304f39637ce946f40afb1626ed",
           "pairing_token_hex": "101112131415161718191a1b1c1d1e1f",
           "name": "PC-Sala"
         }
@@ -24,7 +24,7 @@
     {
       "name": "multiple_hosts_utf8_name",
       "description": "Vários IPv4 em ordem de preferência e nome UTF-8 com espaços (%20).",
-      "uri": "padgaming://pair?v=1&h=192.168.0.10,10.0.0.5,172.16.1.2&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=Sala%20de%20Jogos%20%E2%80%94%20Jo%C3%A3o",
+      "uri": "vynpad://pair?v=1&h=192.168.0.10,10.0.0.5,172.16.1.2&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=Sala%20de%20Jogos%20%E2%80%94%20Jo%C3%A3o",
       "expect": {
         "result": "ok",
         "params": {
@@ -35,7 +35,7 @@
             "172.16.1.2"
           ],
           "port": 47800,
-          "fingerprint_hex": "44efc52c26e12a924baed650350cfe190c913d5c1ed4970aee29c91802bd7f30",
+          "fingerprint_hex": "af8beea5aef0bef6b2c549c2e17e9f2aad865e304f39637ce946f40afb1626ed",
           "pairing_token_hex": "101112131415161718191a1b1c1d1e1f",
           "name": "Sala de Jogos — João"
         }
@@ -44,7 +44,7 @@
     {
       "name": "any_param_order_and_unknown_param",
       "description": "Ordem dos parâmetros é livre e parâmetros desconhecidos são ignorados.",
-      "uri": "padgaming://pair?n=PC-Sala&x=future&t=EBESExQVFhcYGRobHB0eHw&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&p=50000&h=10.0.0.1&v=1",
+      "uri": "vynpad://pair?n=PC-Sala&x=future&t=EBESExQVFhcYGRobHB0eHw&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&p=50000&h=10.0.0.1&v=1",
       "expect": {
         "result": "ok",
         "params": {
@@ -53,7 +53,7 @@
             "10.0.0.1"
           ],
           "port": 50000,
-          "fingerprint_hex": "44efc52c26e12a924baed650350cfe190c913d5c1ed4970aee29c91802bd7f30",
+          "fingerprint_hex": "af8beea5aef0bef6b2c549c2e17e9f2aad865e304f39637ce946f40afb1626ed",
           "pairing_token_hex": "101112131415161718191a1b1c1d1e1f",
           "name": "PC-Sala"
         }
@@ -62,7 +62,7 @@
     {
       "name": "plus_is_not_space",
       "description": "'+' não é convertido em espaço: o nome é literalmente 'PC+Sala'.",
-      "uri": "padgaming://pair?v=1&h=192.168.0.10&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=PC+Sala",
+      "uri": "vynpad://pair?v=1&h=192.168.0.10&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=PC+Sala",
       "expect": {
         "result": "ok",
         "params": {
@@ -71,7 +71,7 @@
             "192.168.0.10"
           ],
           "port": 47800,
-          "fingerprint_hex": "44efc52c26e12a924baed650350cfe190c913d5c1ed4970aee29c91802bd7f30",
+          "fingerprint_hex": "af8beea5aef0bef6b2c549c2e17e9f2aad865e304f39637ce946f40afb1626ed",
           "pairing_token_hex": "101112131415161718191a1b1c1d1e1f",
           "name": "PC+Sala"
         }
@@ -79,8 +79,8 @@
     },
     {
       "name": "wrong_scheme",
-      "description": "Esquema https em vez de padgaming.",
-      "uri": "https://pair?v=1&h=192.168.0.10&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
+      "description": "Esquema https em vez de vynpad.",
+      "uri": "https://pair?v=1&h=192.168.0.10&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
       "expect": {
         "result": "error",
         "error": "bad_scheme"
@@ -89,7 +89,7 @@
     {
       "name": "wrong_action",
       "description": "Ação connect em vez de pair.",
-      "uri": "padgaming://connect?v=1&h=192.168.0.10&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
+      "uri": "vynpad://connect?v=1&h=192.168.0.10&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
       "expect": {
         "result": "error",
         "error": "bad_scheme"
@@ -98,7 +98,7 @@
     {
       "name": "missing_fingerprint",
       "description": "Sem o parâmetro fp.",
-      "uri": "padgaming://pair?v=1&h=192.168.0.10&p=47800&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
+      "uri": "vynpad://pair?v=1&h=192.168.0.10&p=47800&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
       "expect": {
         "result": "error",
         "error": "missing_param"
@@ -107,7 +107,7 @@
     {
       "name": "missing_version",
       "description": "Sem o parâmetro v.",
-      "uri": "padgaming://pair?h=192.168.0.10&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
+      "uri": "vynpad://pair?h=192.168.0.10&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
       "expect": {
         "result": "error",
         "error": "missing_param"
@@ -116,7 +116,7 @@
     {
       "name": "unsupported_version",
       "description": "v=2.",
-      "uri": "padgaming://pair?v=2&h=192.168.0.10&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
+      "uri": "vynpad://pair?v=2&h=192.168.0.10&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
       "expect": {
         "result": "error",
         "error": "unsupported_version"
@@ -125,7 +125,7 @@
     {
       "name": "fingerprint_wrong_length",
       "description": "fp com 31 bytes.",
-      "uri": "padgaming://pair?v=1&h=192.168.0.10&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fw&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
+      "uri": "vynpad://pair?v=1&h=192.168.0.10&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJg&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
       "expect": {
         "result": "error",
         "error": "bad_param"
@@ -134,7 +134,7 @@
     {
       "name": "token_with_padding",
       "description": "t em base64 com padding (=).",
-      "uri": "padgaming://pair?v=1&h=192.168.0.10&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw%3D%3D&n=PC-Sala",
+      "uri": "vynpad://pair?v=1&h=192.168.0.10&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw%3D%3D&n=PC-Sala",
       "expect": {
         "result": "error",
         "error": "bad_param"
@@ -143,7 +143,7 @@
     {
       "name": "host_not_ipv4",
       "description": "h com hostname em vez de IPv4.",
-      "uri": "padgaming://pair?v=1&h=meu-pc.local&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
+      "uri": "vynpad://pair?v=1&h=meu-pc.local&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
       "expect": {
         "result": "error",
         "error": "bad_param"
@@ -152,7 +152,7 @@
     {
       "name": "host_octet_out_of_range",
       "description": "h com octeto 256.",
-      "uri": "padgaming://pair?v=1&h=192.168.0.256&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
+      "uri": "vynpad://pair?v=1&h=192.168.0.256&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
       "expect": {
         "result": "error",
         "error": "bad_param"
@@ -161,7 +161,7 @@
     {
       "name": "port_out_of_range",
       "description": "p = 70000.",
-      "uri": "padgaming://pair?v=1&h=192.168.0.10&p=70000&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
+      "uri": "vynpad://pair?v=1&h=192.168.0.10&p=70000&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala",
       "expect": {
         "result": "error",
         "error": "bad_param"
@@ -170,7 +170,7 @@
     {
       "name": "duplicated_param",
       "description": "Parâmetro p repetido.",
-      "uri": "padgaming://pair?v=1&h=192.168.0.10&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala&p=47801",
+      "uri": "vynpad://pair?v=1&h=192.168.0.10&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=PC-Sala&p=47801",
       "expect": {
         "result": "error",
         "error": "bad_param"
@@ -179,7 +179,7 @@
     {
       "name": "name_too_long",
       "description": "n com 65 caracteres.",
-      "uri": "padgaming://pair?v=1&h=192.168.0.10&p=47800&fp=RO_FLCbhKpJLrtZQNQz-GQyRPVwe1JcK7inJGAK9fzA&t=EBESExQVFhcYGRobHB0eHw&n=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "uri": "vynpad://pair?v=1&h=192.168.0.10&p=47800&fp=r4vupa7wvvayxUnC4X6fKq2GXjBPOWN86Ub0CvsWJu0&t=EBESExQVFhcYGRobHB0eHw&n=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "expect": {
         "result": "error",
         "error": "bad_param"

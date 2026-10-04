@@ -2,17 +2,17 @@
 //! viram funções que lançam o `AppError`.
 //!
 //! Regras: nenhum command guarda estado nem decide regra de negócio; eles traduzem tipos e
-//! delegam ao `Core` (`padgaming-server`), onde ficam os testes de comportamento.
+//! delegam ao `Core` (`vynpad-server`), onde ficam os testes de comportamento.
 
 // O Tauri entrega `State` por valor; não dá para pegar por referência.
 #![allow(clippy::needless_pass_by_value)]
 
-use padgaming_driver::SlotId;
-use padgaming_net::discovery::interfaces;
-use padgaming_storage::AppSettings;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::State;
+use vynpad_driver::SlotId;
+use vynpad_net::discovery::interfaces;
+use vynpad_storage::AppSettings;
 
 use crate::dto::{
     AddressDto, DeviceDefaultsDto, DeviceDto, InterfaceDto, LogEntryDto, LogQueryDto, MetricsDto,
@@ -40,7 +40,7 @@ pub struct AppInfo {
 pub fn app_info() -> AppInfo {
     AppInfo {
         app_version: env!("CARGO_PKG_VERSION"),
-        core_version: padgaming_core::VERSION,
+        core_version: vynpad_core::VERSION,
     }
 }
 
@@ -364,14 +364,12 @@ pub fn get_nearby_devices(state: State<'_, AppState>) -> Vec<NearbyDto> {
 pub fn get_server_info(state: State<'_, AppState>) -> ServerInfoDto {
     let core = &state.core;
     let ports = core.ports();
-    let info = core
-        .discovery()
-        .map(padgaming_net::discovery::Discovery::info);
+    let info = core.discovery().map(vynpad_net::discovery::Discovery::info);
     ServerInfoDto {
         name: info
             .as_ref()
-            .map_or_else(padgaming_server::computer_name, |i| i.wire_name()),
-        fingerprint_short: padgaming_protocol::discovery::short_fingerprint(&core.fingerprint()),
+            .map_or_else(vynpad_server::computer_name, |i| i.wire_name()),
+        fingerprint_short: vynpad_protocol::discovery::short_fingerprint(&core.fingerprint()),
         control_port: ports.control,
         input_port: ports.input,
         discovery_port: ports.discovery,

@@ -381,7 +381,7 @@ export type FirewallPortDto = {
 	allowed: boolean,
 };
 
-/**  O estado do firewall do Windows para o `PadGaming`. */
+/**  O estado do firewall do Windows para o `VynPad`. */
 export type FirewallStatusDto = {
 	/**  O sistema tem o firewall do Windows (fora dele, nada a fazer). */
 	applicable: boolean,
@@ -793,7 +793,7 @@ export type Theme =
 /**  Segue o sistema. */
 "system";
 
-/**  O aviso "o `PadGaming` continua rodando na bandeja" (`tray:hint`). */
+/**  O aviso "o `VynPad` continua rodando na bandeja" (`tray:hint`). */
 export type TrayHint = Record<string, never>;
 
 /**  Há uma navegação pedida pela bandeja esperando a UI (`tray:navigate`). */

@@ -1,10 +1,10 @@
-// Implementação de referência do protocolo PadGaming v1 (docs/00-visao-geral/PROTOCOLO.md).
-// Usada só para gerar e conferir os test vectors; o server usa o crate padgaming-protocol
+// Implementação de referência do protocolo VynPad v1 (docs/00-visao-geral/PROTOCOLO.md).
+// Usada só para gerar e conferir os test vectors; o server usa o crate vynpad-protocol
 // e o client Android o módulo core:protocol.
 
 import { createCipheriv, createDecipheriv } from "node:crypto";
 
-export const MAGIC = 0x4750;
+export const MAGIC = 0x5056;
 export const VERSION = 1;
 export const HEADER_LEN = 12;
 export const TAG_LEN = 16;
@@ -300,7 +300,7 @@ function b64urlBytes(s, bytes) {
 /** Faz o parsing da URI do QR code (§4.2). */
 export function parsePairingUri(uri) {
   const err = (error) => ({ result: "error", error });
-  const prefix = "padgaming://pair?";
+  const prefix = "vynpad://pair?";
   if (!uri.startsWith(prefix)) return err("bad_scheme");
 
   const params = new Map();

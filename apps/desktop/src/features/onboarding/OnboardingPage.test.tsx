@@ -69,7 +69,7 @@ function setup(options: Options = {}) {
   commands.getNearbyDevices.mockResolvedValue(options.nearby ?? []);
   commands.listDevices.mockResolvedValue([]);
   commands.startPairing.mockResolvedValue({
-    uri: "padgaming://pair?x=1",
+    uri: "vynpad://pair?x=1",
     qr_svg: '<svg viewBox="0 0 2 2"><rect width="2" height="2"/></svg>',
     pin: "482913",
     token_ttl_s: 120,
@@ -140,7 +140,7 @@ describe("introdução", () => {
     await screen.findByText("Seu celular é o controle");
     next();
     expect(await screen.findByText("O driver ainda não está instalado.")).toBeTruthy();
-    expect(screen.getByText(/Sem o driver, o PadGaming não cria controles/)).toBeTruthy();
+    expect(screen.getByText(/Sem o driver, o VynPad não cria controles/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Baixar o ViGEmBus" }));
     await waitFor(() => {
       expect(commands.openVigemDownload).toHaveBeenCalledTimes(1);
@@ -177,9 +177,7 @@ describe("introdução", () => {
     next();
     expect(await screen.findByText("PC da sala")).toBeTruthy();
     expect(screen.getByText("192.168.0.10:47800")).toBeTruthy();
-    expect(
-      await screen.findByText("O firewall do Windows está bloqueando o PadGaming."),
-    ).toBeTruthy();
+    expect(await screen.findByText("O firewall do Windows está bloqueando o VynPad.")).toBeTruthy();
     // Enquanto não está certo, dá para pular.
     expect(screen.getByRole("button", { name: "Pular por enquanto" })).toBeTruthy();
 
@@ -233,7 +231,7 @@ describe("introdução", () => {
     next();
     expect(await screen.findByRole("img", { name: "QR code para parear" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Pular por enquanto" })).toBeTruthy();
-    expect(screen.getByText(/Nenhum celular com o PadGaming aberto por perto/)).toBeTruthy();
+    expect(screen.getByText(/Nenhum celular com o VynPad aberto por perto/)).toBeTruthy();
 
     act(() => {
       useLastPaired.getState().record({ device_id: "d1", name: "Galaxy da Ana", model: "S24" });

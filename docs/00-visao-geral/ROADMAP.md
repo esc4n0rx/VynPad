@@ -17,18 +17,18 @@ gantt
   section Linux
   M5 Linux v1.0                          :m5, after m4, 2
   section Android
-  M6 Android MVP → PadGaming 1.0         :m6, after m5, 4
+  M6 Android MVP → VynPad 1.0         :m6, after m5, 4
 ```
 *(Unidades relativas em sprints de ~1 semana; não são datas.)*
 
 | Marco | Resultado verificável | Tasks |
 |---|---|---|
-| **M1 — Primeiro input** | O `padgaming-sim` move um controle X360 virtual que aparece no `joy.cpl` e funciona num jogo | T-001, T-004, T-101, T-102, T-201, T-202, T-203, T-206, T-301, T-307 |
+| **M1 — Primeiro input** | O `vynpad-sim` move um controle X360 virtual que aparece no `joy.cpl` e funciona num jogo | T-001, T-004, T-101, T-102, T-201, T-202, T-203, T-206, T-301, T-307 |
 | **M2 — Server conectável e seguro** | Descoberta via mDNS, pareamento por QR/PIN, TLS, reconexão; dados no SQLite | T-002, T-103, T-302, T-303, T-304, T-306, T-401, T-402, T-403, T-506 |
 | **M3 — App com cara de produto** | Janela com vidro, onboarding, dashboard ao vivo, tela de dispositivos | T-003, T-205, T-501–T-505, T-601, T-602, T-603 |
-| **M4 — Windows v1.0** | Mapeamento, rumble, latência, tray, instalador assinado, auto-update | T-204, T-305, T-604–T-608, T-701–T-706 |
+| **M4 — Windows v1.0** | Mapeamento, rumble, latência, tray, instalador assinado, auto-update | T-204, T-305, T-604–T-608, T-701–T-707 |
 | **M5 — Linux v1.0** | Mesmo app no Linux com uinput, AppImage/deb/rpm | T-801–T-804 |
-| **M6 — Android → PadGaming 1.0** | App Android completo publicado; ecossistema ponta a ponta | T-901–T-910 |
+| **M6 — Android → VynPad 1.0** | App Android completo publicado; ecossistema ponta a ponta | T-901–T-910 |
 
 ## 2. Grafo de dependências (caminho crítico em destaque)
 
@@ -84,7 +84,7 @@ flowchart TD
 | ID | Task | Prio | Est. | Depende de | Status |
 |---|---|---|---|---|---|
 | [T-101](../tasks/F1-protocolo/T-101-spec-protocolo.md) | Especificação final do protocolo v1 + test vectors | P0 | M | — | ✅ |
-| [T-102](../tasks/F1-protocolo/T-102-crate-protocolo.md) | Crate `padgaming-protocol` | P0 | M | T-001, T-101 | ✅ |
+| [T-102](../tasks/F1-protocolo/T-102-crate-protocolo.md) | Crate `vynpad-protocol` | P0 | M | T-001, T-101 | ✅ |
 | [T-103](../tasks/F1-protocolo/T-103-tls-pareamento.md) | TLS, certificado e pareamento QR/PIN | P0 | G | T-102 | ✅ |
 
 ### F2 — Emulação Windows
@@ -106,7 +106,7 @@ flowchart TD
 | [T-304](../tasks/F3-rede/T-304-ciclo-vida-sessao.md) | Ciclo de vida da sessão e reconexão | P0 | M | T-301, T-302 | 🟨 |
 | [T-305](../tasks/F3-rede/T-305-metricas-latencia.md) | Métricas de latência | P1 | M | T-301 | 🟨 |
 | [T-306](../tasks/F3-rede/T-306-firewall-windows.md) | Regras de firewall do Windows | P0 | P | T-301 | 🟨 |
-| [T-307](../tasks/F3-rede/T-307-simulador-cli.md) | Simulador CLI `padgaming-sim` | P0 | M | T-102 | 🟨 |
+| [T-307](../tasks/F3-rede/T-307-simulador-cli.md) | Simulador CLI `vynpad-sim` | P0 | M | T-102 | 🟨 |
 
 ### F4 — Persistência
 | ID | Task | Prio | Est. | Depende de | Status |
@@ -146,6 +146,7 @@ flowchart TD
 | [T-704](../tasks/F7-release-windows/T-704-auto-update.md) | Auto-update | P1 | M | T-703 | ⬜ |
 | [T-705](../tasks/F7-release-windows/T-705-docs-diagnostico.md) | Docs do usuário e pacote de diagnóstico | P1 | M | T-004 | 🟨 |
 | [T-706](../tasks/F7-release-windows/T-706-revisao-seguranca.md) | Revisão de segurança | P1 | M | T-103, T-302 | ✅ |
+| [T-707](../tasks/F7-release-windows/T-707-renomear-vynpad.md) | Renomear o projeto para VynPad | P0 | M | — | 🟨 |
 
 ### F8 — Linux
 | ID | Task | Prio | Est. | Depende de | Status |

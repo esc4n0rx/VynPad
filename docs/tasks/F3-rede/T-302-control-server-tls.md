@@ -21,7 +21,7 @@ Aceitar conexões dos clients, autenticar, criar sessões e distribuir as chaves
 - Limites: máximo de 16 conexões pendentes; `hello` em até 10 s; frames de até 16 KiB (PROTOCOLO §5.1).
 
 ## Critérios de aceite
-- [x] Teste de integração: `padgaming-sim` faz o handshake completo e envia input.
+- [x] Teste de integração: `vynpad-sim` faz o handshake completo e envia input.
 - [x] Um client com token revogado recebe `reject{revoked}`.
 - [x] Um `proto_ver` incompatível recebe `reject{version}` com a mensagem clara no client.
 
@@ -30,7 +30,7 @@ Aceitar conexões dos clients, autenticar, criar sessões e distribuir as chaves
 
 ## Situação
 
-Pronto, em `padgaming_net::control` (`ControlServer`), testado por `padgaming-sim/tests/control_handshake.rs` (15 cenários, com TLS e UDP reais em loopback):
+Pronto, em `vynpad_net::control` (`ControlServer`), testado por `vynpad-sim/tests/control_handshake.rs` (15 cenários, com TLS e UDP reais em loopback):
 - Handshake `hello` → versão → `PairingService` → slot (`SlotManager::assign`) → `session_id`/`udp_key` aleatórios registrados no `InputServer` → `welcome`. `reject` com `bad_request`, `bad_auth`, `locked`, `revoked`, `no_slot` e `version` (com `supported_versions`).
 - `device_token` no `welcome` do primeiro pareamento; o evento `ControlEvent::Paired` sai depois do `welcome` (a persistência é do `DeviceStore`, T-403).
 - Confirmação de novos dispositivos: `set_require_approval` + `set_approver`. O pedido só é feito depois de a credencial (QR/PIN) valer e antes de gravar o dispositivo, por isso o `PairingService` ganhou `authenticate_with(hello, peer, approve)`. Sem resposta em 30 s, ou sem UI, recusa com `bad_auth`.

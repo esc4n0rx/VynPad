@@ -44,7 +44,7 @@ export interface ResolvedGyro {
   mix_with_stick: boolean;
 }
 
-/** Os valores padrão do backend (`padgaming-mapping`): campo ausente no perfil vale isto. */
+/** Os valores padrão do backend (`vynpad-mapping`): campo ausente no perfil vale isto. */
 export const STICK_DEFAULTS = {
   deadzone_inner: 0,
   deadzone_outer: 0,

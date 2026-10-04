@@ -26,7 +26,7 @@ Instalação em um clique, confiável e sem alertas assustadores do SmartScreen.
 
 ## Implementação
 - `tauri.conf.json` (`bundle`): NSIS por usuário sem admin, pt-BR e en com seletor de idioma, MSI em pt-BR e en-US, WebView2 por `downloadBootstrapper`.
-- `apps/desktop/src-tauri/windows/hooks.nsh`: no desinstalador remove as regras de firewall `PadGaming *` (UAC só se existirem; nunca em modo silencioso), a entrada de autostart e, se o usuário marcar a opção, `%APPDATA%\PadGaming` e `%LOCALAPPDATA%\PadGaming`.
+- `apps/desktop/src-tauri/windows/hooks.nsh`: no desinstalador remove as regras de firewall `VynPad *` (UAC só se existirem; nunca em modo silencioso), a entrada de autostart e, se o usuário marcar a opção, `%APPDATA%\VynPad` e `%LOCALAPPDATA%\VynPad`.
 - `.github/workflows/release.yml`: tag `v*` confere a versão, compila NSIS e MSI, assina com o Azure Trusted Signing quando os segredos existem (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `TRUSTED_SIGNING_ENDPOINT`, `TRUSTED_SIGNING_ACCOUNT`, `TRUSTED_SIGNING_PROFILE`), confere as assinaturas e publica o GitHub Release com changelog automático. Sem os segredos publica sem assinar e avisa.
 
 ## Decisões

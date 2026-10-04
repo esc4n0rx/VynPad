@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://padgaming.local/schemas/pairing-uri-vectors.schema.json",
+  "$id": "https://vynpad.local/schemas/pairing-uri-vectors.schema.json",
   "title": "Test vectors da URI de pareamento (protocol/test-vectors/pairing-uri.json)",
   "description": "PROTOCOLO.md §4.2 e §11.",
   "type": "object",

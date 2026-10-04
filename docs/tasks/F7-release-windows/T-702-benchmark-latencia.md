@@ -12,7 +12,7 @@
 Provar as metas de RNF-01 a RNF-04 com números reproduzíveis.
 
 ## Escopo
-- **Server**: `padgaming-sim bench --clients 4 --rate 250 --duration 300s` → p50/p95/p99 do processamento; alvo p99 < 1 ms.
+- **Server**: `vynpad-sim bench --clients 4 --rate 250 --duration 300s` → p50/p95/p99 do processamento; alvo p99 < 1 ms.
 - **Ponta a ponta sem celular**: loopback de medição: o sim envia um pulso e, na mesma máquina, lê o `XInputGetState` até ver a mudança; mede de envio até visível no XInput.
 - **Ponta a ponta com celular** (após F9): câmera 240 fps filmando o toque e um indicador na tela (procedimento documentado); alvo p95 < 10 ms em 5 GHz.
 - **Recursos**: CPU (ocioso e com 4 controles), RAM (janela aberta, só tray), tempo de boot.

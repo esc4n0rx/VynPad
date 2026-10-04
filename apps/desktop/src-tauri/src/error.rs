@@ -5,10 +5,10 @@
 //! aqui, já em português, para mostrar sob a mensagem) e `in_use` quando apagar um perfil em uso
 //! pede confirmação.
 
-use padgaming_server::CoreError;
-use padgaming_storage::DataError;
 use serde::Serialize;
 use specta::Type;
+use vynpad_server::CoreError;
+use vynpad_storage::DataError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Type)]
 #[serde(rename_all = "snake_case")]

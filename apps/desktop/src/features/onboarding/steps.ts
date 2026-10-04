@@ -4,7 +4,7 @@ export type StepId = (typeof STEPS)[number];
 /** Passos que dá para pular por enquanto (o do driver tem o seu próprio "continuar sem"). */
 const SKIPPABLE: ReadonlySet<StepId> = new Set(["network", "connect"]);
 
-export const STORAGE_KEY = "padgaming.onboarding.step";
+export const STORAGE_KEY = "vynpad.onboarding.step";
 
 export const isSkippable = (step: StepId) => SKIPPABLE.has(step);
 

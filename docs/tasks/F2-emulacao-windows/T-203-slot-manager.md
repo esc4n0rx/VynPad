@@ -32,7 +32,7 @@ Gerenciar até 4 controles virtuais simultâneos, cada um vinculado a uma sessã
 - Timeouts de rede (T-304).
 
 ## Implementação
-- `padgaming-core::slots::SlotManager` (sobre `Arc<dyn VirtualPadDriver>`), com `Clock` injetável (`padgaming-core::clock`).
+- `vynpad-core::slots::SlotManager` (sobre `Arc<dyn VirtualPadDriver>`), com `Clock` injetável (`vynpad-core::clock`).
 - API de rede: `assign` (preferido → menor livre → `NoSlot`; reconexão do mesmo dispositivo volta ao mesmo slot sem replugar), `submit` (hot path), `suspend`, `release`, `tick` (expira reservas de 30 s).
 - API da UI: `disconnect_slot` (devolve a sessão para o `bye{kicked}`), `set_paused`, `swap`, `snapshot` e `subscribe` (uma `SlotsSnapshot` por mudança).
 - Hot path: tabela `ArcSwap` de controles ativos; `submit` não usa lock nem aloca (`tests/hot_path.rs`), exceto no primeiro input da sessão, que pluga o controle.

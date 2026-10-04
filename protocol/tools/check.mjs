@@ -1,4 +1,4 @@
-// Confere os test vectors commitados. Uso: pnpm --filter @padgaming/protocol check
+// Confere os test vectors commitados. Uso: pnpm --filter @vynpad/protocol check
 //
 // 1. O ChaCha20-Poly1305 do Node bate com a RFC 8439 §2.8.2.
 // 2. Os arquivos em test-vectors/ são idênticos ao que o gerador produz.
@@ -62,14 +62,14 @@ for (const [file, content] of Object.entries(expected)) {
   try {
     text = readFileSync(path, "utf8");
   } catch {
-    fail(`${file}: não existe (rode \`pnpm --filter @padgaming/protocol gen\`)`);
+    fail(`${file}: não existe (rode \`pnpm --filter @vynpad/protocol gen\`)`);
     continue;
   }
 
   // 2. Arquivo em dia com o gerador.
   if (text !== serialize(content)) {
     fail(
-      `${file}: desatualizado em relação ao gerador (rode \`pnpm --filter @padgaming/protocol gen\`)`,
+      `${file}: desatualizado em relação ao gerador (rode \`pnpm --filter @vynpad/protocol gen\`)`,
     );
   }
 

@@ -4,15 +4,15 @@
 //! Firewall e UAC bloqueiam a thread por um tempo (COM, elevação), então rodam em
 //! `spawn_blocking` e não seguram a webview.
 
-use padgaming_net::firewall::{
+use std::time::{Duration, SystemTime};
+use vynpad_net::firewall::{
     self, FirewallError, FirewallPorts, FirewallStatus, NETWORK_SETTINGS_URI, Transport,
 };
-use std::time::{Duration, SystemTime};
 
-use padgaming_server::{DeviceSummary, Diagnostics, LogFile};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::State;
+use vynpad_server::{DeviceSummary, Diagnostics, LogFile};
 
 use crate::error::{AppError, ErrorCode};
 use crate::state::AppState;
@@ -30,7 +30,7 @@ pub struct FirewallPortDto {
     pub allowed: bool,
 }
 
-/// O estado do firewall do Windows para o `PadGaming`.
+/// O estado do firewall do Windows para o `VynPad`.
 // São quatro fatos independentes que a UI mostra; agrupá-los só esconderia o que cada um diz.
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
@@ -204,7 +204,7 @@ const LOG_DAYS: u64 = 3;
 /// De cada log, no máximo este tanto do final (os mais recentes).
 const LOG_TAIL_BYTES: usize = 2 * 1024 * 1024;
 
-/// Lê os logs recentes (`padgaming.*.log` dos últimos [`LOG_DAYS`] dias), só o final de cada um.
+/// Lê os logs recentes (`vynpad.*.log` dos últimos [`LOG_DAYS`] dias), só o final de cada um.
 fn recent_logs() -> Vec<LogFile> {
     let Some(dir) = crate::logging::log_dir() else {
         return Vec::new();
@@ -223,7 +223,7 @@ fn recent_logs() -> Vec<LogFile> {
             let is_log = std::path::Path::new(&name)
                 .extension()
                 .is_some_and(|ext| ext.eq_ignore_ascii_case("log"));
-            if !(name.starts_with("padgaming") && is_log) {
+            if !(name.starts_with("vynpad") && is_log) {
                 return None;
             }
             let modified = entry.metadata().ok()?.modified().ok()?;
@@ -252,9 +252,9 @@ fn info_text(state: &AppState, firewall: Option<&FirewallStatus>) -> String {
     let used = slots.slots.iter().filter(|s| s.device.is_some()).count();
     let mut lines = vec![
         format!(
-            "PadGaming {} (núcleo {})",
+            "VynPad {} (núcleo {})",
             env!("CARGO_PKG_VERSION"),
-            padgaming_core::VERSION
+            vynpad_core::VERSION
         ),
         format!(
             "Sistema: {} {}{}",
@@ -271,7 +271,7 @@ fn info_text(state: &AppState, firewall: Option<&FirewallStatus>) -> String {
         ),
         format!(
             "Impressão digital do server: {}",
-            padgaming_protocol::discovery::short_fingerprint(&state.core.fingerprint())
+            vynpad_protocol::discovery::short_fingerprint(&state.core.fingerprint())
         ),
         format!("Slots em uso: {used} de {}", slots.slots.len()),
     ];
@@ -308,7 +308,7 @@ pub async fn export_diagnostics(state: State<'_, AppState>, mask_ips: bool) -> R
         .devices()
         .list()
         .await
-        .map_err(padgaming_server::CoreError::from)?
+        .map_err(vynpad_server::CoreError::from)?
         .into_iter()
         .map(|d| DeviceSummary {
             id: d.id,
@@ -337,15 +337,15 @@ pub async fn export_diagnostics(state: State<'_, AppState>, mask_ips: bool) -> R
         logs: recent_logs(),
         mask_ips,
     };
-    let bytes = padgaming_server::build_zip(&diagnostics).map_err(|e| AppError::internal(&e))?;
+    let bytes = vynpad_server::build_zip(&diagnostics).map_err(|e| AppError::internal(&e))?;
 
     let dir = dirs::download_dir()
         .or_else(dirs::desktop_dir)
         .or_else(dirs::home_dir)
         .ok_or_else(|| AppError::not_found("a pasta de Downloads"))?;
     let path = dir.join(format!(
-        "padgaming-diagnostico-{}.zip",
-        padgaming_server::utc_stamp(padgaming_storage::seed::now_ms())
+        "vynpad-diagnostico-{}.zip",
+        vynpad_server::utc_stamp(vynpad_storage::seed::now_ms())
     ));
     std::fs::write(&path, bytes)?;
     tracing::info!(path = %path.display(), "pacote de diagnóstico exportado");

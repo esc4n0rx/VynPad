@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/udp-vectors.schema.json",
   "format": 1,
-  "description": "Pacotes UDP do protocolo PadGaming v1 (PROTOCOLO.md §6). Gerado por protocol/tools/gen.mjs — não edite à mão.",
+  "description": "Pacotes UDP do protocolo VynPad v1 (PROTOCOLO.md §6). Gerado por protocol/tools/gen.mjs — não edite à mão.",
   "vectors": [
     {
       "name": "input_neutral",
@@ -12,11 +12,11 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "50470101785634120000000058fa4d31ade6a6d113615c61af434e27f8b1f3f5e1ad5ba3640f3167ad1cd8ad9062d15c6262fec3",
+      "packet_hex": "56500101785634120000000058fa4d31ade6a6d113615c61af434e27f8b1f3f5e1ad5ba320cd6bfdbca3efb6d47ac1ba71f2d32c",
       "expect": {
         "result": "ok",
         "header": {
-          "magic": 18256,
+          "magic": 20566,
           "ver": 1,
           "type": 1,
           "session_id": 305419896,
@@ -47,11 +47,11 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 41
       },
-      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "packet_hex": "56500101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb678965936171126a48cdd94dd479bff3",
       "expect": {
         "result": "ok",
         "header": {
-          "magic": 18256,
+          "magic": 20566,
           "ver": 1,
           "type": 1,
           "session_id": 305419896,
@@ -82,11 +82,11 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 998
       },
-      "packet_hex": "5047010178563412e8030000d12a4ce6c8ea4ec30c0daccbf17d3901ae5a954a4074f63345d016fc8926faabc34992dac3ce4b35",
+      "packet_hex": "5650010178563412e8030000d12a4ce6c8ea4ec30c0daccbf17d3901ae5a954a4074f63334a1235ed5c5690a83ac7a13547acc87",
       "expect": {
         "result": "ok",
         "header": {
-          "magic": 18256,
+          "magic": 20566,
           "ver": 1,
           "type": 1,
           "session_id": 305419896,
@@ -117,11 +117,11 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 4294967293
       },
-      "packet_hex": "50470101ffffff7ffeffffffbcc9be52d39961b6eb5101a8d97f71b2f79b8626d1360960aef52a105874518668e316beaf1bddf0",
+      "packet_hex": "56500101ffffff7ffeffffffbcc9be52d39961b6eb5101a8d97f71b2f79b8626d1360960d9a1c4abd7c65ef4d89e2d2b1ea16acf",
       "expect": {
         "result": "ok",
         "header": {
-          "magic": 18256,
+          "magic": 20566,
           "ver": 1,
           "type": 1,
           "session_id": 2147483647,
@@ -153,11 +153,11 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 6
       },
-      "packet_hex": "504701017856341207000000b14d8b4822e87a89622e4e33fc88109a329da241f1ed89faa6ec18d16faee1c1f9d67dd5510a3775",
+      "packet_hex": "565001017856341207000000b14d8b4822e87a89622e4e33fc88109a329da241f1ed89fa89b28d94e946cbfdbf3a75d438491bef",
       "expect": {
         "result": "ok",
         "header": {
-          "magic": 18256,
+          "magic": 20566,
           "ver": 1,
           "type": 1,
           "session_id": 305419896,
@@ -188,11 +188,11 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 9
       },
-      "packet_hex": "50470102785634120a0000005d689a71f4063f35c23a66d5aa3e35f88677c37b9b6fa1757f15d2a694b26678214bcaa3b975a4f68b9051a2c435edb1ef8a1abb",
+      "packet_hex": "56500102785634120a0000005d689a71f4063f35c23a66d5aa3e35f88677c37b9b6fa1757f15d2a694b26678214bcaa39335b3f96335dc4ede45b678ce7d414f",
       "expect": {
         "result": "ok",
         "header": {
-          "magic": 18256,
+          "magic": 20566,
           "ver": 1,
           "type": 2,
           "session_id": 305419896,
@@ -229,11 +229,11 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 10
       },
-      "packet_hex": "50470102785634120b000000f673f4bc09c5ac30eb3a0c063bb8128c62449d0355be7df8cb86043fbe9af275094c6712f05b7fe2935593d0a34100bf54711a4a",
+      "packet_hex": "56500102785634120b000000f673f4bc09c5ac30eb3a0c063bb8128c62449d0355be7df8cb86043fbe9af275094c67127faef332517e1c0a2a949a9d2f419e65",
       "expect": {
         "result": "ok",
         "header": {
-          "magic": 18256,
+          "magic": 20566,
           "ver": 1,
           "type": 2,
           "session_id": 305419896,
@@ -270,11 +270,11 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 42
       },
-      "packet_hex": "50470110785634122b000000aabcbb4680d08284d7a69124b49671ad9d9236458aa8fced",
+      "packet_hex": "56500110785634122b000000aabcbb4680d08284ebac14496e83aa2be0a1c8f25ef4dd5b",
       "expect": {
         "result": "ok",
         "header": {
-          "magic": 18256,
+          "magic": 20566,
           "ver": 1,
           "type": 16,
           "session_id": 305419896,
@@ -295,11 +295,11 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "5047011178563412000000008025e250d8e39c2a52be330d7b3fdd5b04b8f0d8a7fef711e689a6932869ca3af2be5079",
+      "packet_hex": "5650011178563412000000008025e250d8e39c2a52be330d7b3fdd5b04b8f0d86e0ea361a6d30e909a7255fb8606f989",
       "expect": {
         "result": "ok",
         "header": {
-          "magic": 18256,
+          "magic": 20566,
           "ver": 1,
           "type": 17,
           "session_id": 305419896,
@@ -322,11 +322,11 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 4
       },
-      "packet_hex": "504701207856341205000000f213f7cf4fc9edaedc73a39faa4f1a73bb7faa56",
+      "packet_hex": "565001207856341205000000f213f7cf20dfff74c94a43548dbd0dab49090bed",
       "expect": {
         "result": "ok",
         "header": {
-          "magic": 18256,
+          "magic": 20566,
           "ver": 1,
           "type": 32,
           "session_id": 305419896,
@@ -349,11 +349,11 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 5
       },
-      "packet_hex": "50470120785634120600000069d50b4a36d5b5eb2438b2fb00687445666d740d",
+      "packet_hex": "56500120785634120600000069d50b4a8b5bc70a64b262c86e9d2b20ebd8fe40",
       "expect": {
         "result": "ok",
         "header": {
-          "magic": 18256,
+          "magic": 20566,
           "ver": 1,
           "type": 32,
           "session_id": 305419896,
@@ -391,7 +391,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "50470101785634122a0000",
+      "packet_hex": "56500101785634122a0000",
       "expect": {
         "result": "error",
         "error": "too_short"
@@ -399,14 +399,14 @@
     },
     {
       "name": "bad_magic_big_endian",
-      "description": "magic gravado em big-endian (bytes 47 50): erro clássico de endianness.",
+      "description": "magic gravado em big-endian (bytes 50 56): erro clássico de endianness.",
       "receiver": {
         "role": "server",
         "session_id": 305419896,
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "47500101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb5dea2f27542e6efa98b322b3571c7a3d",
+      "packet_hex": "50560101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb40e7c2b0ba2885e52e09cef279b96293",
       "expect": {
         "result": "error",
         "error": "bad_magic"
@@ -421,7 +421,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "50470201785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb75d77941852265f085b66a3db8cf5165",
+      "packet_hex": "56500201785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb4283bb59987835190f2a904fad0c0c0b",
       "expect": {
         "result": "error",
         "error": "bad_version"
@@ -436,7 +436,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "50470103785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdbd6931727db8850871de76da8e2ee2ae7",
+      "packet_hex": "56500103785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdba33f593feede20b0a65a93bad72be58c",
       "expect": {
         "result": "error",
         "error": "unknown_type"
@@ -451,7 +451,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "504701207856341201000000b82702b7fa099281096d15c5d9d33d34dc72a737",
+      "packet_hex": "565001207856341201000000b82702b7a49b5f55257e784907faed1b22064611",
       "expect": {
         "result": "error",
         "error": "wrong_direction"
@@ -466,7 +466,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "packet_hex": "56500101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb678965936171126a48cdd94dd479bff3",
       "expect": {
         "result": "error",
         "error": "wrong_direction"
@@ -481,7 +481,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c05",
+      "packet_hex": "56500101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb678965936171126a48cdd94dd479bf",
       "expect": {
         "result": "error",
         "error": "bad_length"
@@ -496,7 +496,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e00",
+      "packet_hex": "56500101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb678965936171126a48cdd94dd479bff300",
       "expect": {
         "result": "error",
         "error": "bad_length"
@@ -511,7 +511,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "50470102785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "packet_hex": "56500102785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb678965936171126a48cdd94dd479bff3",
       "expect": {
         "result": "error",
         "error": "bad_length"
@@ -526,7 +526,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "50470101795634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdbbefafe74a4e17848e2087b98953edee0",
+      "packet_hex": "56500101795634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb86a6408db73749716b7ca0aa8a7b9886",
       "expect": {
         "result": "error",
         "error": "unknown_session"
@@ -541,7 +541,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 42
       },
-      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "packet_hex": "56500101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb678965936171126a48cdd94dd479bff3",
       "expect": {
         "result": "error",
         "error": "stale_seq"
@@ -556,7 +556,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 43
       },
-      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "packet_hex": "56500101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb678965936171126a48cdd94dd479bff3",
       "expect": {
         "result": "error",
         "error": "stale_seq"
@@ -571,7 +571,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 4294967295
       },
-      "packet_hex": "5047010178563412000000000d072300ace6a6d117735ca94f6d8ec7074e0c8ae2ad5b0b39625a0cfffc4e5c7c8283e805309403",
+      "packet_hex": "5650010178563412000000000d072300ace6a6d117735ca94f6d8ec7074e0c8ae2ad5b0bf51f95a20e846665c09a734615c0696c",
       "expect": {
         "result": "error",
         "error": "stale_seq"
@@ -586,7 +586,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 41
       },
-      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054f",
+      "packet_hex": "56500101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb678965936171126a48cdd94dd479bff2",
       "expect": {
         "result": "error",
         "error": "bad_tag"
@@ -601,7 +601,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 41
       },
-      "packet_hex": "50470101785634122a00000071e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "packet_hex": "56500101785634122a00000071e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb678965936171126a48cdd94dd479bff3",
       "expect": {
         "result": "error",
         "error": "bad_tag"
@@ -616,7 +616,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 41
       },
-      "packet_hex": "50470101785634122b000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb9add237b4e1b4241bf59b43bdf3c054e",
+      "packet_hex": "56500101785634122b000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb678965936171126a48cdd94dd479bff3",
       "expect": {
         "result": "error",
         "error": "bad_tag"
@@ -631,7 +631,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 41
       },
-      "packet_hex": "50470101785634122a0000009a2c3eb07b83c1740429661b24018ef8eed3910e03f4580e32b9093ff04dc0dfc8a2656e9a97bd7c",
+      "packet_hex": "56500101785634122a0000009a2c3eb07b83c1740429661b24018ef8eed3910e03f4580e262547480455e503b40ee0635e8c88bf",
       "expect": {
         "result": "error",
         "error": "bad_tag"
@@ -646,7 +646,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": 41
       },
-      "packet_hex": "50470101785634122a000000d1d5cb14db832acd3f239d3aff7179d47b1c40591e86b69d0cf432aa0e13e2dc52f72a50ab69dfce",
+      "packet_hex": "56500101785634122a000000d1d5cb14db832acd3f239d3aff7179d47b1c40591e86b69d8ac47e6be353c7bbfd33bc1ceae0e4b7",
       "expect": {
         "result": "error",
         "error": "bad_tag"
@@ -661,7 +661,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "50470101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9ddb9e9a5c56efd590a3573e35e7554cf952",
+      "packet_hex": "56500101785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9ddb6b469e6e022c61cce0b15af94a89b3f8",
       "expect": {
         "result": "error",
         "error": "bad_payload"
@@ -676,7 +676,7 @@
         "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "last_seq": null
       },
-      "packet_hex": "50470102785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb57e503d49b607280c8134316946e0cfc294cbc4efe608f5e4855d8f0",
+      "packet_hex": "56500102785634122a000000f1e80a93ff649fd5a355b540e6cbb8bbad3e8a9cc97c9cdb57e503d49b607280c8134316bfa0de61f14417d108b3953faf40815d",
       "expect": {
         "result": "error",
         "error": "bad_payload"

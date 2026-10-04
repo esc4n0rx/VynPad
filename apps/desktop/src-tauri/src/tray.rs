@@ -9,15 +9,15 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
-use padgaming_core::SlotView;
-use padgaming_driver::DriverStatus;
-use padgaming_server::{Core, CoreEvent};
-use padgaming_storage::Language;
 use tauri::image::Image;
 use tauri::menu::{CheckMenuItemBuilder, Menu, MenuBuilder, MenuItemBuilder};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::broadcast::error::RecvError;
+use vynpad_core::SlotView;
+use vynpad_driver::DriverStatus;
+use vynpad_server::{Core, CoreEvent};
+use vynpad_storage::Language;
 
 use crate::shell;
 use crate::state::AppState;
@@ -117,7 +117,7 @@ struct Text {
 }
 
 const PT: Text = Text {
-    open: "Abrir PadGaming",
+    open: "Abrir VynPad",
     pair: "Parear novo dispositivo",
     pause_all: "Pausar todos os controles",
     settings: "Configurações",
@@ -132,7 +132,7 @@ const PT: Text = Text {
 };
 
 const EN: Text = Text {
-    open: "Open PadGaming",
+    open: "Open VynPad",
     pair: "Pair a new device",
     pause_all: "Pause all controllers",
     settings: "Settings",
@@ -175,7 +175,7 @@ impl TrayModel {
         }
     }
 
-    /// "`PadGaming` — 2 controles conectados".
+    /// "`VynPad` — 2 controles conectados".
     pub fn tooltip(&self) -> String {
         let t = text(self.language);
         let status = match self.connected() {
@@ -184,9 +184,9 @@ impl TrayModel {
             n => format!("{n} {}", t.many),
         };
         if self.driver_ready {
-            format!("PadGaming — {status}")
+            format!("VynPad — {status}")
         } else {
-            format!("PadGaming — {}", t.driver_error)
+            format!("VynPad — {}", t.driver_error)
         }
     }
 
@@ -435,21 +435,21 @@ mod tests {
         let mut slots = empty();
         assert_eq!(
             model(slots.clone(), true, Language::PtBr).tooltip(),
-            "PadGaming — nenhum controle conectado"
+            "VynPad — nenhum controle conectado"
         );
         slots[0] = line(0, Some("Galaxy"), Some(20));
         assert_eq!(
             model(slots.clone(), true, Language::PtBr).tooltip(),
-            "PadGaming — 1 controle conectado"
+            "VynPad — 1 controle conectado"
         );
         slots[2] = line(2, Some("Pixel"), None);
         assert_eq!(
             model(slots.clone(), true, Language::PtBr).tooltip(),
-            "PadGaming — 2 controles conectados"
+            "VynPad — 2 controles conectados"
         );
         assert_eq!(
             model(slots, true, Language::En).tooltip(),
-            "PadGaming — 2 controllers connected"
+            "VynPad — 2 controllers connected"
         );
     }
 
@@ -459,7 +459,7 @@ mod tests {
         slots[0] = line(0, Some("Galaxy"), None);
         let m = model(slots, false, Language::PtBr);
         assert_eq!(m.icon(), IconKind::Error);
-        assert_eq!(m.tooltip(), "PadGaming — driver com problema");
+        assert_eq!(m.tooltip(), "VynPad — driver com problema");
     }
 
     #[test]

@@ -13,15 +13,15 @@ Se nada aqui resolver, vá em **Configurações → Sobre → Exportar diagnóst
 
 ## O firewall bloqueia {#o-firewall-bloqueia}
 
-O Windows precisa deixar o celular entrar nas portas do PadGaming. Em **Configurações → Rede → Firewall**, clique em **Corrigir** (ou **Permitir conexões**, na introdução). O Windows pede permissão de administrador uma vez e o app cria as regras só para redes **Privada** e **Domínio**. Se você recusar a permissão, dá para tentar de novo.
+O Windows precisa deixar o celular entrar nas portas do VynPad. Em **Configurações → Rede → Firewall**, clique em **Corrigir** (ou **Permitir conexões**, na introdução). O Windows pede permissão de administrador uma vez e o app cria as regras só para redes **Privada** e **Domínio**. Se você recusar a permissão, dá para tentar de novo.
 
 ## Rede pública {#rede-publica}
 
-Em uma rede marcada como **pública** o Windows bloqueia conexões de entrada, e as regras do PadGaming não valem nela. Abra as configurações de rede (o app tem o botão) e mude a rede para **privada**.
+Em uma rede marcada como **pública** o Windows bloqueia conexões de entrada, e as regras do VynPad não valem nela. Abra as configurações de rede (o app tem o botão) e mude a rede para **privada**.
 
 ## O ViGEmBus não aparece {#vigembus}
 
-Sem o **ViGEmBus**, o PadGaming não cria controles. Veja o estado em **Configurações → Controles** (ou no passo **Driver** da introdução):
+Sem o **ViGEmBus**, o VynPad não cria controles. Veja o estado em **Configurações → Controles** (ou no passo **Driver** da introdução):
 
 - **Não instalado**: use **Baixar o ViGEmBus**, instale e volte. O app percebe sozinho.
 - **Desatualizado**: instale a versão indicada ou mais nova.
@@ -69,7 +69,7 @@ O perfil que você quer apagar está sendo usado por dispositivos ou controles c
 
 ## Arquivo de perfil inválido {#err-import-invalid}
 
-O arquivo `.padprofile` está corrompido, é grande demais ou não é de um perfil do PadGaming. Peça outro à pessoa que o exportou, ou exporte de novo.
+O arquivo `.padprofile` está corrompido, é grande demais ou não é de um perfil do VynPad. Peça outro à pessoa que o exportou, ou exporte de novo.
 
 ## Sem rede local {#err-no-network}
 

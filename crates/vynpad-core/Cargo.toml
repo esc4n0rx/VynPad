@@ -1,0 +1,20 @@
+[package]
+name = "vynpad-core"
+description = "Orquestração do server: sessões, slots e métricas."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+vynpad-driver = { workspace = true }
+vynpad-protocol = { workspace = true }
+arc-swap = "1"
+crossbeam-channel = "0.5"
+thiserror = { workspace = true }
+
+[dev-dependencies]
+vynpad-driver = { workspace = true, features = ["mock"] }
+
+[lints]
+workspace = true

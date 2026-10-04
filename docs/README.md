@@ -1,4 +1,4 @@
-# PadGaming — Documentação do Projeto
+# VynPad — Documentação do Projeto
 
 Gamepad virtual: um **client Android** envia o input pela rede local para um **server desktop (Windows / Linux)**, que expõe esse input como um **controle Xbox 360 nativo**, compatível com qualquer jogo XInput.
 

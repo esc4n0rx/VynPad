@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://padgaming.local/schemas/discovery-response.schema.json",
-  "title": "Resposta ao broadcast PGDISC1",
+  "$id": "https://vynpad.local/schemas/discovery-response.schema.json",
+  "title": "Resposta ao broadcast VPDISC1",
   "description": "PROTOCOLO.md §3.2. Campos desconhecidos são permitidos (e ignorados).",
   "type": "object",
   "required": ["id", "name", "ver", "tcp", "udp", "os", "free", "fp"],

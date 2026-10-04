@@ -1,6 +1,6 @@
 # Latência: o input está atrasado? {#latencia}
 
-A **latência** é o tempo entre tocar no celular e o jogo reagir. O PadGaming mede a conexão de cada controle o tempo todo e mostra em **Latência** e no card do painel.
+A **latência** é o tempo entre tocar no celular e o jogo reagir. O VynPad mede a conexão de cada controle o tempo todo e mostra em **Latência** e no card do painel.
 
 ## O que a tela mostra {#o-que-a-tela-mostra}
 

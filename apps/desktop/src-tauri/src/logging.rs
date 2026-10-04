@@ -10,7 +10,7 @@ use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 /// `info` para o nosso código e para o frontend, `warn` para as dependências.
 /// A variável `RUST_LOG` sobrescreve.
-const DEFAULT_FILTER: &str = "warn,padgaming=info,frontend=info";
+const DEFAULT_FILTER: &str = "warn,vynpad=info,frontend=info";
 
 /// Quantidade de arquivos diários mantidos na pasta de logs.
 const LOG_FILES_KEPT: usize = 7;
@@ -18,9 +18,9 @@ const LOG_FILES_KEPT: usize = 7;
 /// Pasta de logs documentada em ARQUITETURA §6.
 pub fn log_dir() -> Option<PathBuf> {
     #[cfg(target_os = "linux")]
-    let dir = dirs::state_dir().map(|d| d.join("padgaming").join("logs"));
+    let dir = dirs::state_dir().map(|d| d.join("vynpad").join("logs"));
     #[cfg(not(target_os = "linux"))]
-    let dir = dirs::data_local_dir().map(|d| d.join("PadGaming").join("logs"));
+    let dir = dirs::data_local_dir().map(|d| d.join("VynPad").join("logs"));
     dir
 }
 
@@ -54,7 +54,7 @@ fn file_appender(dir: &std::path::Path) -> Result<RollingFileAppender, Box<dyn s
     std::fs::create_dir_all(dir)?;
     Ok(RollingFileAppender::builder()
         .rotation(Rotation::DAILY)
-        .filename_prefix("padgaming")
+        .filename_prefix("vynpad")
         .filename_suffix("log")
         .max_log_files(LOG_FILES_KEPT)
         .build(dir)?)
@@ -65,7 +65,7 @@ fn install_panic_hook() {
     let default_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         let backtrace = std::backtrace::Backtrace::force_capture();
-        tracing::error!(target: "padgaming::panic", %info, %backtrace, "pânico");
+        tracing::error!(target: "vynpad::panic", %info, %backtrace, "pânico");
         default_hook(info);
     }));
 }

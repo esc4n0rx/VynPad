@@ -7,9 +7,9 @@
 use std::sync::Mutex;
 use std::time::Duration;
 
-use padgaming_core::SlotManager;
-use padgaming_driver::{SlotId, XReport};
 use tokio::sync::Notify;
+use vynpad_core::SlotManager;
+use vynpad_driver::{SlotId, XReport};
 
 use crate::dto::InputReportDto;
 
@@ -121,8 +121,8 @@ impl LiveInput {
 mod tests {
     use std::sync::Arc;
 
-    use padgaming_driver::MockDriver;
-    use padgaming_protocol::control::Uuid;
+    use vynpad_driver::MockDriver;
+    use vynpad_protocol::control::Uuid;
 
     use super::*;
 

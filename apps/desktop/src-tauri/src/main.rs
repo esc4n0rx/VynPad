@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    padgaming_desktop_lib::run();
+    vynpad_desktop_lib::run();
 }

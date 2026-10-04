@@ -1,6 +1,6 @@
 # Latency: is the input delayed? {#latencia}
 
-**Latency** is the time between touching the phone and the game reacting. PadGaming measures each controller’s connection all the time and shows it in **Latency** and on the dashboard card.
+**Latency** is the time between touching the phone and the game reacting. VynPad measures each controller’s connection all the time and shows it in **Latency** and on the dashboard card.
 
 ## What the screen shows {#o-que-a-tela-mostra}
 

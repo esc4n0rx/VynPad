@@ -12,7 +12,7 @@
 Transformar o input bruto do client no `XReport` final aplicando o perfil do slot: rápido, determinístico e 100% testável.
 
 ## Escopo
-Crate `padgaming-mapping`, função pura `apply(&CompiledProfile, &RawInput, &mut GyroState, dt) -> XReport`.
+Crate `vynpad-mapping`, função pura `apply(&CompiledProfile, &RawInput, &mut GyroState, dt) -> XReport`.
 
 Etapas, em ordem:
 1. **Sticks**: deadzone interna/externa (radial ou axial), anti-deadzone, curva (linear, exponencial, customizada por 4 pontos), sensibilidade, inverter X/Y, trocar esquerdo ↔ direito.
@@ -30,14 +30,14 @@ Etapas, em ordem:
 
 ## Critérios de aceite
 - [ ] Cobertura de testes ≥ 90% no crate.
-- [x] Benchmark dentro da meta: `apply` leva ~36 ns (perfil padrão) e ~60 ns (todas as etapas ligadas), contra a meta de 5 µs (`cargo bench -p padgaming-mapping`).
+- [x] Benchmark dentro da meta: `apply` leva ~36 ns (perfil padrão) e ~60 ns (todas as etapas ligadas), contra a meta de 5 µs (`cargo bench -p vynpad-mapping`).
 - [x] A troca de perfil em tempo real (`ProfileCell`, sobre `ArcSwap`) não bloqueia o thread de input: um teste troca o perfil sem parar enquanto outra thread mapeia e confere que só saem valores dos dois perfis.
 
 ## Fora de escopo
 - A tela de edição (T-604). Persistência (T-402/403).
 
 ## Implementação
-- `padgaming-mapping`: `Profile` (JSON com `schema_version`, todos os campos opcionais, validado com o caminho do campo no erro) → `CompiledProfile` (LUTs de 1024 passos; curva linear sem LUT, para a identidade ser exata) → `apply(&CompiledProfile, &RawInput, &mut MapperState, dt) -> XReport`.
+- `vynpad-mapping`: `Profile` (JSON com `schema_version`, todos os campos opcionais, validado com o caminho do campo no erro) → `CompiledProfile` (LUTs de 1024 passos; curva linear sem LUT, para a identidade ser exata) → `apply(&CompiledProfile, &RawInput, &mut MapperState, dt) -> XReport`.
 - `MapperState` guarda o estado do gyro (filtros 1-Euro, modo alternado, recentralizar) e o relógio do turbo. Diferença em relação ao texto da task: em vez de só `GyroState`, o estado inclui também o turbo.
 - `ProfileCell` (troca em tempo real) e `Mapper` (perfil + estado de um slot). `RawInput::from_wire` converte os pacotes UDP (gyro de rad/s×1000 para rad/s).
 - Convenções do gyro (referencial do PROTOCOLO §6.4): virar para a esquerda (`gy` > 0) move o analógico para a esquerda; inclinar o topo para longe do jogador (`gx` < 0) mira para cima; sensibilidade 1,0 = fundo de escala a 2 rad/s (~115°/s).

@@ -13,17 +13,17 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use padgaming_driver::DriverStatus;
-use padgaming_net::control::{ControlEvent, SessionEnd};
-use padgaming_protocol::control::RejectReason;
-use padgaming_server::{ApprovalEvent, Core, CoreEvent};
-use padgaming_storage::{AppSettings, Language};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_notification::NotificationExt;
 use tauri_specta::Event;
 use tokio::sync::broadcast::error::RecvError;
+use vynpad_driver::DriverStatus;
+use vynpad_net::control::{ControlEvent, SessionEnd};
+use vynpad_protocol::control::RejectReason;
+use vynpad_server::{ApprovalEvent, Core, CoreEvent};
+use vynpad_storage::{AppSettings, Language};
 
 use crate::shell;
 
@@ -302,7 +302,7 @@ fn deliver<R: Runtime>(app: &AppHandle<R>, core: &Core, notice: &Notice) {
         &settings,
         notice.category(),
         window_visible(app),
-        padgaming_net::user_state::fullscreen_busy(),
+        vynpad_net::user_state::fullscreen_busy(),
     );
     let message = render(notice, settings.language);
     match way {
@@ -320,7 +320,7 @@ fn deliver<R: Runtime>(app: &AppHandle<R>, core: &Core, notice: &Notice) {
             if let Err(error) = app
                 .notification()
                 .builder()
-                .title("PadGaming")
+                .title("VynPad")
                 .body(message)
                 .show()
             {
@@ -465,8 +465,7 @@ async fn handle<R: Runtime>(
         CoreEvent::Approval(ApprovalEvent::Requested(_)) => {
             let settings = core.settings().get();
             if settings.notify_pairing
-                && !(padgaming_net::user_state::fullscreen_busy()
-                    && settings.notify_skip_fullscreen)
+                && !(vynpad_net::user_state::fullscreen_busy() && settings.notify_skip_fullscreen)
             {
                 shell::show_main_window(app);
             }

@@ -4,7 +4,7 @@
 ; onboarding do app, com consentimento (D-11), e não pelo instalador.
 ;
 ; Desinstalação: remove o que o app criou fora da pasta de instalação, para não deixar sobras:
-;   - regras de firewall "PadGaming *" (precisam de administrador, então pedem UAC só se existirem);
+;   - regras de firewall "VynPad *" (precisam de administrador, então pedem UAC só se existirem);
 ;   - a entrada de "Iniciar com o Windows" (HKCU\...\Run);
 ;   - os dados (banco, perfis, logs) somente se o usuário marcar a opção do desinstalador.
 
@@ -16,25 +16,25 @@
 
 !macro NSIS_HOOK_PREUNINSTALL
   ; Desinstalação silenciosa (/S) nunca abre UAC: as regras ficam e o usuário pode removê-las depois.
-  IfSilent padgaming_skip_firewall 0
+  IfSilent vynpad_skip_firewall 0
   ; Sai com o número de regras encontradas; consultar não exige administrador.
-  nsExec::Exec `powershell.exe -NoProfile -NonInteractive -Command "exit @(Get-NetFirewallRule -DisplayName 'PadGaming *' -ErrorAction SilentlyContinue).Count"`
+  nsExec::Exec `powershell.exe -NoProfile -NonInteractive -Command "exit @(Get-NetFirewallRule -DisplayName 'VynPad *' -ErrorAction SilentlyContinue).Count"`
   Pop $0
   ${If} $0 != 0
-    ExecShellWait "runas" "powershell.exe" `-NoProfile -WindowStyle Hidden -Command "Remove-NetFirewallRule -DisplayName 'PadGaming *'"` SW_HIDE
+    ExecShellWait "runas" "powershell.exe" `-NoProfile -WindowStyle Hidden -Command "Remove-NetFirewallRule -DisplayName 'VynPad *'"` SW_HIDE
   ${EndIf}
-  padgaming_skip_firewall:
+  vynpad_skip_firewall:
 
   ; Iniciar com o Windows: a chave e o "aprovado" que o Gerenciador de Tarefas guarda.
-  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "PadGaming"
-  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run" "PadGaming"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "VynPad"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run" "VynPad"
 !macroend
 
 !macro NSIS_HOOK_POSTUNINSTALL
-  ; O app guarda os dados em %APPDATA%\PadGaming e os logs em %LOCALAPPDATA%\PadGaming; o
+  ; O app guarda os dados em %APPDATA%\VynPad e os logs em %LOCALAPPDATA%\VynPad; o
   ; desinstalador do Tauri só conhece as pastas com o identificador do app.
   ${If} $DeleteAppDataCheckboxState == 1
-    RMDir /r "$APPDATA\PadGaming"
-    RMDir /r "$LOCALAPPDATA\PadGaming"
+    RMDir /r "$APPDATA\VynPad"
+    RMDir /r "$LOCALAPPDATA\VynPad"
   ${EndIf}
 !macroend

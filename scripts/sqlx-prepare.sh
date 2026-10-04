@@ -9,15 +9,15 @@ cd "$(dirname "$0")/.."
 ROOT="$(pwd -W 2>/dev/null || pwd)" # no Git Bash, o caminho no formato do Windows
 DIR="target/sqlx-prepare"
 
-cargo run -q -p padgaming-dbprep -- "$DIR"
+cargo run -q -p vynpad-dbprep -- "$DIR"
 rm -rf .sqlx
 mkdir .sqlx
 
-export DATABASE_URL="sqlite:$ROOT/$DIR/padgaming.db"
+export DATABASE_URL="sqlite:$ROOT/$DIR/vynpad.db"
 export SQLX_OFFLINE=false
 export SQLX_OFFLINE_DIR="$ROOT/.sqlx"
 # Força a expansão das macros de novo.
-cargo clean -q -p padgaming-storage
-cargo check -q -p padgaming-storage --all-targets
+cargo clean -q -p vynpad-storage
+cargo check -q -p vynpad-storage --all-targets
 
 echo "metadados gerados: $(ls .sqlx | wc -l) queries em .sqlx/"

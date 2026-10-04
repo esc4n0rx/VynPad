@@ -89,7 +89,7 @@ function setup(settings: Partial<Settings> = {}, initial = "/settings") {
     },
   ]);
   commands.appInfo.mockResolvedValue({ app_version: "0.1.0", core_version: "0.1.0" });
-  commands.logsDir.mockResolvedValue("C:\\Users\\ana\\AppData\\Local\\PadGaming\\logs");
+  commands.logsDir.mockResolvedValue("C:\\Users\\ana\\AppData\\Local\\VynPad\\logs");
   const router = createMemoryRouter(
     [
       { path: "/settings", element: <SettingsPage /> },
@@ -293,7 +293,7 @@ describe("rede", () => {
   it("firewall liberado só informa o estado das portas", async () => {
     setup();
     goTo("Rede");
-    expect(await screen.findByText("O firewall não bloqueia o PadGaming.")).toBeTruthy();
+    expect(await screen.findByText("O firewall não bloqueia o VynPad.")).toBeTruthy();
     expect(screen.getByText(/TCP 47800 · liberada/)).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Corrigir" })).toBeNull();
   });
@@ -313,7 +313,7 @@ describe("rede", () => {
     await waitFor(() => {
       expect(commands.fixFirewall).toHaveBeenCalledTimes(1);
     });
-    expect(await screen.findByText("O firewall não bloqueia o PadGaming.")).toBeTruthy();
+    expect(await screen.findByText("O firewall não bloqueia o VynPad.")).toBeTruthy();
     expect(useToasts.getState().toasts.at(-1)?.message).toBe("Regras criadas.");
   });
 
@@ -532,9 +532,7 @@ describe("privacidade", () => {
 
 describe("diagnóstico e ajuda", () => {
   it("exporta o diagnóstico e mostra onde o arquivo ficou", async () => {
-    commands.exportDiagnostics.mockResolvedValue(
-      "C:/Users/ana/Downloads/padgaming-diagnostico.zip",
-    );
+    commands.exportDiagnostics.mockResolvedValue("C:/Users/ana/Downloads/vynpad-diagnostico.zip");
     setup();
     goTo("Sobre");
     fireEvent.click(await screen.findByRole("button", { name: "Exportar diagnóstico" }));
@@ -542,7 +540,7 @@ describe("diagnóstico e ajuda", () => {
       expect(commands.exportDiagnostics).toHaveBeenCalledWith(false);
     });
     await waitFor(() => {
-      expect(useToasts.getState().toasts.at(-1)?.message).toContain("padgaming-diagnostico.zip");
+      expect(useToasts.getState().toasts.at(-1)?.message).toContain("vynpad-diagnostico.zip");
     });
   });
 

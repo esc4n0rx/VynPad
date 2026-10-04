@@ -12,11 +12,11 @@
 Base de persistência confiável, versionada e testável.
 
 ## Escopo
-- Crate `padgaming-storage` com `sqlx` (features `sqlite`, `runtime-tokio`, `macros`, `migrate`).
+- Crate `vynpad-storage` com `sqlx` (features `sqlite`, `runtime-tokio`, `macros`, `migrate`).
 - `SqlitePool` com `journal_mode=WAL`, `synchronous=NORMAL`, `foreign_keys=ON`, `busy_timeout=5s`.
 - Migrations em `migrations/` embutidas com `sqlx::migrate!()` e executadas no boot.
 - Queries verificadas em tempo de compilação com o modo offline (`sqlx prepare`, `.sqlx/` versionado) para o CI funcionar sem banco.
-- Backup automático antes de cada migration (`padgaming.db.bak-<versão>`), mantendo os 3 últimos.
+- Backup automático antes de cada migration (`vynpad.db.bak-<versão>`), mantendo os 3 últimos.
 - Banco em memória para os testes.
 
 ## Critérios de aceite
@@ -29,10 +29,10 @@ Base de persistência confiável, versionada e testável.
 
 ## Situação
 
-Pronto em `padgaming-storage` (`Database`):
-- `Database::open(dir)`: cria a pasta e `padgaming.db`, pool de 5 conexões com WAL, `synchronous=NORMAL`, `foreign_keys=ON` e `busy_timeout=5s` (conferidos por teste, inclusive as chaves estrangeiras em várias conexões). `default_data_dir()` devolve `%APPDATA%\PadGaming` / `~/.local/share/padgaming`.
+Pronto em `vynpad-storage` (`Database`):
+- `Database::open(dir)`: cria a pasta e `vynpad.db`, pool de 5 conexões com WAL, `synchronous=NORMAL`, `foreign_keys=ON` e `busy_timeout=5s` (conferidos por teste, inclusive as chaves estrangeiras em várias conexões). `default_data_dir()` devolve `%APPDATA%\VynPad` / `~/.local/share/vynpad`.
 - Migrations embutidas por `sqlx::migrate!("./migrations")` (com `build.rs` para recompilar quando mudam) e aplicadas no boot. A pasta ainda está vazia: a primeira (`0001_schema.sql`) é a T-402.
-- Backup `padgaming.db.bak-<versão>` (via `VACUUM INTO`, consistente com o WAL) só quando há migrations pendentes **e** o banco já tem dados; ficam os 3 de versão mais alta.
+- Backup `vynpad.db.bak-<versão>` (via `VACUUM INTO`, consistente com o WAL) só quando há migrations pendentes **e** o banco já tem dados; ficam os 3 de versão mais alta.
 - Migration que falha: fecha o pool, restaura o backup e devolve `StorageError::Migration` com mensagem em português (etapa, se os dados foram restaurados, onde está o backup, detalhe técnico). Como o SQLite tem DDL transacional, uma migration com instrução quebrada no meio não deixa rastro. Banco novo (sem dados) cuja migration falha é descartado. Banco de versão mais nova que o app → `StorageError::TooNew`; migration editada depois de publicada → erro claro do checksum.
 - `Database::in_memory()` para os testes (uma conexão só, senão cada conexão seria um banco).
 - Sem `DATABASE_URL`: `.cargo/config.toml` define `SQLX_OFFLINE=true`. Ainda não há macros `query!` (não há tabelas), então `.sqlx/` passou a existir na T-403, gerado por `scripts/sqlx-prepare.sh` (sem `sqlx-cli`).

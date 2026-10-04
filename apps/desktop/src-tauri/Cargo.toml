@@ -1,6 +1,6 @@
 [package]
-name = "padgaming-desktop"
-description = "Server desktop do PadGaming (shell Tauri)."
+name = "vynpad-desktop"
+description = "Server desktop do VynPad (shell Tauri)."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -9,7 +9,7 @@ publish.workspace = true
 [lib]
 # O sufixo `_lib` evita conflito de nome entre lib e bin no Windows
 # (https://github.com/rust-lang/cargo/issues/8519).
-name = "padgaming_desktop_lib"
+name = "vynpad_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -17,13 +17,13 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 dirs.workspace = true
-padgaming-core.workspace = true
-padgaming-driver.workspace = true
-padgaming-mapping = { workspace = true, features = ["specta"] }
-padgaming-net.workspace = true
-padgaming-protocol.workspace = true
-padgaming-server.workspace = true
-padgaming-storage = { workspace = true, features = ["specta"] }
+vynpad-core.workspace = true
+vynpad-driver.workspace = true
+vynpad-mapping = { workspace = true, features = ["specta"] }
+vynpad-net.workspace = true
+vynpad-protocol.workspace = true
+vynpad-server.workspace = true
+vynpad-storage = { workspace = true, features = ["specta"] }
 serde.workspace = true
 serde_json.workspace = true
 specta = { version = "=2.0.0-rc.25", features = ["derive"] }
@@ -44,7 +44,7 @@ tauri-plugin-window-state = "2"
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }
-padgaming-driver = { workspace = true, features = ["mock"] }
+vynpad-driver = { workspace = true, features = ["mock"] }
 tempfile = "3"
 tauri = { version = "2", features = ["test"] }
 

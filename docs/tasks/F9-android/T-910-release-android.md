@@ -9,10 +9,10 @@
 | Status | ⬜ A fazer |
 
 ## Objetivo
-Publicar o client e fechar o ecossistema PadGaming 1.0.
+Publicar o client e fechar o ecossistema VynPad 1.0.
 
 ## Escopo
-- Testes: unit (protocolo, estado do input), instrumentados (fluxo de conexão com o server rodando no CI via `padgaming-sim`/server headless de teste), matriz de aparelhos (Samsung, Xiaomi, Motorola, Pixel; Android 8 a 15).
+- Testes: unit (protocolo, estado do input), instrumentados (fluxo de conexão com o server rodando no CI via `vynpad-sim`/server headless de teste), matriz de aparelhos (Samsung, Xiaomi, Motorola, Pixel; Android 8 a 15).
 - Medição ponta a ponta com câmera (procedimento da T-702) e registro em `docs/benchmarks/`.
 - Play Console: listing PT-BR/EN, screenshots, política de privacidade (sem coleta de dados), declaração de foreground service, App Bundle assinado (Play App Signing).
 - Faixas: interno → beta fechado → produção.

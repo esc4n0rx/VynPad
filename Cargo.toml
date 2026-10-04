@@ -10,13 +10,13 @@ publish = false
 
 [workspace.dependencies]
 # Crates internos
-padgaming-protocol = { path = "crates/padgaming-protocol" }
-padgaming-driver = { path = "crates/padgaming-driver" }
-padgaming-mapping = { path = "crates/padgaming-mapping" }
-padgaming-net = { path = "crates/padgaming-net" }
-padgaming-storage = { path = "crates/padgaming-storage" }
-padgaming-core = { path = "crates/padgaming-core" }
-padgaming-server = { path = "crates/padgaming-server" }
+vynpad-protocol = { path = "crates/vynpad-protocol" }
+vynpad-driver = { path = "crates/vynpad-driver" }
+vynpad-mapping = { path = "crates/vynpad-mapping" }
+vynpad-net = { path = "crates/vynpad-net" }
+vynpad-storage = { path = "crates/vynpad-storage" }
+vynpad-core = { path = "crates/vynpad-core" }
+vynpad-server = { path = "crates/vynpad-server" }
 
 # Externos (versões centralizadas)
 anyhow = "1"
@@ -30,7 +30,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 dirs = "7"
 
 [workspace.lints.rust]
-# O padgaming-driver libera pontualmente com #[allow(unsafe_code)] no módulo de FFI.
+# O vynpad-driver libera pontualmente com #[allow(unsafe_code)] no módulo de FFI.
 unsafe_code = "deny"
 
 [workspace.lints.clippy]
@@ -47,8 +47,8 @@ panic = "abort"
 strip = true
 
 # Hot path mais realista em builds de debug.
-[profile.dev.package.padgaming-protocol]
+[profile.dev.package.vynpad-protocol]
 opt-level = 1
 
-[profile.dev.package.padgaming-mapping]
+[profile.dev.package.vynpad-mapping]
 opt-level = 1
