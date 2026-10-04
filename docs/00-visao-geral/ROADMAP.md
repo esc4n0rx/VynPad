@@ -94,36 +94,36 @@ flowchart TD
 | [T-202](../tasks/F2-emulacao-windows/T-202-backend-vigem.md) | Backend ViGEmBus | P0 | M | T-201 | ✅ |
 | [T-203](../tasks/F2-emulacao-windows/T-203-slot-manager.md) | Slot Manager (4 controles) | P0 | M | T-202 | ✅ |
 | [T-204](../tasks/F2-emulacao-windows/T-204-rumble-server.md) | Rumble: driver → client | P1 | M | T-202, T-301 | ⬜ |
-| [T-205](../tasks/F2-emulacao-windows/T-205-deteccao-vigem-xinput.md) | Detecção/instalação do ViGEmBus e slots XInput | P0 | M | T-202 | ⬜ |
-| [T-206](../tasks/F2-emulacao-windows/T-206-pipeline-mapeamento.md) | Pipeline de mapeamento + gyro | P0 | G | T-201 | ⬜ |
+| [T-205](../tasks/F2-emulacao-windows/T-205-deteccao-vigem-xinput.md) | Detecção/instalação do ViGEmBus e slots XInput | P0 | M | T-202 | 🟨 |
+| [T-206](../tasks/F2-emulacao-windows/T-206-pipeline-mapeamento.md) | Pipeline de mapeamento + gyro | P0 | G | T-201 | 🟨 |
 
 ### F3 — Rede
 | ID | Task | Prio | Est. | Depende de | Status |
 |---|---|---|---|---|---|
 | [T-301](../tasks/F3-rede/T-301-udp-input-loop.md) | Loop UDP de input (hot path) | P0 | G | T-102, T-203, T-206 | ✅ |
 | [T-302](../tasks/F3-rede/T-302-control-server-tls.md) | Servidor de controle TLS | P0 | G | T-103, T-203 | ✅ |
-| [T-303](../tasks/F3-rede/T-303-descoberta-mdns.md) | Descoberta mDNS + broadcast | P0 | M | T-102 | ✅ |
-| [T-304](../tasks/F3-rede/T-304-ciclo-vida-sessao.md) | Ciclo de vida da sessão e reconexão | P0 | M | T-301, T-302 | ✅ |
+| [T-303](../tasks/F3-rede/T-303-descoberta-mdns.md) | Descoberta mDNS + broadcast | P0 | M | T-102 | 🟨 |
+| [T-304](../tasks/F3-rede/T-304-ciclo-vida-sessao.md) | Ciclo de vida da sessão e reconexão | P0 | M | T-301, T-302 | 🟨 |
 | [T-305](../tasks/F3-rede/T-305-metricas-latencia.md) | Métricas de latência | P1 | M | T-301 | ⬜ |
-| [T-306](../tasks/F3-rede/T-306-firewall-windows.md) | Regras de firewall do Windows | P0 | P | T-301 | ⬜ |
-| [T-307](../tasks/F3-rede/T-307-simulador-cli.md) | Simulador CLI `padgaming-sim` | P0 | M | T-102 | ⬜ |
+| [T-306](../tasks/F3-rede/T-306-firewall-windows.md) | Regras de firewall do Windows | P0 | P | T-301 | 🟨 |
+| [T-307](../tasks/F3-rede/T-307-simulador-cli.md) | Simulador CLI `padgaming-sim` | P0 | M | T-102 | 🟨 |
 
 ### F4 — Persistência
 | ID | Task | Prio | Est. | Depende de | Status |
 |---|---|---|---|---|---|
-| [T-401](../tasks/F4-persistencia/T-401-setup-sqlx.md) | Setup SQLite + sqlx + migrations | P0 | P | T-001 | ✅ |
+| [T-401](../tasks/F4-persistencia/T-401-setup-sqlx.md) | Setup SQLite + sqlx + migrations | P0 | P | T-001 | 🟨 |
 | [T-402](../tasks/F4-persistencia/T-402-schema-v1.md) | Schema v1 | P0 | M | T-401 | ✅ |
 | [T-403](../tasks/F4-persistencia/T-403-repositorios-commands.md) | Repositórios, serviços e commands | P0 | M | T-402, T-506 | ✅ |
 
 ### F5 — UI Shell
 | ID | Task | Prio | Est. | Depende de | Status |
 |---|---|---|---|---|---|
-| [T-501](../tasks/F5-ui-shell/T-501-design-system.md) | Design system: tokens + componentes base | P0 | G | T-002 | ⬜ |
-| [T-502](../tasks/F5-ui-shell/T-502-janela-vibrancy.md) | Janela custom: vidro, cantos, semáforo | P0 | M | T-002 | ⬜ |
-| [T-503](../tasks/F5-ui-shell/T-503-layout-navegacao.md) | Layout, sidebar, rotas e transições | P0 | M | T-501, T-502 | ⬜ |
-| [T-504](../tasks/F5-ui-shell/T-504-i18n.md) | i18n PT-BR / EN | P1 | P | T-503 | ⬜ |
-| [T-505](../tasks/F5-ui-shell/T-505-gamepad-svg-icones.md) | Gamepad SVG ao vivo + ícones | P0 | G | T-501 | ⬜ |
-| [T-506](../tasks/F5-ui-shell/T-506-bridge-tipada.md) | Bridge tipada Tauri ↔ React | P0 | M | T-002 | ✅ |
+| [T-501](../tasks/F5-ui-shell/T-501-design-system.md) | Design system: tokens + componentes base | P0 | G | T-002 | 🟨 |
+| [T-502](../tasks/F5-ui-shell/T-502-janela-vibrancy.md) | Janela custom: vidro, cantos, semáforo | P0 | M | T-002 | 🟨 |
+| [T-503](../tasks/F5-ui-shell/T-503-layout-navegacao.md) | Layout, sidebar, rotas e transições | P0 | M | T-501, T-502 | 🟨 |
+| [T-504](../tasks/F5-ui-shell/T-504-i18n.md) | i18n PT-BR / EN | P1 | P | T-503 | 🟨 |
+| [T-505](../tasks/F5-ui-shell/T-505-gamepad-svg-icones.md) | Gamepad SVG ao vivo + ícones | P0 | G | T-501 | 🟨 |
+| [T-506](../tasks/F5-ui-shell/T-506-bridge-tipada.md) | Bridge tipada Tauri ↔ React | P0 | M | T-002 | 🟨 |
 
 ### F6 — Features
 | ID | Task | Prio | Est. | Depende de | Status |
