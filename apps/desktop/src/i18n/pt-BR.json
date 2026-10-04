@@ -241,7 +241,132 @@
       "stick-right": "Analógico direito",
       "ls-click": "Clique do analógico esquerdo (L3)",
       "rs-click": "Clique do analógico direito (R3)"
-    }
+    },
+    "profiles": {
+      "title": "Perfis",
+      "list": "Lista de perfis",
+      "new": "Novo perfil",
+      "newName": "Novo perfil",
+      "duplicate": "Duplicar",
+      "rename": "Renomear",
+      "delete": "Excluir",
+      "import": "Importar",
+      "export": "Exportar",
+      "restore": "Restaurar padrão",
+      "builtin": "Embutido",
+      "icon": "Ícone do perfil",
+      "name": "Nome do perfil",
+      "copySuffix": "cópia",
+      "menu": "Ações do perfil {{name}}",
+      "imported": "Perfil “{{name}}” importado.",
+      "importFailed": "Esse arquivo não é um perfil válido.",
+      "restored": "Perfil Padrão restaurado.",
+      "none": "Nenhum perfil. Crie um para começar."
+    },
+    "confirmDelete": {
+      "title": "Excluir {{name}}?",
+      "body": "O perfil é apagado para sempre.",
+      "bodyInUse": "Ele está em uso: {{devices}} dispositivo(s) o têm como padrão e {{slots}} controle(s) o estão usando agora. Eles passam para o perfil Padrão.",
+      "delete": "Excluir",
+      "cancel": "Cancelar"
+    },
+    "confirmRestore": {
+      "title": "Restaurar o perfil Padrão?",
+      "body": "O perfil Padrão volta ao original. Seus outros perfis não mudam.",
+      "restore": "Restaurar"
+    },
+    "preview": {
+      "label": "Pré-visualizar com",
+      "none": "Nenhum",
+      "slot": "P{{n}}"
+    },
+    "save": {
+      "pending": "Alterações pendentes…",
+      "saving": "Salvando…",
+      "saved": "Salvo",
+      "error": "Não foi possível salvar",
+      "undo": "Desfazer",
+      "readOnly": "Perfil embutido: duplique para editar."
+    },
+    "tabs": {
+      "label": "Propriedades",
+      "controls": "Controles",
+      "gyro": "Gyro"
+    },
+    "panel": {
+      "empty": "Selecione um botão, gatilho ou analógico no controle para ajustar.",
+      "pad": "Controle X360. Escolha um elemento para editar."
+    },
+    "button": {
+      "title": "Botão {{name}}",
+      "mapTo": "Mapear para",
+      "none": "Nenhum (ignorar)",
+      "leftTrigger": "Gatilho esquerdo (LT)",
+      "rightTrigger": "Gatilho direito (RT)",
+      "turbo": "Turbo",
+      "turboRate": "Velocidade do turbo"
+    },
+    "stick": {
+      "title": "{{name}}",
+      "deadzoneInner": "Deadzone interna",
+      "deadzoneOuter": "Deadzone externa",
+      "shape": "Forma da deadzone",
+      "radial": "Circular",
+      "axial": "Por eixo",
+      "anti": "Anti-deadzone",
+      "sensitivity": "Sensibilidade",
+      "invertX": "Inverter X",
+      "invertY": "Inverter Y",
+      "swap": "Trocar esquerdo ↔ direito",
+      "diagram": "Deadzones do analógico: interna {{inner}}%, externa {{outer}}%"
+    },
+    "curve": {
+      "label": "Curva de resposta",
+      "type": "Curva",
+      "linear": "Linear",
+      "exponential": "Exponencial",
+      "custom": "Personalizada",
+      "exponent": "Expoente",
+      "point": "Ponto {{n}} da curva",
+      "pointValue": "entrada {{x}}%, saída {{y}}%"
+    },
+    "trigger": {
+      "title": "{{name}}",
+      "deadzone": "Deadzone",
+      "fullPoint": "Ponto máximo",
+      "digital": "Modo digital"
+    },
+    "gyro": {
+      "title": "Gyro",
+      "enabled": "Ativar o gyro",
+      "mode": "Quando age",
+      "always": "Sempre",
+      "whileHeld": "Segurando",
+      "toggle": "Alternar",
+      "button": "Botão do modo",
+      "target": "Analógico alvo",
+      "left": "Esquerdo",
+      "right": "Direito",
+      "axisX": "Movimento do eixo X",
+      "axisY": "Movimento do eixo Y",
+      "yaw": "Virar para os lados",
+      "pitch": "Inclinar para cima e para baixo",
+      "roll": "Girar como um volante",
+      "sensitivityX": "Sensibilidade X",
+      "sensitivityY": "Sensibilidade Y",
+      "invertX": "Inverter X",
+      "invertY": "Inverter Y",
+      "deadzone": "Deadzone do gyro",
+      "smoothing": "Suavização",
+      "cutoff": "Frequência de corte",
+      "beta": "Reação a movimentos rápidos",
+      "recenter": "Botão de recentralizar",
+      "recenterNone": "Nenhum",
+      "mix": "Somar ao analógico"
+    },
+    "percent": "{{value}}%",
+    "hz": "{{value}} Hz",
+    "multiplier": "{{value}}×"
   },
   "latency": {
     "title": "Latência",

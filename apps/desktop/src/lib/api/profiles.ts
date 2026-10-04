@@ -20,7 +20,9 @@ export function useSaveProfile() {
   return useMutation({
     mutationFn: (args: { id: string | null; input: ProfileInputDto }) =>
       commands.saveProfile(args.id, args.input),
-    onSuccess: async () => {
+    onSuccess: async (saved) => {
+      // O editor lê o perfil do cache ao reabrir: mantém o que acabou de ser gravado.
+      queryClient.setQueryData(keys.profile(saved.summary.id), saved);
       await queryClient.invalidateQueries({ queryKey: keys.profiles });
     },
   });

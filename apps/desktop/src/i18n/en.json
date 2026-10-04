@@ -241,7 +241,132 @@
       "stick-right": "Right stick",
       "ls-click": "Left stick click (L3)",
       "rs-click": "Right stick click (R3)"
-    }
+    },
+    "profiles": {
+      "title": "Profiles",
+      "list": "Profile list",
+      "new": "New profile",
+      "newName": "New profile",
+      "duplicate": "Duplicate",
+      "rename": "Rename",
+      "delete": "Delete",
+      "import": "Import",
+      "export": "Export",
+      "restore": "Restore default",
+      "builtin": "Built-in",
+      "icon": "Profile icon",
+      "name": "Profile name",
+      "copySuffix": "copy",
+      "menu": "Actions for profile {{name}}",
+      "imported": "Profile “{{name}}” imported.",
+      "importFailed": "That file is not a valid profile.",
+      "restored": "Default profile restored.",
+      "none": "No profiles. Create one to start."
+    },
+    "confirmDelete": {
+      "title": "Delete {{name}}?",
+      "body": "The profile is deleted for good.",
+      "bodyInUse": "It is in use: {{devices}} device(s) have it as default and {{slots}} controller(s) are using it right now. They switch to the Default profile.",
+      "delete": "Delete",
+      "cancel": "Cancel"
+    },
+    "confirmRestore": {
+      "title": "Restore the Default profile?",
+      "body": "The Default profile goes back to the original. Your other profiles don’t change.",
+      "restore": "Restore"
+    },
+    "preview": {
+      "label": "Preview with",
+      "none": "None",
+      "slot": "P{{n}}"
+    },
+    "save": {
+      "pending": "Pending changes…",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "error": "Could not save",
+      "undo": "Undo",
+      "readOnly": "Built-in profile: duplicate it to edit."
+    },
+    "tabs": {
+      "label": "Properties",
+      "controls": "Controls",
+      "gyro": "Gyro"
+    },
+    "panel": {
+      "empty": "Select a button, trigger or stick on the controller to adjust it.",
+      "pad": "X360 controller. Pick an element to edit."
+    },
+    "button": {
+      "title": "Button {{name}}",
+      "mapTo": "Map to",
+      "none": "None (ignore)",
+      "leftTrigger": "Left trigger (LT)",
+      "rightTrigger": "Right trigger (RT)",
+      "turbo": "Turbo",
+      "turboRate": "Turbo speed"
+    },
+    "stick": {
+      "title": "{{name}}",
+      "deadzoneInner": "Inner deadzone",
+      "deadzoneOuter": "Outer deadzone",
+      "shape": "Deadzone shape",
+      "radial": "Circular",
+      "axial": "Per axis",
+      "anti": "Anti-deadzone",
+      "sensitivity": "Sensitivity",
+      "invertX": "Invert X",
+      "invertY": "Invert Y",
+      "swap": "Swap left ↔ right",
+      "diagram": "Stick deadzones: inner {{inner}}%, outer {{outer}}%"
+    },
+    "curve": {
+      "label": "Response curve",
+      "type": "Curve",
+      "linear": "Linear",
+      "exponential": "Exponential",
+      "custom": "Custom",
+      "exponent": "Exponent",
+      "point": "Curve point {{n}}",
+      "pointValue": "input {{x}}%, output {{y}}%"
+    },
+    "trigger": {
+      "title": "{{name}}",
+      "deadzone": "Deadzone",
+      "fullPoint": "Max point",
+      "digital": "Digital mode"
+    },
+    "gyro": {
+      "title": "Gyro",
+      "enabled": "Turn the gyro on",
+      "mode": "When it acts",
+      "always": "Always",
+      "whileHeld": "While held",
+      "toggle": "Toggle",
+      "button": "Mode button",
+      "target": "Target stick",
+      "left": "Left",
+      "right": "Right",
+      "axisX": "X axis motion",
+      "axisY": "Y axis motion",
+      "yaw": "Turn sideways",
+      "pitch": "Tilt up and down",
+      "roll": "Rotate like a wheel",
+      "sensitivityX": "X sensitivity",
+      "sensitivityY": "Y sensitivity",
+      "invertX": "Invert X",
+      "invertY": "Invert Y",
+      "deadzone": "Gyro deadzone",
+      "smoothing": "Smoothing",
+      "cutoff": "Cutoff frequency",
+      "beta": "Fast-motion response",
+      "recenter": "Recenter button",
+      "recenterNone": "None",
+      "mix": "Add to the stick"
+    },
+    "percent": "{{value}}%",
+    "hz": "{{value}} Hz",
+    "multiplier": "{{value}}×"
   },
   "latency": {
     "title": "Latency",

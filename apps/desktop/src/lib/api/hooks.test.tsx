@@ -109,8 +109,9 @@ describe("perfis", () => {
 
   it("salvar um perfil refaz a lista", async () => {
     commands.listProfiles.mockResolvedValue([]);
-    commands.saveProfile.mockResolvedValue({});
-    const { wrapper } = setup();
+    const saved = { summary: { id: "p1", name: "x" }, profile: {} };
+    commands.saveProfile.mockResolvedValue(saved);
+    const { wrapper, queryClient } = setup();
     const list = renderHook(() => useProfiles(), { wrapper });
     await waitFor(() => expect(commands.listProfiles).toHaveBeenCalledTimes(1));
 
@@ -123,5 +124,7 @@ describe("perfis", () => {
     });
     await waitFor(() => expect(commands.listProfiles).toHaveBeenCalledTimes(2));
     expect(list.result.current.isError).toBe(false);
+    // O perfil gravado fica no cache para o editor reabrir sem ler de novo.
+    expect(queryClient.getQueryData(["profiles", "p1"])).toEqual(saved);
   });
 });

@@ -1,5 +1,5 @@
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -90,8 +90,10 @@ describe("shell", () => {
     await screen.findByRole("navigation", { name: "Seções" });
 
     fireEvent.keyDown(window, { key: "3", ctrlKey: true });
-    await screen.findByText("Esta tela chega na T-604.");
-    expect(router.state.location.pathname).toBe("/mapping");
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe("/mapping");
+    });
+    expect(await screen.findByRole("complementary", { name: "Lista de perfis" })).toBeTruthy();
 
     fireEvent.keyDown(window, { key: ",", ctrlKey: true });
     await screen.findByText("Esta tela chega na T-605.");
