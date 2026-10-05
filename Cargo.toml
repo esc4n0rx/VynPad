@@ -46,6 +46,16 @@ codegen-units = 1
 panic = "abort"
 strip = true
 
+# Builds de debug enxutos: sem cache incremental e só com tabelas de linhas (backtraces
+# continuam úteis), o que evita `target/` na casa das dezenas de GB.
+[profile.dev]
+incremental = false
+debug = "line-tables-only"
+
+# Dependências de terceiros sem símbolos de debug.
+[profile.dev.package."*"]
+debug = false
+
 # Hot path mais realista em builds de debug.
 [profile.dev.package.vynpad-protocol]
 opt-level = 1
