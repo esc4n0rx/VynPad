@@ -94,6 +94,8 @@ fun VynApp() {
     val session by pairing.session.state.collectAsState()
     val padState = remember { GamepadState() }
     val rttMicros by pairing.session.rttMicros.collectAsState()
+    val gyroActive by pairing.session.gyroActive.collectAsState()
+    val gyroCalibrating by pairing.session.gyroCalibrating.collectAsState()
     // O controle na tela alimenta o envio ao PC assim que há uma sessão.
     LaunchedEffect(pairing, padState) { pairing.session.bindInput(padState) }
     LaunchedEffect(pairing, rumble) { pairing.session.setRumble(rumble) }
@@ -145,6 +147,9 @@ fun VynApp() {
                                     state = padState,
                                     session = session,
                                     rttMicros = rttMicros,
+                                    gyroActive = gyroActive,
+                                    gyroCalibrating = gyroCalibrating,
+                                    onRecenterGyro = { pairing.session.recenterGyro() },
                                     onBack = { screen = Screen.Connect },
                                     onDisconnect = { pairing.session.disconnect() },
                                     modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),

@@ -115,5 +115,7 @@
     <string name="gamepad_preview">Prévia</string>
     <string name="gamepad_menu_title">Pausado</string>
     <string name="gamepad_resume">Continuar</string>
+    <string name="gyro_recenter">Recentralizar gyro</string>
+    <string name="gyro_hold_still">Segure parado…</string>
     <string name="gamepad_leave">Sair do gamepad</string>
 </resources>

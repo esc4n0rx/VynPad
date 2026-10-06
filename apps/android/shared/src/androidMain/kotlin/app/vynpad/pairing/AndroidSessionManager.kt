@@ -65,11 +65,20 @@ internal class AndroidSessionManager(
     private var rttSamples = 0
     override val rttMicros: StateFlow<Int?> = _rtt.asStateFlow()
 
+    private val _gyroActive = MutableStateFlow(false)
+    override val gyroActive: StateFlow<Boolean> = _gyroActive.asStateFlow()
+
+    private val motion = MotionSensors(appContext) { sample -> pump?.setMotion(sample) }
+    override val gyroCalibrating: StateFlow<Boolean> = motion.calibrating
+
+    override fun recenterGyro() = motion.recalibrate()
+
     private val rumble = RumbleVibrator(appContext, scope)
     private var rumbleSettings = RumbleSettings()
 
     private val lock = Any()
     private var connection: ControlConnection? = null
+    @Volatile
     private var pump: InputPump? = null
     private var padState: GamepadState? = null
     private var target: PairedServer? = null
@@ -138,6 +147,7 @@ internal class AndroidSessionManager(
         conn.start(
             object : SessionListener {
                 override fun onConfig(config: ConfigInfo) {
+                    applyGyro(config.gyroEnabled)
                     val current = _state.value
                     if (current is SessionState.Connected && current.slot != config.slot.toInt()) {
                         _state.value = current.copy(slot = config.slot.toInt())
@@ -185,6 +195,7 @@ internal class AndroidSessionManager(
         }
         _rtt.value = null
         rttSamples = 0
+        applyGyro(conn.welcome().gyroEnabled)
         acquireWifiLock()
         batteryJob = scope.launch {
             while (isActive) {
@@ -201,10 +212,27 @@ internal class AndroidSessionManager(
         }
         batteryJob?.cancel()
         batteryJob = null
+        applyGyro(false)
         rumble.reset()
         releaseWifiLock()
         _rtt.value = null
         engine?.let { runCatching { it.stop() } }
+    }
+
+    /**
+     * Liga ou desliga os sensores conforme o `config` do PC. Desligado, o motor volta a mandar só
+     * o estado do controle (`0x01`) e nenhum sensor fica registrado.
+     */
+    private fun applyGyro(enabled: Boolean) {
+        val engine = synchronized(lock) { pump }
+        if (enabled && engine != null && motion.available) {
+            motion.start()
+            _gyroActive.value = true
+        } else {
+            motion.stop()
+            engine?.clearMotion()
+            _gyroActive.value = false
+        }
     }
 
     /** Liga o controle da tela ao motor: cada mudança vai direto, sem passar pelo Compose. */

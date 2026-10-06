@@ -38,6 +38,15 @@ interface SessionManager {
     /** Latência de rede até o PC (suavizada), em µs; nula sem sessão ou antes do primeiro pong. */
     val rttMicros: StateFlow<Int?>
 
+    /** `true` enquanto os sensores de movimento estão ligados (o PC pediu gyro neste controle). */
+    val gyroActive: StateFlow<Boolean>
+
+    /** `true` enquanto o gyro mede o viés: o usuário deve segurar o celular parado. */
+    val gyroCalibrating: StateFlow<Boolean>
+
+    /** Mede o viés do gyro de novo (recentraliza); o celular precisa ficar parado por ~2 s. */
+    fun recenterGyro()
+
     /** Passa a enviar ao PC tudo o que mudar em [state] (o controle na tela). */
     fun bindInput(state: GamepadState)
 

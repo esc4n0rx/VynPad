@@ -6,7 +6,7 @@
 | Prioridade | P1 |
 | Estimativa | M |
 | Depende de | T-906 |
-| Status | ⬜ A fazer |
+| Status | ✅ Concluída (validada no aparelho) |
 
 ## Objetivo
 Mira por movimento: o celular inclina e o analógico se move (a lógica de mapeamento fica no server, conforme D-08).
@@ -20,8 +20,8 @@ Mira por movimento: o celular inclina e o analógico se move (a lógica de mapea
 - Botão de recentralizar no menu de pausa.
 
 ## Critérios de aceite
-- [ ] Com o perfil "gyro no stick direito", a mira num FPS responde de forma suave e sem drift perceptível em 60 s.
-- [ ] Desligar o gyro no server desliga os sensores (economia de bateria).
+- [x] Com o perfil "gyro no stick direito", a mira num FPS responde de forma suave e sem drift perceptível em 60 s.
+- [x] Desligar o gyro no server desliga os sensores (economia de bateria).
 
 ## Fora de escopo
 - Emular motion do DualShock (fora do escopo X360).

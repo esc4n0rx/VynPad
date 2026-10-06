@@ -34,6 +34,8 @@ import app.vynpad.resources.gamepad_menu_title
 import app.vynpad.resources.gamepad_player_n
 import app.vynpad.resources.gamepad_preview
 import app.vynpad.resources.gamepad_resume
+import app.vynpad.resources.gyro_hold_still
+import app.vynpad.resources.gyro_recenter
 import app.vynpad.resources.session_disconnect
 import app.vynpad.ui.PlatformBackHandler
 import app.vynpad.ui.components.ButtonKind
@@ -60,6 +62,9 @@ fun GamepadScreen(
     state: GamepadState,
     session: SessionState,
     rttMicros: Int?,
+    gyroActive: Boolean,
+    gyroCalibrating: Boolean,
+    onRecenterGyro: () -> Unit,
     onBack: () -> Unit,
     onDisconnect: () -> Unit,
     modifier: Modifier = Modifier,
@@ -131,6 +136,15 @@ fun GamepadScreen(
         VynSheet(visible = menuOpen, onDismiss = { menuOpen = false }, maxWidth = 380.dp) {
             VynText(stringResource(Res.string.gamepad_menu_title), style = t.title)
             VynButton(stringResource(Res.string.gamepad_resume), { menuOpen = false }, modifier = Modifier.fillMaxWidth())
+            if (connected != null && gyroActive) {
+                VynButton(
+                    stringResource(if (gyroCalibrating) Res.string.gyro_hold_still else Res.string.gyro_recenter),
+                    onRecenterGyro,
+                    kind = ButtonKind.Secondary,
+                    enabled = !gyroCalibrating,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
             if (connected != null) {
                 VynButton(
                     stringResource(Res.string.session_disconnect),
