@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Splash do sistema (Android 12+): mesmo grafite do app, com o ícone, e a abertura animada continua dali. -->
+    <style name="Theme.VynPad" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/vynpad_window</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowSplashScreenBackground">@color/vynpad_window</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+    </style>
+</resources>

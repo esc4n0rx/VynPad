@@ -8,11 +8,40 @@
     <string name="connect_tagline">Seu celular, seu controle.</string>
     <string name="connect_empty_title">Nenhum PC encontrado</string>
     <string name="connect_empty_body">Abra o VynPad no PC e confirme que os dois estão na mesma rede Wi-Fi.</string>
+    <string name="connect_scanning_title">Procurando na sua rede…</string>
+    <string name="connect_scanning_body">Mantenha o VynPad aberto no PC.</string>
+    <string name="connect_found_title">PCs encontrados: %1$d</string>
+    <string name="connect_found_body">Toque num PC no radar ou na lista.</string>
     <string name="connect_search">Procurar PCs</string>
+    <string name="connect_search_again">Procurar de novo</string>
     <string name="connect_searching">Procurando…</string>
+    <string name="connect_add_ip">Adicionar por IP</string>
+    <string name="connect_list_title">Na sua rede</string>
     <string name="connect_preview_gamepad">Pré-visualizar o gamepad</string>
     <string name="status_offline">Offline</string>
     <string name="status_searching">Procurando</string>
+    <string name="status_found">Encontrado</string>
+
+    <string name="pc_slots_free">%1$d slots livres</string>
+    <string name="pc_slots_full">Sem slots livres</string>
+    <string name="pc_new">Novo</string>
+    <string name="pc_manual">Manual</string>
+    <string name="pc_address">Endereço</string>
+    <string name="pc_system">Sistema</string>
+    <string name="pc_slots">Slots</string>
+    <string name="pc_fingerprint">Impressão digital</string>
+    <string name="pc_found_via">Encontrado por</string>
+    <string name="via_mdns">mDNS</string>
+    <string name="via_broadcast">Broadcast</string>
+    <string name="via_manual">Manual</string>
+    <string name="pc_pair">Parear</string>
+    <string name="pc_pair_soon">O pareamento chega na próxima etapa.</string>
+    <string name="action_close">Fechar</string>
+
+    <string name="manual_title">Adicionar PC por IP</string>
+    <string name="manual_hint">Exemplo: 192.168.0.10 ou 192.168.0.10:47800</string>
+    <string name="manual_error">Digite um IPv4 válido, com porta opcional de 1 a 65535.</string>
+    <string name="manual_add">Adicionar</string>
 
     <string name="settings_title">Ajustes</string>
     <string name="settings_appearance">Aparência</string>

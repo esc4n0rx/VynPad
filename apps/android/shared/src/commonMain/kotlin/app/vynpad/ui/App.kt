@@ -1,6 +1,7 @@
 package app.vynpad.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -27,6 +28,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +39,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import app.vynpad.discovery.DiscoveredPc
+import app.vynpad.discovery.rememberDiscoveryEngine
 import app.vynpad.resources.Res
 import app.vynpad.resources.nav_connect
 import app.vynpad.resources.nav_settings
@@ -48,7 +53,10 @@ import app.vynpad.ui.haptics.LocalHaptics
 import app.vynpad.ui.haptics.ProvideHaptics
 import app.vynpad.ui.screens.ConnectScreen
 import app.vynpad.ui.screens.GamepadScreen
+import app.vynpad.ui.screens.ManualPcSheet
+import app.vynpad.ui.screens.PcSheet
 import app.vynpad.ui.screens.SettingsScreen
+import app.vynpad.ui.screens.SplashScreen
 import app.vynpad.ui.theme.PageTransitionMillis
 import app.vynpad.ui.theme.PageTransitionOffsetDp
 import app.vynpad.ui.theme.ThemeMode
@@ -64,49 +72,85 @@ fun VynApp() {
     var screen by remember { mutableStateOf(Screen.Connect) }
     var themeMode by remember { mutableStateOf(ThemeMode.Dark) }
     var hapticsEnabled by remember { mutableStateOf(true) }
-    var searching by remember { mutableStateOf(false) }
+    var splashDone by remember { mutableStateOf(false) }
+    var selectedPc by remember { mutableStateOf<DiscoveredPc?>(null) }
+    var manualOpen by remember { mutableStateOf(false) }
+
+    val engine = rememberDiscoveryEngine()
+    val pcs by engine.pcs.collectAsState()
+    val status by engine.status.collectAsState()
+
+    // A busca e o anúncio do celular só existem enquanto a tela Conectar está aberta.
+    LaunchedEffect(screen, splashDone) {
+        if (!splashDone) return@LaunchedEffect
+        if (screen == Screen.Connect) engine.start() else engine.stop()
+    }
 
     val offsetPx = with(LocalDensity.current) { PageTransitionOffsetDp.dp.roundToPx() }
 
     VynTheme(themeMode) {
         ProvideHaptics(hapticsEnabled) {
+            PlatformBackHandler(enabled = manualOpen) { manualOpen = false }
+            PlatformBackHandler(enabled = selectedPc != null) { selectedPc = null }
             PlatformBackHandler(enabled = screen == Screen.Gamepad) { screen = Screen.Connect }
             ImmersiveLandscapeEffect(active = screen == Screen.Gamepad)
 
             VynBackground {
-                AnimatedContent(
-                    targetState = screen,
-                    transitionSpec = {
-                        (fadeIn(tween(PageTransitionMillis, delayMillis = 40)) +
-                            slideInVertically(tween(PageTransitionMillis)) { offsetPx })
-                            .togetherWith(fadeOut(tween(PageTransitionMillis / 2)))
-                    },
-                    label = "screen",
-                ) { target ->
-                    when (target) {
-                        Screen.Gamepad -> GamepadScreen(
-                            onBack = { screen = Screen.Connect },
-                            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
-                        )
-                        else -> Shell(
-                            tab = target,
-                            onTab = { screen = it },
-                        ) {
+                Crossfade(targetState = splashDone, animationSpec = tween(350), label = "splash") { done ->
+                    if (!done) {
+                        SplashScreen(onFinished = { splashDone = true })
+                    } else {
+                        AnimatedContent(
+                            targetState = screen,
+                            transitionSpec = {
+                                (fadeIn(tween(PageTransitionMillis, delayMillis = 40)) +
+                                    slideInVertically(tween(PageTransitionMillis)) { offsetPx })
+                                    .togetherWith(fadeOut(tween(PageTransitionMillis / 2)))
+                            },
+                            label = "screen",
+                        ) { target ->
                             when (target) {
-                                Screen.Settings -> SettingsScreen(
-                                    themeMode = themeMode,
-                                    onThemeMode = { themeMode = it },
-                                    hapticsEnabled = hapticsEnabled,
-                                    onHapticsEnabled = { hapticsEnabled = it },
+                                Screen.Gamepad -> GamepadScreen(
+                                    onBack = { screen = Screen.Connect },
+                                    modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
                                 )
-                                else -> ConnectScreen(
-                                    searching = searching,
-                                    onToggleSearch = { searching = !searching },
-                                    onPreviewGamepad = { screen = Screen.Gamepad },
-                                )
+                                else -> Shell(tab = target, onTab = { screen = it }) {
+                                    when (target) {
+                                        Screen.Settings -> SettingsScreen(
+                                            themeMode = themeMode,
+                                            onThemeMode = { themeMode = it },
+                                            hapticsEnabled = hapticsEnabled,
+                                            onHapticsEnabled = { hapticsEnabled = it },
+                                        )
+                                        else -> ConnectScreen(
+                                            pcs = pcs,
+                                            status = status,
+                                            onSearch = { engine.start() },
+                                            onSelectPc = { selectedPc = it },
+                                            onAddByIp = { manualOpen = true },
+                                            onPreviewGamepad = { screen = Screen.Gamepad },
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
+                }
+
+                if (splashDone && screen == Screen.Connect) {
+                    PcSheet(pc = selectedPc, onDismiss = { selectedPc = null })
+                    ManualPcSheet(
+                        visible = manualOpen,
+                        onDismiss = { manualOpen = false },
+                        onAdd = { text ->
+                            val added = engine.addManual(text)
+                            if (added != null) {
+                                manualOpen = false
+                                selectedPc = added
+                            }
+                            added != null
+                        },
+                    )
                 }
             }
         }
@@ -135,7 +179,7 @@ private fun TabBar(selected: Screen, onSelect: (Screen) -> Unit, modifier: Modif
         TabItem(Screen.Settings, VynIcon.Settings, Res.string.nav_settings),
     )
     val index = items.indexOfFirst { it.screen == selected }.coerceAtLeast(0)
-    GlassCard(modifier, radius = 32.dp) {
+    GlassCard(modifier, radius = 32.dp, base = c.windowSolid.copy(alpha = 0.90f)) {
         BoxWithConstraints(Modifier.padding(6.dp)) {
             val itemWidth = 132.dp
             val x by animateDpAsState(itemWidth * index, vynSpring())

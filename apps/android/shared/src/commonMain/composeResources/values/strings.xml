@@ -8,11 +8,40 @@
     <string name="connect_tagline">Your phone, your gamepad.</string>
     <string name="connect_empty_title">No PC found yet</string>
     <string name="connect_empty_body">Open VynPad on your PC and make sure both devices are on the same Wi-Fi network.</string>
+    <string name="connect_scanning_title">Searching your network…</string>
+    <string name="connect_scanning_body">Keep VynPad open on your PC.</string>
+    <string name="connect_found_title">PCs found: %1$d</string>
+    <string name="connect_found_body">Tap a PC on the radar or in the list.</string>
     <string name="connect_search">Search for PCs</string>
+    <string name="connect_search_again">Search again</string>
     <string name="connect_searching">Searching…</string>
+    <string name="connect_add_ip">Add by IP</string>
+    <string name="connect_list_title">On your network</string>
     <string name="connect_preview_gamepad">Preview gamepad</string>
     <string name="status_offline">Offline</string>
     <string name="status_searching">Searching</string>
+    <string name="status_found">Found</string>
+
+    <string name="pc_slots_free">%1$d free slots</string>
+    <string name="pc_slots_full">No free slots</string>
+    <string name="pc_new">New</string>
+    <string name="pc_manual">Manual</string>
+    <string name="pc_address">Address</string>
+    <string name="pc_system">System</string>
+    <string name="pc_slots">Slots</string>
+    <string name="pc_fingerprint">Fingerprint</string>
+    <string name="pc_found_via">Found via</string>
+    <string name="via_mdns">mDNS</string>
+    <string name="via_broadcast">Broadcast</string>
+    <string name="via_manual">Manual</string>
+    <string name="pc_pair">Pair</string>
+    <string name="pc_pair_soon">Pairing arrives in the next step.</string>
+    <string name="action_close">Close</string>
+
+    <string name="manual_title">Add PC by IP</string>
+    <string name="manual_hint">Example: 192.168.0.10 or 192.168.0.10:47800</string>
+    <string name="manual_error">Enter a valid IPv4 address, optionally followed by a port from 1 to 65535.</string>
+    <string name="manual_add">Add</string>
 
     <string name="settings_title">Settings</string>
     <string name="settings_appearance">Appearance</string>

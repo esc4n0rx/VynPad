@@ -62,6 +62,7 @@ fun GlassCard(
     modifier: Modifier = Modifier,
     radius: Dp = VynRadius.xl,
     glow: Color? = null,
+    base: Color = Color.Transparent,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val c = VynTheme.colors
@@ -78,6 +79,7 @@ fun GlassCard(
                 ),
             )
             .clip(shape)
+            .background(base)
             .background(c.elevated)
             .background(Brush.verticalGradient(listOf(c.shine, Color.Transparent), endY = 160f))
             .border(

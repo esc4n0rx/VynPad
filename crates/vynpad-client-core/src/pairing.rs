@@ -52,6 +52,8 @@ pub struct DiscoveredServer {
     pub free_slots: u8,
     /// 8 primeiros bytes do fingerprint em hex (identificação visual, não substitui o pinning).
     pub short_fingerprint: String,
+    /// IPv4 pelos quais o server respondeu (vazio quando só se conhece o JSON).
+    pub hosts: Vec<String>,
 }
 
 /// Lê (e valida) a resposta JSON de um server ao broadcast.
@@ -67,6 +69,7 @@ pub fn parse_discovery_response(json: &[u8]) -> Result<DiscoveredServer, CoreErr
         os: r.os,
         free_slots: r.free,
         short_fingerprint: r.fp,
+        hosts: Vec::new(),
     })
 }
 

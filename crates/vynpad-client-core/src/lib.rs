@@ -10,6 +10,7 @@
 
 mod error;
 mod pairing;
+mod scan;
 mod session;
 mod types;
 
@@ -18,6 +19,7 @@ pub use pairing::{
     DiscoveredServer, PairingInfo, discovery_port, discovery_request, parse_discovery_response,
     parse_pairing_uri,
 };
+pub use scan::{BroadcastScanner, ScanListener};
 pub use session::ClientSession;
 pub use types::{GamepadInput, MotionSample, ReceivedPacket};
 
