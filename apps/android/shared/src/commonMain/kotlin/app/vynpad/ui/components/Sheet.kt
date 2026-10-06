@@ -18,11 +18,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.vynpad.ui.theme.vynSpring
 
@@ -35,6 +37,8 @@ fun VynSheet(
     visible: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Largura máxima do cartão (em paisagem uma folha de tela inteira ficaria desproporcional). */
+    maxWidth: Dp = 560.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val c = app.vynpad.ui.theme.VynTheme.colors
@@ -60,6 +64,7 @@ fun VynSheet(
             ) {
                 GlassCard(
                     Modifier
+                        .widthIn(max = maxWidth)
                         .fillMaxWidth()
                         // Engole os toques: tocar no cartão não fecha a folha.
                         .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {},

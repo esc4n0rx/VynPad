@@ -6,78 +6,146 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import app.vynpad.input.GamepadState
+import app.vynpad.pairing.SessionState
 import app.vynpad.resources.Res
-import app.vynpad.resources.gamepad_back
-import app.vynpad.resources.gamepad_player
-import app.vynpad.resources.gamepad_wip
+import app.vynpad.resources.gamepad_leave
+import app.vynpad.resources.gamepad_menu_title
+import app.vynpad.resources.gamepad_player_n
+import app.vynpad.resources.gamepad_preview
+import app.vynpad.resources.gamepad_resume
+import app.vynpad.resources.session_disconnect
+import app.vynpad.ui.PlatformBackHandler
+import app.vynpad.ui.components.ButtonKind
 import app.vynpad.ui.components.GlassCard
+import app.vynpad.ui.components.VynButton
 import app.vynpad.ui.components.VynIcon
 import app.vynpad.ui.components.VynIconView
+import app.vynpad.ui.components.VynSheet
 import app.vynpad.ui.components.VynText
+import app.vynpad.ui.gamepad.GamepadSurface
+import app.vynpad.ui.gamepad.PadFeedback
 import app.vynpad.ui.haptics.LocalHaptics
 import app.vynpad.ui.theme.VynTheme
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Tela do gamepad: landscape, tela cheia e imersiva (o chamador aplica isso). Por ora é só o
- * invólucro (voltar, jogador e o glow do slot); o layout multitouch entra na subtask E.
+ * Tela do gamepad: paisagem, imersiva e com a tela sempre ligada (o chamador liga isso).
+ * O controle ocupa tudo; só há uma pílula de status no topo (jogador, PC) que abre o menu.
  */
 @Composable
-fun GamepadScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun GamepadScreen(
+    state: GamepadState,
+    session: SessionState,
+    onBack: () -> Unit,
+    onDisconnect: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val c = VynTheme.colors
     val t = VynTheme.typography
     val haptics = LocalHaptics.current
-    val slot = c.slot(0)
+    var menuOpen by remember { mutableStateOf(false) }
+
+    val connected = session as? SessionState.Connected
+    val slot = connected?.slot ?: 0
+    val accent = c.slot(slot)
+
+    val feedback = remember(haptics) {
+        object : PadFeedback {
+            override fun press() = haptics.press()
+            override fun slide() = haptics.tick()
+            override fun detent() = haptics.tick()
+        }
+    }
+
+    // Voltar abre o menu (em vez de sair sem querer no meio do jogo); com o menu aberto, fecha-o.
+    PlatformBackHandler(enabled = true) { menuOpen = !menuOpen }
+
     val pulse by rememberInfiniteTransition().animateFloat(
-        initialValue = 0.55f,
+        initialValue = 0.5f,
         targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(1600), RepeatMode.Reverse),
+        animationSpec = infiniteRepeatable(tween(1400), RepeatMode.Reverse),
     )
+
     Box(modifier.fillMaxSize()) {
-        Row(
-            Modifier.padding(20.dp).align(Alignment.TopStart),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        GamepadSurface(state = state, accent = accent, feedback = feedback, enabled = !menuOpen)
+
+        // Pílula de status: jogador e PC; tocar abre o menu.
+        GlassCard(
+            Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 10.dp)
+                .clip(CircleShape)
+                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                    haptics.tick()
+                    menuOpen = true
+                },
+            radius = 28.dp,
+            base = c.windowSolid.copy(alpha = 0.7f),
         ) {
-            Box(
-                Modifier
-                    .size(44.dp)
-                    .background(c.control, CircleShape)
-                    .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                        haptics.tick()
-                        onBack()
-                    },
-                contentAlignment = Alignment.Center,
+            Row(
+                Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                VynIconView(VynIcon.Back, tint = c.textPrimary, size = 22.dp)
-            }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(Modifier.size(10.dp).alpha(pulse).background(slot, CircleShape))
-                VynText(stringResource(Res.string.gamepad_player), style = t.bodyStrong)
+                Box(Modifier.size(10.dp).alpha(if (connected != null) pulse else 0.4f).background(accent, CircleShape))
+                VynText(
+                    if (connected != null) {
+                        stringResource(Res.string.gamepad_player_n, slot + 1) + " · " + connected.serverName
+                    } else {
+                        stringResource(Res.string.gamepad_preview)
+                    },
+                    style = t.bodyStrong,
+                    maxLines = 1,
+                )
+                VynIconView(VynIcon.Menu, tint = c.textSecondary, size = 20.dp)
             }
         }
-        GlassCard(Modifier.align(Alignment.Center), glow = slot) {
-            Column(Modifier.padding(horizontal = 32.dp, vertical = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                VynIconView(VynIcon.Gamepad, tint = slot, size = 40.dp)
-                VynText(stringResource(Res.string.gamepad_wip), style = t.body, color = c.textSecondary, modifier = Modifier.padding(top = 10.dp))
+
+        VynSheet(visible = menuOpen, onDismiss = { menuOpen = false }, maxWidth = 380.dp) {
+            VynText(stringResource(Res.string.gamepad_menu_title), style = t.title)
+            VynButton(stringResource(Res.string.gamepad_resume), { menuOpen = false }, modifier = Modifier.fillMaxWidth())
+            if (connected != null) {
+                VynButton(
+                    stringResource(Res.string.session_disconnect),
+                    {
+                        menuOpen = false
+                        onDisconnect()
+                        onBack()
+                    },
+                    kind = ButtonKind.Destructive,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
+            VynButton(
+                stringResource(Res.string.gamepad_leave),
+                {
+                    menuOpen = false
+                    onBack()
+                },
+                kind = ButtonKind.Secondary,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }

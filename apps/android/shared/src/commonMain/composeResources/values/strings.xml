@@ -103,4 +103,10 @@
     <string name="session_ended_kicked">%1$s disconnected this phone.</string>
     <string name="session_ended_revoked">This phone was removed on %1$s. Pair it again to use it.</string>
     <string name="session_ended_lost">Could not reconnect to %1$s.</string>
+
+    <string name="gamepad_player_n">Player %1$d</string>
+    <string name="gamepad_preview">Preview</string>
+    <string name="gamepad_menu_title">Paused</string>
+    <string name="gamepad_resume">Resume</string>
+    <string name="gamepad_leave">Leave gamepad</string>
 </resources>

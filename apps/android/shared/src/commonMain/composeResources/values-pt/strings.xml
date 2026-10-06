@@ -103,4 +103,10 @@
     <string name="session_ended_kicked">%1$s desconectou este celular.</string>
     <string name="session_ended_revoked">Este celular foi removido em %1$s. Pareie de novo para usar.</string>
     <string name="session_ended_lost">Não consegui reconectar a %1$s.</string>
+
+    <string name="gamepad_player_n">Jogador %1$d</string>
+    <string name="gamepad_preview">Prévia</string>
+    <string name="gamepad_menu_title">Pausado</string>
+    <string name="gamepad_resume">Continuar</string>
+    <string name="gamepad_leave">Sair do gamepad</string>
 </resources>

@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /** Ícones desenhados em Canvas, traço de 1,75 como o lucide do client Windows. */
-enum class VynIcon { Connect, Settings, Gamepad, Back, Phone, Monitor, Close }
+enum class VynIcon { Connect, Settings, Gamepad, Back, Phone, Monitor, Close, Menu }
 
 @Composable
 fun VynIconView(icon: VynIcon, tint: Color, modifier: Modifier = Modifier, size: Dp = 24.dp) {
@@ -31,6 +31,7 @@ fun VynIconView(icon: VynIcon, tint: Color, modifier: Modifier = Modifier, size:
             VynIcon.Phone -> phone(tint, stroke, u)
             VynIcon.Monitor -> monitor(tint, stroke, u)
             VynIcon.Close -> close(tint, stroke, u)
+            VynIcon.Menu -> menu(tint, u)
         }
     }
 }
@@ -115,4 +116,8 @@ private fun DrawScope.monitor(tint: Color, stroke: Stroke, u: Float) {
 private fun DrawScope.close(tint: Color, stroke: Stroke, u: Float) {
     drawLine(tint, Offset(6f * u, 6f * u), Offset(18f * u, 18f * u), stroke.width, StrokeCap.Round)
     drawLine(tint, Offset(18f * u, 6f * u), Offset(6f * u, 18f * u), stroke.width, StrokeCap.Round)
+}
+
+private fun DrawScope.menu(tint: Color, u: Float) {
+    listOf(5f, 12f, 19f).forEach { x -> drawCircle(tint, radius = 1.9f * u, center = Offset(x * u, 12f * u)) }
 }

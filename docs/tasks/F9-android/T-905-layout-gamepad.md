@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | G |
 | Depende de | T-901 |
-| Status | ⬜ A fazer |
+| Status | 🟨 Em andamento (subtask E: layout, multitouch e haptics prontos; falta o ping e a qualidade da conexão no overlay e validar multitouch real) |
 
 ## Objetivo
 Um controle na tela que seja gostoso de usar: preciso, responsivo, bonito.
@@ -27,3 +27,12 @@ Um controle na tela que seja gostoso de usar: preciso, responsivo, bonito.
 
 ## Fora de escopo
 - Editor de layout (T-909).
+
+## Andamento (2026-10-05)
+- **Estado único** (`GamepadState`, `@Volatile`, sem Compose): a tela escreve a cada toque e o motor de envio (T-906) lê na taxa dele.
+- **Geometria** (`GamepadGeometry`, código puro, em frações da tela: vale de 5" a 11"): layout Xbox em paisagem, com folga de toque nos botões pequenos; direcional em 4 teclas separadas com leitura em 8 vias; gatilhos analógicos pela altura do dedo.
+- **Roteador de toques** (`TouchRouter`, rastreio por `pointerId`): botões que deslizam de um para outro sem levantar o dedo; analógico flutuante que não pula (a base nasce onde o dedo pousa) e fica restrito a um dedo; L3/R3 por duplo toque com o segundo segurado; solta tudo ao abrir o menu.
+- **Desenho** num único `Canvas`, com mola por botão e halo na cor do slot (P1 azul…); nada recompõe por toque. Haptics ao apertar, ao deslizar e nos fins de curso (analógico no máximo, gatilho em 50% e 100%). Tela sempre ligada e `requestUnbufferedDispatch` para a menor latência.
+- **Menu de pausa** na pílula do topo (também o botão voltar): continuar, desconectar e sair. A pílula mostra o jogador e o PC.
+- **Testes na JVM** (`TouchRouterTest`, 11 casos): inclui 5 toques simultâneos (analógico, A, gatilho, direcional e ombro) registrados corretamente.
+- **Pendente:** ping e qualidade da conexão no overlay (vêm com o T-906), validar o multitouch real com os dedos e a latência medida (< 2 ms). O editor de layout é o T-909.

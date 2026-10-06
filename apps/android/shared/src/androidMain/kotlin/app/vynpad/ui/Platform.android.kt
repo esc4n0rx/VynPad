@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
+import android.os.Build
+import android.view.InputDevice
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,11 +34,15 @@ actual fun ImmersiveLandscapeEffect(active: Boolean) {
             onDispose { }
         } else {
             val previous = activity.requestedOrientation
+            // Tela sempre ligada e toques entregues sem agrupar: latência mínima no controle.
+            view.keepScreenOn = true
+            if (Build.VERSION.SDK_INT >= 31) view.requestUnbufferedDispatch(InputDevice.SOURCE_TOUCHSCREEN)
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             val controller = WindowCompat.getInsetsController(activity.window, view)
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             controller.hide(WindowInsetsCompat.Type.systemBars())
             onDispose {
+                view.keepScreenOn = false
                 controller.show(WindowInsetsCompat.Type.systemBars())
                 activity.requestedOrientation = previous
             }

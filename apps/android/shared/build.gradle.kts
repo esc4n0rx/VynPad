@@ -45,9 +45,15 @@ kotlin {
 
         // Necessário para os recursos do Compose (strings, fontes) irem para o APK.
         androidResources.enable = true
+
+        // Testes de lógica pura (geometria e roteamento de toques) rodam na JVM, sem aparelho.
+        withHostTest { }
     }
 
     sourceSets {
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)

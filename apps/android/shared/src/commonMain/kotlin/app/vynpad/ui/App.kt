@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import app.vynpad.discovery.DiscoveredPc
+import app.vynpad.input.GamepadState
 import app.vynpad.discovery.rememberDiscoveryEngine
 import app.vynpad.pairing.DeepLinks
 import app.vynpad.pairing.SessionState
@@ -89,6 +90,7 @@ fun VynApp() {
     val pairedServers by pairing.paired.collectAsState()
     val pairedIds = remember(pairedServers) { pairedServers.map { it.serverId }.toSet() }
     val session by pairing.session.state.collectAsState()
+    val padState = remember { GamepadState() }
     val pcs by engine.pcs.collectAsState()
     val status by engine.status.collectAsState()
 
@@ -116,7 +118,6 @@ fun VynApp() {
             PlatformBackHandler(enabled = pairingOpen) { pairingOpen = false }
             PlatformBackHandler(enabled = manualOpen) { manualOpen = false }
             PlatformBackHandler(enabled = selectedPc != null) { selectedPc = null }
-            PlatformBackHandler(enabled = screen == Screen.Gamepad) { screen = Screen.Connect }
             ImmersiveLandscapeEffect(active = screen == Screen.Gamepad)
 
             VynBackground {
@@ -135,7 +136,10 @@ fun VynApp() {
                         ) { target ->
                             when (target) {
                                 Screen.Gamepad -> GamepadScreen(
+                                    state = padState,
+                                    session = session,
                                     onBack = { screen = Screen.Connect },
+                                    onDisconnect = { pairing.session.disconnect() },
                                     modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
                                 )
                                 else -> Shell(tab = target, onTab = { screen = it }) {
