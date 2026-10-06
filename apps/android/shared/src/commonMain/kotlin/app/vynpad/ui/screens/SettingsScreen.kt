@@ -27,7 +27,12 @@ import app.vynpad.resources.settings_rumble_test
 import app.vynpad.resources.rumble_medium
 import app.vynpad.resources.rumble_soft
 import app.vynpad.resources.rumble_strong
-import app.vynpad.input.RumbleSettings
+import app.vynpad.resources.pad_color_fixed
+import app.vynpad.resources.pad_color_slot
+import app.vynpad.resources.settings_haptics_strength
+import app.vynpad.resources.settings_pad_color
+import app.vynpad.settings.AppSettings
+import app.vynpad.ui.haptics.HapticStrength
 import app.vynpad.input.RumbleStrength
 import app.vynpad.ui.components.ButtonKind
 import app.vynpad.ui.components.VynButton
@@ -50,17 +55,15 @@ const val AppVersion = "0.1.0"
 
 @Composable
 fun SettingsScreen(
-    themeMode: ThemeMode,
-    onThemeMode: (ThemeMode) -> Unit,
-    hapticsEnabled: Boolean,
-    onHapticsEnabled: (Boolean) -> Unit,
-    rumble: RumbleSettings,
-    onRumble: (RumbleSettings) -> Unit,
+    settings: AppSettings,
+    onSettings: (AppSettings) -> Unit,
     onTestRumble: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = VynTheme.colors
     val t = VynTheme.typography
+    val themeMode = settings.theme
+    val rumble = settings.rumble
     val coreInfo = remember { loadCoreInfo() }
     val coreSummary = coreInfo?.let { "${it.version} · v${it.protocolVersion}" } ?: "—"
     Column(
@@ -81,7 +84,16 @@ fun SettingsScreen(
                     ThemeMode.Light to stringResource(Res.string.theme_light),
                 ),
                 selected = themeMode,
-                onSelect = onThemeMode,
+                onSelect = { onSettings(settings.copy(theme = it)) },
+            )
+            VynText(stringResource(Res.string.settings_pad_color), style = t.bodyStrong)
+            VynSegmented(
+                options = listOf(
+                    true to stringResource(Res.string.pad_color_slot),
+                    false to stringResource(Res.string.pad_color_fixed),
+                ),
+                selected = settings.slotAccent,
+                onSelect = { onSettings(settings.copy(slotAccent = it)) },
             )
         }
 
@@ -91,14 +103,26 @@ fun SettingsScreen(
                     VynText(stringResource(Res.string.settings_haptics), style = t.bodyStrong)
                     VynText(stringResource(Res.string.settings_haptics_desc), style = t.caption, color = c.textSecondary)
                 }
-                VynToggle(hapticsEnabled, onHapticsEnabled)
+                VynToggle(settings.hapticsEnabled, { onSettings(settings.copy(hapticsEnabled = it)) })
+            }
+            if (settings.hapticsEnabled) {
+                VynText(stringResource(Res.string.settings_haptics_strength), style = t.bodyStrong)
+                VynSegmented(
+                    options = listOf(
+                        HapticStrength.Soft to stringResource(Res.string.rumble_soft),
+                        HapticStrength.Medium to stringResource(Res.string.rumble_medium),
+                        HapticStrength.Strong to stringResource(Res.string.rumble_strong),
+                    ),
+                    selected = settings.hapticStrength,
+                    onSelect = { onSettings(settings.copy(hapticStrength = it)) },
+                )
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     VynText(stringResource(Res.string.settings_rumble), style = t.bodyStrong)
                     VynText(stringResource(Res.string.settings_rumble_desc), style = t.caption, color = c.textSecondary)
                 }
-                VynToggle(rumble.enabled, { onRumble(rumble.copy(enabled = it)) })
+                VynToggle(rumble.enabled, { onSettings(settings.withRumble(rumble.copy(enabled = it))) })
             }
             if (rumble.enabled) {
                 VynText(stringResource(Res.string.settings_rumble_strength), style = t.bodyStrong)
@@ -109,7 +133,7 @@ fun SettingsScreen(
                         RumbleStrength.Strong to stringResource(Res.string.rumble_strong),
                     ),
                     selected = rumble.strength,
-                    onSelect = { onRumble(rumble.copy(strength = it)) },
+                    onSelect = { onSettings(settings.withRumble(rumble.copy(strength = it))) },
                 )
                 VynButton(
                     stringResource(Res.string.settings_rumble_test),

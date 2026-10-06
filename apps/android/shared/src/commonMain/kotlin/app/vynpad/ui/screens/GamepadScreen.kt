@@ -95,7 +95,7 @@ fun GamepadScreen(
 
     val connected = session as? SessionState.Connected
     val slot = connected?.slot ?: 0
-    val accent = c.slot(slot)
+    val accent = if (settings.slotAccent) c.slot(slot) else c.accent
 
     val feedback = remember(haptics) {
         object : PadFeedback {

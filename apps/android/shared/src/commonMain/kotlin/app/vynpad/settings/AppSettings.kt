@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import app.vynpad.input.RumbleSettings
 import app.vynpad.input.RumbleStrength
 import app.vynpad.ui.gamepad.PadLayout
+import app.vynpad.ui.haptics.HapticStrength
 import app.vynpad.ui.gamepad.PadLayouts
 import app.vynpad.ui.theme.ThemeMode
 import kotlinx.serialization.Serializable
@@ -27,6 +28,9 @@ expect fun rememberSettingsStore(): SettingsStore
 data class AppSettings(
     val theme: ThemeMode = ThemeMode.Dark,
     val hapticsEnabled: Boolean = true,
+    val hapticStrength: HapticStrength = HapticStrength.Medium,
+    /** `true`: o controle usa a cor do jogador (P1 azul...); `false`: a cor de destaque do app. */
+    val slotAccent: Boolean = true,
     val rumbleEnabled: Boolean = true,
     val rumbleStrength: RumbleStrength = RumbleStrength.Strong,
     val layouts: List<PadLayout> = listOf(PadLayouts.default()),

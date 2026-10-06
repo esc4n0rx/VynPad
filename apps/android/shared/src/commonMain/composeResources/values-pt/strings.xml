@@ -59,6 +59,10 @@
     <string name="rumble_medium">Média</string>
     <string name="rumble_strong">Forte</string>
     <string name="settings_rumble_test">Testar vibração</string>
+    <string name="settings_haptics_strength">Intensidade do toque</string>
+    <string name="settings_pad_color">Cor do controle</string>
+    <string name="pad_color_slot">Por jogador</string>
+    <string name="pad_color_fixed">Fixa</string>
     <string name="settings_about">Sobre</string>
     <string name="settings_core">Núcleo / protocolo</string>
     <string name="settings_version">Versão</string>

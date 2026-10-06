@@ -134,7 +134,7 @@ fun VynApp() {
     val offsetPx = with(LocalDensity.current) { PageTransitionOffsetDp.dp.roundToPx() }
 
     VynTheme(themeMode) {
-        ProvideHaptics(hapticsEnabled) {
+        ProvideHaptics(hapticsEnabled, settings.hapticStrength) {
             PlatformBackHandler(enabled = pairingOpen) { pairingOpen = false }
             PlatformBackHandler(enabled = manualOpen) { manualOpen = false }
             PlatformBackHandler(enabled = selectedPc != null) { selectedPc = null }
@@ -171,12 +171,8 @@ fun VynApp() {
                                 else -> Shell(tab = target, onTab = { screen = it }) {
                                     when (target) {
                                         Screen.Settings -> SettingsScreen(
-                                            themeMode = themeMode,
-                                            onThemeMode = { settings = settings.copy(theme = it) },
-                                            hapticsEnabled = hapticsEnabled,
-                                            onHapticsEnabled = { settings = settings.copy(hapticsEnabled = it) },
-                                            rumble = rumble,
-                                            onRumble = { settings = settings.withRumble(it) },
+                                            settings = settings,
+                                            onSettings = { settings = it },
                                             onTestRumble = { pairing.session.testRumble() },
                                         )
                                         else -> ConnectScreen(
