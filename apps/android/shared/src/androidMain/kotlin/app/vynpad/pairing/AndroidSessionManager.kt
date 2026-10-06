@@ -7,6 +7,7 @@ import android.os.Build
 import android.util.Log
 import app.vynpad.input.GamepadSink
 import app.vynpad.input.GamepadState
+import app.vynpad.input.RumbleSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -64,6 +65,9 @@ internal class AndroidSessionManager(
     private var rttSamples = 0
     override val rttMicros: StateFlow<Int?> = _rtt.asStateFlow()
 
+    private val rumble = RumbleVibrator(appContext, scope)
+    private var rumbleSettings = RumbleSettings()
+
     private val lock = Any()
     private var connection: ControlConnection? = null
     private var pump: InputPump? = null
@@ -80,6 +84,13 @@ internal class AndroidSessionManager(
             pump?.let { connectSink(state, it) }
         }
     }
+
+    override fun setRumble(settings: RumbleSettings) {
+        rumbleSettings = settings
+        rumble.configure(settings)
+    }
+
+    override fun testRumble() = rumble.test(rumbleSettings)
 
     /** Adota uma conexão que acabou de parear (é a mesma sessão: o PC não vê um desconecta-conecta). */
     fun adopt(conn: ControlConnection, server: PairedServer) {
@@ -147,6 +158,7 @@ internal class AndroidSessionManager(
                 conn.welcome(),
                 object : PumpListener {
                     override fun onRtt(rttUs: UInt) {
+                        rumble.onAlive()
                         val measured = rttUs.toInt().coerceAtLeast(0)
                         val previous = _rtt.value
                         rttSamples = (rttSamples + 1).coerceAtMost(RTT_WARMUP_SAMPLES)
@@ -154,8 +166,8 @@ internal class AndroidSessionManager(
                         _rtt.value = if (previous == null) measured else (previous + (measured - previous) * weight).toInt()
                     }
 
-                    // A vibração do jogo é tratada na subtask G (T-907).
-                    override fun onRumble(rumbleId: UShort, large: UByte, small: UByte) = Unit
+                    override fun onRumble(rumbleId: UShort, large: UByte, small: UByte) =
+                        rumble.onRumble(large.toInt(), small.toInt())
 
                     override fun onStopped(reason: String) {
                         // O contador de pacotes acabou ou o socket falhou: abre uma sessão nova.
@@ -189,6 +201,7 @@ internal class AndroidSessionManager(
         }
         batteryJob?.cancel()
         batteryJob = null
+        rumble.reset()
         releaseWifiLock()
         _rtt.value = null
         engine?.let { runCatching { it.stop() } }

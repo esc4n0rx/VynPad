@@ -1,6 +1,7 @@
 package app.vynpad.pairing
 
 import app.vynpad.input.GamepadState
+import app.vynpad.input.RumbleSettings
 import kotlinx.coroutines.flow.StateFlow
 
 /** Por que a sessão acabou sem o usuário pedir. */
@@ -39,6 +40,12 @@ interface SessionManager {
 
     /** Passa a enviar ao PC tudo o que mudar em [state] (o controle na tela). */
     fun bindInput(state: GamepadState)
+
+    /** Ajustes da vibração que vem do jogo; valem já, mesmo no meio de uma vibração. */
+    fun setRumble(settings: RumbleSettings)
+
+    /** Vibra o celular uma vez com os ajustes atuais, para o usuário calibrar. */
+    fun testRumble()
 
     /** Conecta a um PC já pareado com o token do dispositivo. */
     fun connect(server: PairedServer)

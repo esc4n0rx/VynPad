@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import app.vynpad.discovery.DiscoveredPc
 import app.vynpad.input.GamepadState
+import app.vynpad.input.RumbleSettings
 import app.vynpad.discovery.rememberDiscoveryEngine
 import app.vynpad.pairing.DeepLinks
 import app.vynpad.pairing.SessionState
@@ -77,6 +78,7 @@ fun VynApp() {
     var screen by remember { mutableStateOf(Screen.Connect) }
     var themeMode by remember { mutableStateOf(ThemeMode.Dark) }
     var hapticsEnabled by remember { mutableStateOf(true) }
+    var rumble by remember { mutableStateOf(RumbleSettings()) }
     var splashDone by remember { mutableStateOf(false) }
     var selectedPc by remember { mutableStateOf<DiscoveredPc?>(null) }
     var manualOpen by remember { mutableStateOf(false) }
@@ -94,6 +96,7 @@ fun VynApp() {
     val rttMicros by pairing.session.rttMicros.collectAsState()
     // O controle na tela alimenta o envio ao PC assim que há uma sessão.
     LaunchedEffect(pairing, padState) { pairing.session.bindInput(padState) }
+    LaunchedEffect(pairing, rumble) { pairing.session.setRumble(rumble) }
     val pcs by engine.pcs.collectAsState()
     val status by engine.status.collectAsState()
 
@@ -153,6 +156,9 @@ fun VynApp() {
                                             onThemeMode = { themeMode = it },
                                             hapticsEnabled = hapticsEnabled,
                                             onHapticsEnabled = { hapticsEnabled = it },
+                                            rumble = rumble,
+                                            onRumble = { rumble = it },
+                                            onTestRumble = { pairing.session.testRumble() },
                                         )
                                         else -> ConnectScreen(
                                             pcs = pcs,

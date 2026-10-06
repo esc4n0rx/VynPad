@@ -52,6 +52,13 @@
     <string name="settings_feedback">Feedback</string>
     <string name="settings_haptics">Vibração</string>
     <string name="settings_haptics_desc">Vibra ao tocar em botões e controles.</string>
+    <string name="settings_rumble">Vibração do jogo</string>
+    <string name="settings_rumble_desc">Sente no celular o rumble do jogo.</string>
+    <string name="settings_rumble_strength">Intensidade</string>
+    <string name="rumble_soft">Suave</string>
+    <string name="rumble_medium">Média</string>
+    <string name="rumble_strong">Forte</string>
+    <string name="settings_rumble_test">Testar vibração</string>
     <string name="settings_about">Sobre</string>
     <string name="settings_core">Núcleo / protocolo</string>
     <string name="settings_version">Versão</string>

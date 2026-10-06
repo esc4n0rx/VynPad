@@ -52,6 +52,13 @@
     <string name="settings_feedback">Feedback</string>
     <string name="settings_haptics">Haptics</string>
     <string name="settings_haptics_desc">Vibrate when you tap buttons and controls.</string>
+    <string name="settings_rumble">Game vibration</string>
+    <string name="settings_rumble_desc">Feel the game's rumble on this phone.</string>
+    <string name="settings_rumble_strength">Strength</string>
+    <string name="rumble_soft">Soft</string>
+    <string name="rumble_medium">Medium</string>
+    <string name="rumble_strong">Strong</string>
+    <string name="settings_rumble_test">Test vibration</string>
     <string name="settings_about">About</string>
     <string name="settings_core">Core / protocol</string>
     <string name="settings_version">Version</string>
