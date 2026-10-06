@@ -8,11 +8,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.vynpad.resources.Res
+import app.vynpad.core.loadCoreInfo
 import app.vynpad.resources.settings_about
+import app.vynpad.resources.settings_core
 import app.vynpad.resources.settings_appearance
 import app.vynpad.resources.settings_feedback
 import app.vynpad.resources.settings_haptics
@@ -44,6 +47,8 @@ fun SettingsScreen(
 ) {
     val c = VynTheme.colors
     val t = VynTheme.typography
+    val coreInfo = remember { loadCoreInfo() }
+    val coreSummary = coreInfo?.let { "${it.version} · v${it.protocolVersion}" } ?: "—"
     Column(
         modifier
             .fillMaxWidth()
@@ -80,6 +85,10 @@ fun SettingsScreen(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 VynText(stringResource(Res.string.settings_version), style = t.body, color = c.textSecondary)
                 VynText(AppVersion, style = t.bodyStrong)
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                VynText(stringResource(Res.string.settings_core), style = t.body, color = c.textSecondary)
+                VynText(coreSummary, style = t.bodyStrong)
             }
         }
     }

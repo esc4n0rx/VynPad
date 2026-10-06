@@ -24,6 +24,7 @@
     <string name="settings_haptics">Vibração</string>
     <string name="settings_haptics_desc">Vibra ao tocar em botões e controles.</string>
     <string name="settings_about">Sobre</string>
+    <string name="settings_core">Núcleo / protocolo</string>
     <string name="settings_version">Versão</string>
 
     <string name="gamepad_back">Voltar</string>

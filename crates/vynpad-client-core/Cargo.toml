@@ -1,0 +1,33 @@
+[package]
+name = "vynpad-client-core"
+description = "Núcleo do client VynPad (sessão, protocolo, pareamento) exposto ao Kotlin e ao Swift via UniFFI."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lib]
+# `cdylib`: a biblioteca nativa que o app carrega; `lib`: testes e reuso em Rust.
+crate-type = ["lib", "cdylib"]
+
+[features]
+# Gerador de bindings (`cargo run --features bindgen --bin uniffi-bindgen`). Fica fora do
+# build padrão para não puxar a CLI do UniFFI em quem só compila o workspace.
+bindgen = ["uniffi/cli"]
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+required-features = ["bindgen"]
+
+[dependencies]
+vynpad-protocol = { workspace = true }
+thiserror = { workspace = true }
+uniffi = "0.32"
+
+[dev-dependencies]
+hex = "0.4"
+serde_json = { workspace = true }
+
+[lints]
+workspace = true
