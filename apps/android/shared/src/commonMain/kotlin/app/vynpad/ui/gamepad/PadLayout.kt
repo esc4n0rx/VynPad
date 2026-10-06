@@ -55,6 +55,7 @@ data class PadLayout(
     val elements: Map<PadElement, ElementSpec> = emptyMap(),
     val leftStick: StickConfig = StickConfig(),
     val rightStick: StickConfig = StickConfig(),
+    val skin: PadSkin = PadSkin(),
 ) {
     fun stick(left: Boolean): StickConfig = if (left) leftStick else rightStick
 

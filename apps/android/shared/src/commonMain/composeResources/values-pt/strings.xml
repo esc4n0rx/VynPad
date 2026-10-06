@@ -159,5 +159,17 @@
     <string name="stick_fixed">Fixo</string>
     <string name="stick_travel">Curso</string>
     <string name="stick_deadzone">Zona morta do toque</string>
+    <string name="skin_title">Visual do jogo</string>
+    <string name="skin_hint">Escolha o banner de um jogo seu para o fundo do controle. A imagem fica só neste celular.</string>
+    <string name="skin_choose">Escolher imagem</string>
+    <string name="skin_remove">Remover</string>
+    <string name="skin_import_error">Não foi possível ler essa imagem.</string>
+    <string name="skin_veil">Escurecimento</string>
+    <string name="skin_blur">Desfoque</string>
+    <string name="skin_use_color">Usar a cor da imagem</string>
+    <string name="skin_pad_opacity">Opacidade dos botões</string>
+    <string name="skin_contrast_warn">Alguns botões podem ficar difíceis de ver nesta imagem.</string>
+    <string name="skin_contrast_fix">Ajustar automaticamente</string>
+    <string name="skin_open">Visual</string>
     <string name="gamepad_leave">Sair do gamepad</string>
 </resources>

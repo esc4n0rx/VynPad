@@ -31,7 +31,11 @@ import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
+import app.vynpad.skin.SkinBitmap
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
@@ -90,6 +94,7 @@ fun GamepadSurface(
     accent: Color,
     feedback: PadFeedback,
     layout: PadLayout,
+    background: SkinBitmap? = null,
     modifier: Modifier = Modifier,
     /** Falso com o menu aberto: solta tudo e ignora os toques. */
     enabled: Boolean = true,
@@ -167,7 +172,8 @@ fun GamepadSurface(
             },
     ) {
         val g = geometry ?: return@Canvas
-        drawPad(g, colors, accent, presses, visuals, leftAnim, rightAnim, labels, measurer)
+        background?.let { drawSkinBackground(it.image, layout.skin.veil) }
+        drawPad(g, colors, accent, presses, visuals, leftAnim, rightAnim, labels, measurer, layout.skin.padOpacity)
     }
 }
 
@@ -196,11 +202,12 @@ private fun DrawScope.drawPad(
     right: StickAnimator,
     labels: Map<String, TextLayoutResult>,
     measurer: TextMeasurer,
+    padOpacity: Float,
 ) {
     // Cada peça some se o usuário a escondeu e usa a opacidade que ele escolheu.
     fun part(element: PadElement, draw: DrawScope.() -> Unit) {
         val spec = g.layout.spec(element)
-        if (spec.visible) layer(spec.opacity, g.bounds(element), draw)
+        if (spec.visible) layer(spec.opacity * padOpacity, g.bounds(element), draw)
     }
 
     // ---- Gatilhos e ombros
@@ -225,6 +232,21 @@ private fun DrawScope.drawPad(
     // ---- Analógicos
     part(PadElement.LeftStick) { drawStick(g.leftStickZone, g, true, left, presses[PadButtons.LEFT_THUMB], c, accent) }
     part(PadElement.RightStick) { drawStick(g.rightStickZone, g, false, right, presses[PadButtons.RIGHT_THUMB], c, accent) }
+}
+
+/** A imagem do jogo cobrindo a tela (corte central, sem distorcer) e o véu escuro por cima. */
+private fun DrawScope.drawSkinBackground(image: ImageBitmap, veil: Float) {
+    val scale = maxOf(size.width / image.width, size.height / image.height)
+    val srcW = (size.width / scale).toInt().coerceIn(1, image.width)
+    val srcH = (size.height / scale).toInt().coerceIn(1, image.height)
+    drawImage(
+        image,
+        srcOffset = IntOffset((image.width - srcW) / 2, (image.height - srcH) / 2),
+        srcSize = IntSize(srcW, srcH),
+        dstSize = IntSize(size.width.toInt(), size.height.toInt()),
+        filterQuality = FilterQuality.Low,
+    )
+    if (veil > 0f) drawRect(Color.Black.copy(alpha = veil))
 }
 
 /**

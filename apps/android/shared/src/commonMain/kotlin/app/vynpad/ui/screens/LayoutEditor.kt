@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,7 +65,9 @@ import app.vynpad.ui.gamepad.StickConfig
 import app.vynpad.resources.preset_default
 import app.vynpad.resources.preset_dpad
 import app.vynpad.resources.preset_left
+import app.vynpad.resources.skin_open
 import app.vynpad.settings.AppSettings
+import app.vynpad.skin.SkinBitmap
 import app.vynpad.ui.components.ButtonKind
 import app.vynpad.ui.components.GlassCard
 import app.vynpad.ui.components.VynButton
@@ -118,6 +121,8 @@ fun LayoutEditorChrome(
     draft: PadLayout,
     selected: PadElement?,
     snap: Boolean,
+    background: SkinBitmap?,
+    aspect: Float,
     onSnap: (Boolean) -> Unit,
     onDraft: (PadLayout) -> Unit,
     onCommit: (PadLayout) -> Unit,
@@ -128,6 +133,9 @@ fun LayoutEditorChrome(
     val c = VynTheme.colors
     val t = VynTheme.typography
     var modelsOpen by remember { mutableStateOf(false) }
+    var skinOpen by remember { mutableStateOf(false) }
+    // Escolher uma peça troca o painel do visual pelo painel dela.
+    LaunchedEffect(selected) { if (selected != null) skinOpen = false }
 
     Box(modifier) {
         // ---- Barra do topo
@@ -144,6 +152,7 @@ fun LayoutEditorChrome(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     VynButton(stringResource(Res.string.layout_done), onDone)
                     VynButton(stringResource(Res.string.layout_models), { modelsOpen = true }, kind = ButtonKind.Secondary)
+                    VynButton(stringResource(Res.string.skin_open), { skinOpen = !skinOpen }, kind = ButtonKind.Secondary)
                     VynText(stringResource(Res.string.layout_snap), style = t.caption, color = c.textSecondary)
                     VynToggle(snap, onSnap)
                 }
@@ -245,6 +254,27 @@ fun LayoutEditorChrome(
             }
         }
 
+        if (skinOpen && selected == null) {
+            BoxWithConstraints(Modifier.fillMaxSize()) {
+                GlassCard(
+                    Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(horizontal = 12.dp)
+                        .width(270.dp)
+                        .heightIn(max = maxHeight - 76.dp),
+                    radius = 22.dp,
+                    base = c.windowSolid.copy(alpha = 0.88f),
+                ) {
+                    Column(
+                        Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        SkinPanelContent(draft, background, aspect, onDraft, onCommit)
+                    }
+                }
+            }
+        }
+
         ModelsSheet(
             visible = modelsOpen,
             settings = settings,
@@ -324,7 +354,7 @@ private fun ModelsSheet(
 
         VynText(stringResource(Res.string.layout_presets), style = t.caption, color = c.textSecondary)
         val apply = { preset: PadPreset ->
-            val next = PadLayouts.fromPreset(preset, draft.id, draft.name)
+            val next = PadLayouts.fromPreset(preset, draft.id, draft.name).copy(skin = draft.skin)
             onDraft(next)
             onCommit(next)
         }

@@ -159,5 +159,17 @@
     <string name="stick_fixed">Fixed</string>
     <string name="stick_travel">Travel</string>
     <string name="stick_deadzone">Touch dead zone</string>
+    <string name="skin_title">Game look</string>
+    <string name="skin_hint">Pick a banner of a game you play for the controller background. It stays on this phone.</string>
+    <string name="skin_choose">Choose image</string>
+    <string name="skin_remove">Remove</string>
+    <string name="skin_import_error">Couldn't read that image.</string>
+    <string name="skin_veil">Darkening</string>
+    <string name="skin_blur">Blur</string>
+    <string name="skin_use_color">Use image color</string>
+    <string name="skin_pad_opacity">Button opacity</string>
+    <string name="skin_contrast_warn">Some buttons may be hard to see on this image.</string>
+    <string name="skin_contrast_fix">Adjust automatically</string>
+    <string name="skin_open">Look</string>
     <string name="gamepad_leave">Leave gamepad</string>
 </resources>

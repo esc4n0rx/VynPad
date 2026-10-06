@@ -20,6 +20,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import app.vynpad.skin.SkinBitmap
+import app.vynpad.skin.rememberSkinStore
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -92,10 +97,22 @@ fun GamepadScreen(
     var snap by remember { mutableStateOf(true) }
     var draft by remember(settings.activeLayout) { mutableStateOf(settings.activeLayout) }
     val layout = if (editing) draft else settings.activeLayout
+    val skin = layout.skin
+
+    // O fundo é lido do disco fora da tela principal e só troca quando a imagem ou o desfoque mudam.
+    val skinStore = rememberSkinStore()
+    val background by produceState<SkinBitmap?>(null, skin.image, skin.blur) {
+        value = skin.image?.let { skinStore.load(it, skin.blur) }
+    }
+    var screenAspect by remember { mutableStateOf(16f / 9f) }
 
     val connected = session as? SessionState.Connected
     val slot = connected?.slot ?: 0
-    val accent = if (settings.slotAccent) c.slot(slot) else c.accent
+    val accent = when {
+        skin.useImageAccent && skin.accent != null -> Color(skin.accent.toInt())
+        settings.slotAccent -> c.slot(slot)
+        else -> c.accent
+    }
 
     val feedback = remember(haptics) {
         object : PadFeedback {
@@ -121,8 +138,15 @@ fun GamepadScreen(
         animationSpec = infiniteRepeatable(tween(1400), RepeatMode.Reverse),
     )
 
-    Box(modifier.fillMaxSize()) {
-        GamepadSurface(state = state, accent = accent, feedback = feedback, layout = layout, enabled = !menuOpen && !editing)
+    Box(modifier.fillMaxSize().onSizeChanged { if (it.height > 0) screenAspect = it.width.toFloat() / it.height }) {
+        GamepadSurface(
+            state = state,
+            accent = accent,
+            feedback = feedback,
+            layout = layout,
+            background = background,
+            enabled = !menuOpen && !editing,
+        )
 
         if (editing) {
             PadEditorOverlay(
@@ -140,6 +164,8 @@ fun GamepadScreen(
                 draft = draft,
                 selected = selected,
                 snap = snap,
+                background = background,
+                aspect = screenAspect,
                 onSnap = { snap = it },
                 onDraft = { draft = it },
                 onCommit = { onSettings(settings.withLayout(it)) },

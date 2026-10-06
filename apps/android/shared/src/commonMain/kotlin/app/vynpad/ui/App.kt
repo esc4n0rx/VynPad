@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import app.vynpad.discovery.DiscoveredPc
 import app.vynpad.input.GamepadState
 import app.vynpad.settings.AppSettings
+import app.vynpad.skin.rememberSkinStore
 import app.vynpad.settings.rememberSettingsStore
 import kotlinx.coroutines.delay
 import app.vynpad.discovery.rememberDiscoveryEngine
@@ -82,11 +83,14 @@ fun VynApp() {
     var screen by remember { mutableStateOf(Screen.Connect) }
     // Os ajustes (tema, vibrações, layouts) vêm do aparelho e voltam a ele a cada mudança.
     val settingsStore = rememberSettingsStore()
+    val skinStore = rememberSkinStore()
     var settings by remember { mutableStateOf(AppSettings.decode(settingsStore.load())) }
     LaunchedEffect(settings) {
         // Pequena espera: um arrastar de slider muda o valor várias vezes e só o último vai ao disco.
         delay(SAVE_DEBOUNCE_MILLIS)
         settingsStore.save(AppSettings.encode(settings))
+        // Imagens de fundo que nenhum layout usa mais saem do aparelho.
+        skinStore.gc(settings.layouts.mapNotNull { it.skin.image }.toSet())
     }
     val themeMode = settings.theme
     val hapticsEnabled = settings.hapticsEnabled
