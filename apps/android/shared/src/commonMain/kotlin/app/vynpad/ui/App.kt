@@ -91,6 +91,9 @@ fun VynApp() {
     val pairedIds = remember(pairedServers) { pairedServers.map { it.serverId }.toSet() }
     val session by pairing.session.state.collectAsState()
     val padState = remember { GamepadState() }
+    val rttMicros by pairing.session.rttMicros.collectAsState()
+    // O controle na tela alimenta o envio ao PC assim que há uma sessão.
+    LaunchedEffect(pairing, padState) { pairing.session.bindInput(padState) }
     val pcs by engine.pcs.collectAsState()
     val status by engine.status.collectAsState()
 
@@ -138,6 +141,7 @@ fun VynApp() {
                                 Screen.Gamepad -> GamepadScreen(
                                     state = padState,
                                     session = session,
+                                    rttMicros = rttMicros,
                                     onBack = { screen = Screen.Connect },
                                     onDisconnect = { pairing.session.disconnect() },
                                     modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
@@ -155,6 +159,7 @@ fun VynApp() {
                                             status = status,
                                             pairedIds = pairedIds,
                                             session = session,
+                                            rttMicros = rttMicros,
                                             onDisconnect = { pairing.session.disconnect() },
                                             onSearch = { engine.start() },
                                             onSelectPc = { selectedPc = it },

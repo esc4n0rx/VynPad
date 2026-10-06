@@ -215,6 +215,7 @@ class TouchRouter(
         state.ly = ly
         state.rx = rx
         state.ry = ry
+        state.commit()
         visuals.buttons = buttons
         visuals.lt = lt
         visuals.rt = rt

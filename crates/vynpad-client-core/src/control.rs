@@ -273,6 +273,16 @@ impl ControlConnection {
         self.welcome.clone()
     }
 
+    /// O endereço IP do server com que esta conexão está falando (o destino do UDP de input).
+    pub fn peer_host(&self) -> String {
+        self.shared
+            .stream()
+            .sock
+            .peer_addr()
+            .map(|addr| addr.ip().to_string())
+            .unwrap_or_default()
+    }
+
     /// Mantém a sessão viva: responde aos `ping` do server na hora (ele manda um a cada 250 ms),
     /// manda o seu a cada 5 s de silêncio e avisa o [`SessionListener`] das mudanças. Sem isso o
     /// server derruba a conexão em 15 s. Roda numa thread própria; chame uma vez.

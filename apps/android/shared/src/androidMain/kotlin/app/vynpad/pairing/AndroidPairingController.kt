@@ -33,6 +33,7 @@ internal class AndroidPairingController(context: Context) : PairingController {
     override val paired: StateFlow<List<PairedServer>> = _paired.asStateFlow()
 
     override val session = AndroidSessionManager(
+        context = appContext,
         deviceInfo = ::deviceInfo,
         // O PC removeu este celular: o token não vale mais, então o pareamento some da lista.
         onRevoked = ::forget,

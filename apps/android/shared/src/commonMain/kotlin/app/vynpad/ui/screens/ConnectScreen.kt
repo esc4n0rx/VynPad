@@ -70,6 +70,7 @@ fun ConnectScreen(
     onSearch: () -> Unit,
     pairedIds: Set<String>,
     session: SessionState,
+    rttMicros: Int?,
     onDisconnect: () -> Unit,
     onSelectPc: (DiscoveredPc) -> Unit,
     onPairQr: () -> Unit,
@@ -92,7 +93,7 @@ fun ConnectScreen(
             VynText(stringResource(Res.string.connect_tagline), style = t.body, color = c.textSecondary)
         }
 
-        SessionBanner(session, onDisconnect)
+        SessionBanner(session, rttMicros, onDisconnect)
 
         GlassCard(Modifier.fillMaxWidth().entrance(1)) {
             Column(

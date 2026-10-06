@@ -1,137 +1,16 @@
 //! O canal de controle do app contra o server de controle TLS de verdade (loopback + driver de
 //! mentira): pareamento por QR e por PIN, reconexão e as recusas.
 
-use std::collections::HashMap;
+mod common;
+
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use common::{connect, phone, pinned, rig, rig_with, token_credential};
 use vynpad_client_core::{
-    ConfigInfo, ControlConnection, CoreError, Credential, DeviceInfo, SessionListener, TrustPolicy,
-    WelcomeInfo,
+    ConfigInfo, ControlConnection, CoreError, Credential, SessionListener, TrustPolicy, WelcomeInfo,
 };
-use vynpad_core::{SlotConfig, SlotManager, SystemClock};
-use vynpad_driver::MockDriver;
-use vynpad_net::control::{ControlConfig, ControlDeps, ControlServer, DefaultProfiles};
-use vynpad_net::identity::ServerIdentity;
-use vynpad_net::input::{InputConfig, InputServer};
-use vynpad_net::pairing::{DeviceRecord, DeviceStore, PairingConfig, PairingManager, StoreError};
-use vynpad_protocol::control::{ByeReason, Uuid};
-
-#[derive(Clone, Default)]
-struct MemStore(Arc<Mutex<HashMap<String, DeviceRecord>>>);
-
-impl DeviceStore for MemStore {
-    fn find(&self, id: &Uuid) -> Result<Option<DeviceRecord>, StoreError> {
-        Ok(self.0.lock().unwrap().get(id.as_str()).cloned())
-    }
-    fn save(&self, record: DeviceRecord) -> Result<(), StoreError> {
-        self.0
-            .lock()
-            .unwrap()
-            .insert(record.device_id.as_str().to_owned(), record);
-        Ok(())
-    }
-}
-
-struct Rig {
-    control: ControlServer,
-    pairing: Arc<PairingManager<MemStore>>,
-    fingerprint: [u8; 32],
-    _input: Arc<InputServer>,
-}
-
-async fn rig() -> Rig {
-    rig_with(Duration::from_secs(15)).await
-}
-
-/// `dead_after`: quanto silêncio o server tolera antes de derrubar a conexão.
-async fn rig_with(dead_after: Duration) -> Rig {
-    let driver = Arc::new(MockDriver::default());
-    let slots = Arc::new(SlotManager::with_clock(
-        driver,
-        SlotConfig::default(),
-        Arc::new(SystemClock),
-    ));
-    let input = Arc::new(
-        InputServer::start(
-            InputConfig {
-                bind: "127.0.0.1:0".parse().unwrap(),
-                ..InputConfig::default()
-            },
-            slots.clone(),
-        )
-        .unwrap(),
-    );
-    let identity = ServerIdentity::generate().unwrap();
-    let fingerprint = identity.fingerprint();
-    let pairing = Arc::new(PairingManager::new(
-        MemStore::default(),
-        PairingConfig::default(),
-    ));
-    let control = ControlServer::start(
-        ControlConfig {
-            bind: "127.0.0.1:0".parse().unwrap(),
-            hello_timeout: Duration::from_secs(2),
-            ping_after: Duration::from_millis(100),
-            dead_after,
-            ..ControlConfig::default()
-        },
-        ControlDeps {
-            identity,
-            server_name: "PC de teste".into(),
-            pairing: pairing.clone(),
-            slots,
-            input: input.clone(),
-            profiles: Arc::new(DefaultProfiles::default()),
-        },
-    )
-    .await
-    .unwrap();
-    Rig {
-        control,
-        pairing,
-        fingerprint,
-        _input: input,
-    }
-}
-
-fn phone() -> DeviceInfo {
-    DeviceInfo {
-        device_id: "00000000-0000-4000-8000-000000000001".to_owned(),
-        name: "Celular de teste".to_owned(),
-        model: "Teste 1".to_owned(),
-        os_ver: "15".to_owned(),
-        app_ver: "0.1.0".to_owned(),
-        gyro: true,
-        rumble: true,
-    }
-}
-
-/// Roda o `connect` bloqueante fora das threads do runtime, como o app faz com `Dispatchers.IO`.
-async fn connect(
-    rig: &Rig,
-    trust: TrustPolicy,
-    credential: Credential,
-) -> Result<Arc<ControlConnection>, CoreError> {
-    let port = rig.control.local_addr().port();
-    tokio::task::spawn_blocking(move || {
-        ControlConnection::connect("127.0.0.1", port, trust, phone(), credential)
-    })
-    .await
-    .unwrap()
-}
-
-fn pinned(rig: &Rig) -> TrustPolicy {
-    TrustPolicy::Pinned {
-        fingerprint: rig.fingerprint.to_vec(),
-    }
-}
-
-fn token_credential(rig: &Rig) -> Credential {
-    Credential::PairingToken {
-        token: rig.pairing.issue_pairing_token().expose().to_vec(),
-    }
-}
+use vynpad_protocol::control::ByeReason;
 
 fn welcome_of(connection: &ControlConnection) -> WelcomeInfo {
     connection.welcome()

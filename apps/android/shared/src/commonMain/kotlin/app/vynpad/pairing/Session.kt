@@ -1,5 +1,6 @@
 package app.vynpad.pairing
 
+import app.vynpad.input.GamepadState
 import kotlinx.coroutines.flow.StateFlow
 
 /** Por que a sessão acabou sem o usuário pedir. */
@@ -32,6 +33,12 @@ sealed interface SessionState {
 /** A conexão (canal de controle e, depois, o input) com um PC pareado. */
 interface SessionManager {
     val state: StateFlow<SessionState>
+
+    /** Latência de rede até o PC (suavizada), em µs; nula sem sessão ou antes do primeiro pong. */
+    val rttMicros: StateFlow<Int?>
+
+    /** Passa a enviar ao PC tudo o que mudar em [state] (o controle na tela). */
+    fun bindInput(state: GamepadState)
 
     /** Conecta a um PC já pareado com o token do dispositivo. */
     fun connect(server: PairedServer)

@@ -43,6 +43,8 @@ import app.vynpad.ui.components.VynIcon
 import app.vynpad.ui.components.VynIconView
 import app.vynpad.ui.components.VynSheet
 import app.vynpad.ui.components.VynText
+import app.vynpad.ui.components.formatRtt
+import app.vynpad.ui.components.rttColor
 import app.vynpad.ui.gamepad.GamepadSurface
 import app.vynpad.ui.gamepad.PadFeedback
 import app.vynpad.ui.haptics.LocalHaptics
@@ -57,6 +59,7 @@ import org.jetbrains.compose.resources.stringResource
 fun GamepadScreen(
     state: GamepadState,
     session: SessionState,
+    rttMicros: Int?,
     onBack: () -> Unit,
     onDisconnect: () -> Unit,
     modifier: Modifier = Modifier,
@@ -118,6 +121,9 @@ fun GamepadScreen(
                     style = t.bodyStrong,
                     maxLines = 1,
                 )
+                if (connected != null && rttMicros != null) {
+                    VynText(formatRtt(rttMicros), style = t.caption, color = rttColor(rttMicros))
+                }
                 VynIconView(VynIcon.Menu, tint = c.textSecondary, size = 20.dp)
             }
         }

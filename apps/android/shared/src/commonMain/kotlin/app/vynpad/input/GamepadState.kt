@@ -37,6 +37,11 @@ data class GamepadSnapshot(
     val ry: Int,
 )
 
+/** Quem quer saber, na hora, quando o controle muda (o motor de envio). */
+fun interface GamepadSink {
+    fun onChanged(buttons: Int, lt: Int, rt: Int, lx: Int, ly: Int, rx: Int, ry: Int)
+}
+
 /**
  * O estado atual do controle, numa estrutura mutável única: a tela escreve a cada toque e o
  * motor de envio lê na taxa dele, sem passar pela recomposição do Compose.
@@ -46,6 +51,9 @@ data class GamepadSnapshot(
  * pacote a 250 Hz corrige isso no seguinte.
  */
 class GamepadState {
+    /** Recebe cada mudança logo depois de gravada; sem alocação. */
+    @Volatile var sink: GamepadSink? = null
+
     @Volatile var buttons: Int = 0
 
     @Volatile var lt: Int = 0
@@ -62,6 +70,11 @@ class GamepadState {
 
     fun snapshot() = GamepadSnapshot(buttons, lt, rt, lx, ly, rx, ry)
 
+    /** Avisa o [sink] de que os campos acabaram de ser atualizados. */
+    fun commit() {
+        sink?.onChanged(buttons, lt, rt, lx, ly, rx, ry)
+    }
+
     /** Solta tudo (ao sair da tela ou perder o foco). */
     fun reset() {
         buttons = 0
@@ -71,5 +84,6 @@ class GamepadState {
         ly = 0
         rx = 0
         ry = 0
+        commit()
     }
 }

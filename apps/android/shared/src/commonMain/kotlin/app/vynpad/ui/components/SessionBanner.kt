@@ -31,7 +31,12 @@ import org.jetbrains.compose.resources.stringResource
  * slot), conectando/reconectando (com anéis pulsando) ou o motivo de a sessão ter terminado.
  */
 @Composable
-fun SessionBanner(state: SessionState, onDisconnect: () -> Unit, modifier: Modifier = Modifier) {
+fun SessionBanner(
+    state: SessionState,
+    rttMicros: Int?,
+    onDisconnect: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     if (state is SessionState.Idle) return
     val c = VynTheme.colors
     val t = VynTheme.typography
@@ -52,8 +57,12 @@ fun SessionBanner(state: SessionState, onDisconnect: () -> Unit, modifier: Modif
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 when (state) {
                     is SessionState.Connected -> {
-                        VynText(stringResource(Res.string.session_connected, state.serverName), style = t.bodyStrong, maxLines = 1)
-                        VynText(stringResource(Res.string.session_slot, state.slot + 1), style = t.caption, color = slotColor ?: c.accent)
+                        VynText(stringResource(Res.string.session_connected, state.serverName), style = t.bodyStrong, maxLines = 2)
+                        VynText(
+                            stringResource(Res.string.session_slot, state.slot + 1) + (rttMicros?.let { " · " + formatRtt(it) } ?: ""),
+                            style = t.caption,
+                            color = slotColor ?: c.accent,
+                        )
                     }
                     is SessionState.Connecting ->
                         VynText(stringResource(Res.string.session_connecting, state.serverName), style = t.bodyStrong, maxLines = 2)
@@ -80,5 +89,19 @@ fun SessionBanner(state: SessionState, onDisconnect: () -> Unit, modifier: Modif
                 kind = ButtonKind.Secondary,
             )
         }
+    }
+}
+
+/** RTT em ms para a tela: "<1 ms", "7 ms"… */
+fun formatRtt(micros: Int): String = if (micros < 1_000) "<1 ms" else "${(micros + 500) / 1_000} ms"
+
+/** Verde até 20 ms, amarelo até 50 ms, vermelho acima disso. */
+@Composable
+fun rttColor(micros: Int): androidx.compose.ui.graphics.Color {
+    val c = VynTheme.colors
+    return when {
+        micros < 20_000 -> c.success
+        micros < 50_000 -> c.warning
+        else -> c.danger
     }
 }
