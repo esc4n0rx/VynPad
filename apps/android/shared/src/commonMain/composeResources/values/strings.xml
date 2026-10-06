@@ -150,5 +150,10 @@
     <string name="el_lb">LB bumper</string>
     <string name="el_rb">RB bumper</string>
     <string name="el_rt">RT trigger</string>
+    <string name="stick_mode">Behavior</string>
+    <string name="stick_floating">Floating</string>
+    <string name="stick_fixed">Fixed</string>
+    <string name="stick_travel">Travel</string>
+    <string name="stick_deadzone">Touch dead zone</string>
     <string name="gamepad_leave">Leave gamepad</string>
 </resources>

@@ -63,7 +63,11 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
     val stickKnobRadius = 0.085f * h
 
     /** Curso deste analógico, que acompanha o tamanho que o usuário deu à peça. */
-    fun travelOf(left: Boolean) = stickTravel * spec(if (left) PadElement.LeftStick else PadElement.RightStick).scale
+    fun travelOf(left: Boolean) =
+        stickTravel * spec(if (left) PadElement.LeftStick else PadElement.RightStick).scale * layout.stick(left).travelScale
+
+    /** Onde o centro do analógico fica em repouso (e, no modo fixo, o tempo todo). */
+    fun stickRest(left: Boolean): Circle = if (left) leftStickZone else rightStickZone
 
     fun knobOf(left: Boolean) = stickKnobRadius * spec(if (left) PadElement.LeftStick else PadElement.RightStick).scale
 

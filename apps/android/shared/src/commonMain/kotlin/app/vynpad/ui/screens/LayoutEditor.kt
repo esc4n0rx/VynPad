@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -51,6 +54,13 @@ import app.vynpad.resources.layout_size
 import app.vynpad.resources.layout_snap
 import app.vynpad.resources.layout_visible
 import app.vynpad.resources.preset_compact
+import app.vynpad.resources.stick_deadzone
+import app.vynpad.resources.stick_fixed
+import app.vynpad.resources.stick_floating
+import app.vynpad.resources.stick_mode
+import app.vynpad.resources.stick_travel
+import app.vynpad.ui.components.VynSegmented
+import app.vynpad.ui.gamepad.StickConfig
 import app.vynpad.resources.preset_default
 import app.vynpad.resources.preset_dpad
 import app.vynpad.resources.preset_left
@@ -150,15 +160,18 @@ fun LayoutEditorChrome(
         if (selected != null) {
             val spec = draft.spec(selected)
             val onRight = spec.x < 0.5f
+            BoxWithConstraints(Modifier.fillMaxSize()) {
             GlassCard(
                 Modifier
                     .align(if (onRight) Alignment.CenterEnd else Alignment.CenterStart)
                     .padding(horizontal = 12.dp)
-                    .width(250.dp),
+                    .width(250.dp)
+                    // Os analógicos têm mais ajustes: o painel rola em vez de passar da tela.
+                    .heightIn(max = maxHeight - 76.dp),
                 radius = 22.dp,
                 base = c.windowSolid.copy(alpha = 0.88f),
             ) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     VynText(stringResource(selected.label()), style = t.bodyStrong, maxLines = 1)
                     VynText(stringResource(Res.string.layout_size), style = t.caption, color = c.textSecondary)
                     VynSlider(
@@ -167,6 +180,41 @@ fun LayoutEditorChrome(
                         valueRange = PadLayouts.MIN_SCALE..PadLayouts.MAX_SCALE,
                         onValueChangeFinished = { onCommit(draft) },
                     )
+                    if (selected == PadElement.LeftStick || selected == PadElement.RightStick) {
+                        val left = selected == PadElement.LeftStick
+                        val stick = draft.stick(left)
+                        VynText(stringResource(Res.string.stick_mode), style = t.caption, color = c.textSecondary)
+                        VynSegmented(
+                            options = listOf(
+                                true to stringResource(Res.string.stick_floating),
+                                false to stringResource(Res.string.stick_fixed),
+                            ),
+                            selected = stick.floating,
+                            onSelect = {
+                                val next = PadEditing.setStick(draft, left, stick.copy(floating = it))
+                                onDraft(next)
+                                onCommit(next)
+                            },
+                        )
+                        VynText(stringResource(Res.string.stick_travel), style = t.caption, color = c.textSecondary)
+                        VynSlider(
+                            value = stick.travelScale,
+                            onValueChange = { onDraft(PadEditing.setStick(draft, left, stick.copy(travelScale = it))) },
+                            valueRange = PadLayouts.MIN_TRAVEL..PadLayouts.MAX_TRAVEL,
+                            onValueChangeFinished = { onCommit(draft) },
+                        )
+                        VynText(
+                            stringResource(Res.string.stick_deadzone) + " · " + (stick.deadzone * 100).toInt() + "%",
+                            style = t.caption,
+                            color = c.textSecondary,
+                        )
+                        VynSlider(
+                            value = stick.deadzone,
+                            onValueChange = { onDraft(PadEditing.setStick(draft, left, stick.copy(deadzone = it))) },
+                            valueRange = 0f..PadLayouts.MAX_DEADZONE,
+                            onValueChangeFinished = { onCommit(draft) },
+                        )
+                    }
                     VynText(stringResource(Res.string.layout_opacity), style = t.caption, color = c.textSecondary)
                     VynSlider(
                         value = spec.opacity,
@@ -193,6 +241,7 @@ fun LayoutEditorChrome(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+            }
             }
         }
 

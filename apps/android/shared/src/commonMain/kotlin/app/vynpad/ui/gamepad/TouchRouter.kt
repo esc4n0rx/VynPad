@@ -72,12 +72,21 @@ class TouchRouter(
 
     private class StickHold(
         val left: Boolean,
+        /** Centro do analógico: onde o dedo pousou (flutuante) ou o meio da zona (fixo). */
         val origin: Offset,
+        /** Onde o dedo pousou: o toque curto (L3) é medido a partir daqui, nos dois modos. */
+        val downPoint: Offset,
+        val deadzone: Float,
         val downAt: Long,
         val clickHeld: Boolean,
     ) : Hold {
+        /** Deflexão enviada ao PC (já com a zona morta de toque). */
         var vx = 0f
         var vy = 0f
+
+        /** Deflexão sob o dedo, sem zona morta: é o que o polegar desenhado mostra. */
+        var kx = 0f
+        var ky = 0f
         var maxDeflection = 0f
         var atLimit = false
     }
@@ -99,9 +108,13 @@ class TouchRouter(
                 // Um analógico só tem um dedo: o segundo toque na mesma zona é ignorado.
                 if (holds.values.any { it is StickHold && it.left == hit.left }) return
                 val index = if (hit.left) 0 else 1
+                val config = g.layout.stick(hit.left)
+                val rest = g.stickRest(hit.left)
                 StickHold(
                     left = hit.left,
-                    origin = Offset(x, y),
+                    origin = if (config.floating) Offset(x, y) else Offset(rest.cx, rest.cy),
+                    downPoint = Offset(x, y),
+                    deadzone = config.deadzone,
                     downAt = nowMs,
                     clickHeld = nowMs - lastTapUp[index] <= DOUBLE_TAP_MS,
                 ).also { if (it.clickHeld) feedback.press() }
@@ -115,7 +128,8 @@ class TouchRouter(
             }
         }
         holds[id] = hold
-        publish()
+        // Num analógico fixo o primeiro toque já pode estar fora do centro.
+        if (hold is StickHold) move(id, x, y) else publish()
     }
 
     fun move(id: Long, x: Float, y: Float) {
@@ -139,9 +153,12 @@ class TouchRouter(
                 val length = hypot(dx, dy)
                 val travel = g.travelOf(hold.left)
                 val scale = if (length > travel) travel / length else 1f
-                hold.vx = dx * scale / travel
-                hold.vy = dy * scale / travel
-                hold.maxDeflection = maxOf(hold.maxDeflection, minOf(length, travel) / travel)
+                hold.kx = dx * scale / travel
+                hold.ky = dy * scale / travel
+                val (ux, uy) = StickMath.deadzone(hold.kx, hold.ky, hold.deadzone)
+                hold.vx = ux
+                hold.vy = uy
+                hold.maxDeflection = maxOf(hold.maxDeflection, hypot(x - hold.downPoint.x, y - hold.downPoint.y) / travel)
                 val limit = length >= travel
                 if (limit && !hold.atLimit) feedback.detent()
                 hold.atLimit = limit
@@ -194,7 +211,7 @@ class TouchRouter(
                     // O eixo Y do XInput é positivo para cima; o da tela é positivo para baixo.
                     val axisY = (-hold.vy.coerceIn(-1f, 1f) * AXIS_MAX).roundToInt()
                     val travel = g.travelOf(hold.left)
-                    val visual = StickVisual(hold.origin, Offset(hold.vx * travel, hold.vy * travel))
+                    val visual = StickVisual(hold.origin, Offset(hold.kx * travel, hold.ky * travel))
                     if (hold.left) {
                         lx = axisX
                         ly = axisY

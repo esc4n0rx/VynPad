@@ -33,13 +33,34 @@ data class ElementSpec(
     val visible: Boolean = true,
 )
 
+/**
+ * Como um analógico responde ao dedo, à parte do tamanho da peça.
+ * - `floating`: o centro nasce onde o dedo pousa; falso = o centro é fixo no meio da zona.
+ * - `travelScale`: multiplica o curso (a distância até a deflexão máxima).
+ * - `deadzone`: fração do curso (0–[PadLayouts.MAX_DEADZONE]) em que o toque é ignorado; é
+ *   independente da zona morta do perfil no PC.
+ */
+@Serializable
+data class StickConfig(
+    val floating: Boolean = true,
+    val travelScale: Float = 1f,
+    val deadzone: Float = 0f,
+)
+
 /** Um layout salvo: o nome que o usuário vê e a posição de cada peça. */
 @Serializable
 data class PadLayout(
     val id: String,
     val name: String,
     val elements: Map<PadElement, ElementSpec> = emptyMap(),
+    val leftStick: StickConfig = StickConfig(),
+    val rightStick: StickConfig = StickConfig(),
 ) {
+    fun stick(left: Boolean): StickConfig = if (left) leftStick else rightStick
+
+    fun withStick(left: Boolean, config: StickConfig): PadLayout =
+        if (left) copy(leftStick = config) else copy(rightStick = config)
+
     /** Peças que o layout não menciona caem no padrão (um layout antigo continua válido). */
     fun spec(element: PadElement): ElementSpec = elements[element] ?: PadLayouts.DefaultSpecs.getValue(element)
 
@@ -58,6 +79,9 @@ object PadLayouts {
     const val MIN_SCALE = 0.6f
     const val MAX_SCALE = 1.6f
     const val MIN_OPACITY = 0.2f
+    const val MIN_TRAVEL = 0.6f
+    const val MAX_TRAVEL = 1.6f
+    const val MAX_DEADZONE = 0.4f
 
     /** O desenho original do controle (T-905). */
     val DefaultSpecs: Map<PadElement, ElementSpec> = mapOf(
@@ -142,9 +166,37 @@ object PadEditing {
     fun setVisible(layout: PadLayout, element: PadElement, visible: Boolean): PadLayout =
         layout.with(element, layout.spec(element).copy(visible = visible))
 
+    fun setStick(layout: PadLayout, left: Boolean, config: StickConfig): PadLayout = layout.withStick(
+        left,
+        config.copy(
+            travelScale = config.travelScale.coerceIn(PadLayouts.MIN_TRAVEL, PadLayouts.MAX_TRAVEL),
+            deadzone = config.deadzone.coerceIn(0f, PadLayouts.MAX_DEADZONE),
+        ),
+    )
+
     /** Devolve só esta peça ao lugar e tamanho originais. */
-    fun resetElement(layout: PadLayout, element: PadElement): PadLayout =
-        layout.with(element, PadLayouts.DefaultSpecs.getValue(element))
+    fun resetElement(layout: PadLayout, element: PadElement): PadLayout {
+        val reset = layout.with(element, PadLayouts.DefaultSpecs.getValue(element))
+        return when (element) {
+            PadElement.LeftStick -> reset.withStick(true, StickConfig())
+            PadElement.RightStick -> reset.withStick(false, StickConfig())
+            else -> reset
+        }
+    }
 
     private fun snapTo(value: Float, step: Float): Float = kotlin.math.round(value / step) * step
+}
+
+object StickMath {
+    /**
+     * Zona morta radial com reescala: abaixo de `dz` (fração do curso) a saída é 0, e de `dz` a 1
+     * a saída vai de 0 a 1 mantendo a direção, sem salto na borda. `(vx, vy)` já está no círculo unitário.
+     */
+    fun deadzone(vx: Float, vy: Float, dz: Float): Pair<Float, Float> {
+        if (dz <= 0f) return vx to vy
+        val length = kotlin.math.sqrt(vx * vx + vy * vy)
+        if (length <= dz) return 0f to 0f
+        val k = ((length - dz) / (1f - dz)) / length
+        return vx * k to vy * k
+    }
 }
