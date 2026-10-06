@@ -52,12 +52,7 @@ private const val PingMillis = 2400
  * surge como um ponto que acende quando a varredura passa por ele. Tocar no ponto abre o PC.
  */
 @Composable
-fun DiscoveryRadar(
-    pcs: List<DiscoveredPc>,
-    scanning: Boolean,
-    onSelect: (DiscoveredPc) -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun DiscoveryRadar(pcs: List<DiscoveredPc>, scanning: Boolean, onSelect: (DiscoveredPc) -> Unit, modifier: Modifier = Modifier) {
     val c = VynTheme.colors
     val transition = rememberInfiniteTransition()
     val sweep = transition.animateFloat(0f, 360f, infiniteRepeatable(tween(SweepMillis, easing = LinearEasing)))
@@ -167,7 +162,12 @@ private fun RadarBlip(pc: DiscoveredPc, radiusPx: Float, sweep: State<Float>, on
             val center = Offset(size.width / 2f, size.height / 2f)
             drawCircle(color.copy(alpha = 0.22f), size.minDimension / 2f * 0.62f, center)
             if (ring.value < 1f) {
-                drawCircle(color.copy(alpha = (1f - ring.value) * 0.7f), size.minDimension / 2f * (0.3f + 0.7f * ring.value), center, style = Stroke(2.dp.toPx()))
+                drawCircle(
+                    color.copy(alpha = (1f - ring.value) * 0.7f),
+                    size.minDimension / 2f * (0.3f + 0.7f * ring.value),
+                    center,
+                    style = Stroke(2.dp.toPx()),
+                )
             }
             drawCircle(color, 6.dp.toPx(), center)
             drawCircle(Color.White.copy(alpha = 0.55f), 2.2.dp.toPx(), center - Offset(1.5.dp.toPx(), 1.5.dp.toPx()))

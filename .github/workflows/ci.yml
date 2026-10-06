@@ -229,6 +229,56 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  # Client Android: ktlint, lint do Android, testes de lógica e o build de release (R8) e do
+  # App Bundle, com os mesmos comandos que se rodam em apps/android (T-910).
+  android:
+    name: Android (ktlint, lint, testes, release)
+    runs-on: ubuntu-latest
+    env:
+      KTLINT_VERSION: "1.8.0"
+      KTLINT_SHA256: "a3fd620207d5c40da6ca789b95e7f823c54e854b7fade7f613e91096a3706d75"
+      NDK_VERSION: "27.1.12297006"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          # O cache do Gradle só é gravado na main; PRs apenas leem.
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.98.1"
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: android
+      - name: SDK e NDK do Android
+        run: |
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37" "build-tools;36.0.0" "ndk;$NDK_VERSION"
+      - run: cargo install cargo-ndk --version 4.1.2 --locked
+      - name: ktlint (binário fixado por versão e hash)
+        run: |
+          curl -sSL -o "$RUNNER_TEMP/ktlint" "https://github.com/ktlint/ktlint/releases/download/$KTLINT_VERSION/ktlint"
+          echo "$KTLINT_SHA256  $RUNNER_TEMP/ktlint" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/ktlint"
+          cd apps/android
+          "$RUNNER_TEMP/ktlint" "shared/src/**/*.kt" "androidApp/src/**/*.kt" "*.kts" "shared/*.kts" "androidApp/*.kts" "buildSrc/**/*.kt"
+      - name: Testes, lint e release
+        working-directory: apps/android
+        run: ./gradlew :shared:testAndroid :androidApp:lintRelease :androidApp:assembleRelease :androidApp:bundleRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-release-unsigned
+          path: |
+            apps/android/androidApp/build/outputs/apk/release/*.apk
+            apps/android/androidApp/build/outputs/bundle/release/*.aab
+          retention-days: 7
+
   bundle:
     name: Build do app (${{ matrix.os }})
     needs: [lint, rust]

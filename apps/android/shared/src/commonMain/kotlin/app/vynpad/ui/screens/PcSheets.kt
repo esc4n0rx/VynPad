@@ -37,13 +37,13 @@ import app.vynpad.resources.manual_hint
 import app.vynpad.resources.manual_title
 import app.vynpad.resources.pc_address
 import app.vynpad.resources.pc_fingerprint
+import app.vynpad.resources.pc_forget
 import app.vynpad.resources.pc_found_via
 import app.vynpad.resources.pc_pair
-import app.vynpad.resources.pc_forget
 import app.vynpad.resources.pc_slots
+import app.vynpad.resources.pc_system
 import app.vynpad.resources.session_connect
 import app.vynpad.resources.session_disconnect
-import app.vynpad.resources.pc_system
 import app.vynpad.resources.via_broadcast
 import app.vynpad.resources.via_manual
 import app.vynpad.resources.via_mdns

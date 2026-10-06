@@ -8,10 +8,7 @@ enum class RumbleStrength(val scale: Float) {
 }
 
 /** Ajustes da vibração que vem do jogo (rumble). */
-data class RumbleSettings(
-    val enabled: Boolean = true,
-    val strength: RumbleStrength = RumbleStrength.Strong,
-)
+data class RumbleSettings(val enabled: Boolean = true, val strength: RumbleStrength = RumbleStrength.Strong)
 
 object RumbleMix {
     /** Peso do motor pequeno (alta frequência) ao combiná-lo com o grande numa só amplitude. */

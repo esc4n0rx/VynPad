@@ -9,12 +9,7 @@ import androidx.compose.ui.Modifier
  * [attempt] muda para pedir a permissão de novo (depois de o usuário tocar em "Permitir").
  */
 @Composable
-expect fun QrScanner(
-    onCode: (String) -> Unit,
-    onPermission: (granted: Boolean) -> Unit,
-    attempt: Int,
-    modifier: Modifier = Modifier,
-)
+expect fun QrScanner(onCode: (String) -> Unit, onPermission: (granted: Boolean) -> Unit, attempt: Int, modifier: Modifier = Modifier)
 
 /** Abre os ajustes do app no sistema (para liberar a câmera depois de negada de vez). */
 @Composable

@@ -238,5 +238,4 @@ private fun PcRow(pc: DiscoveredPc, paired: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-internal fun slotsText(free: Int): String =
-    if (free > 0) stringResource(Res.string.pc_slots_free, free) else stringResource(Res.string.pc_slots_full)
+internal fun slotsText(free: Int): String = if (free > 0) stringResource(Res.string.pc_slots_free, free) else stringResource(Res.string.pc_slots_full)

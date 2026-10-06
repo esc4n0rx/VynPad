@@ -74,7 +74,15 @@ fun GlassCard(
                 shape,
                 Shadow(
                     radius = 18.dp,
-                    color = (glow ?: Color.Black).copy(alpha = if (glow != null) 0.45f else if (c.isDark) 0.35f else 0.12f),
+                    color = (glow ?: Color.Black).copy(
+                        alpha = if (glow != null) {
+                            0.45f
+                        } else if (c.isDark) {
+                            0.35f
+                        } else {
+                            0.12f
+                        },
+                    ),
                     offset = DpOffset(0.dp, 8.dp),
                 ),
             )

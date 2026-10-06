@@ -17,6 +17,12 @@ fun VynText(
     color: Color = Color.Unspecified,
     maxLines: Int = Int.MAX_VALUE,
 ) {
-    val resolved = if (color == Color.Unspecified) style.copy(color = if (style.color == Color.Unspecified) VynTheme.colors.textPrimary else style.color) else style.copy(color = color)
+    val resolved = if (color ==
+        Color.Unspecified
+    ) {
+        style.copy(color = if (style.color == Color.Unspecified) VynTheme.colors.textPrimary else style.color)
+    } else {
+        style.copy(color = color)
+    }
     BasicText(text, modifier, resolved, maxLines = maxLines, overflow = TextOverflow.Ellipsis)
 }

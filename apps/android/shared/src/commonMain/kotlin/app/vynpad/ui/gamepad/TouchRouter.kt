@@ -103,7 +103,9 @@ class TouchRouter(
         val g = geometry()
         val hold: Hold = when (val hit = g.hit(x, y) ?: return) {
             is Hit.Button -> ButtonHold(hit.mask).also { feedback.press() }
+
             is Hit.Dpad -> ButtonHold(hit.mask).also { if (hit.mask != 0) feedback.press() }
+
             is Hit.Stick -> {
                 // Um analógico só tem um dedo: o segundo toque na mesma zona é ignorado.
                 if (holds.values.any { it is StickHold && it.left == hit.left }) return
@@ -119,6 +121,7 @@ class TouchRouter(
                     clickHeld = nowMs - lastTapUp[index] <= DOUBLE_TAP_MS,
                 ).also { if (it.clickHeld) feedback.press() }
             }
+
             is Hit.Trigger -> {
                 if (holds.values.any { it is TriggerHold && it.left == hit.left }) return
                 TriggerHold(hit.left).also {
@@ -147,6 +150,7 @@ class TouchRouter(
                     hold.mask = mask
                 }
             }
+
             is StickHold -> {
                 val dx = x - hold.origin.x
                 val dy = y - hold.origin.y
@@ -163,6 +167,7 @@ class TouchRouter(
                 if (limit && !hold.atLimit) feedback.detent()
                 hold.atLimit = limit
             }
+
             is TriggerHold -> {
                 val value = g.triggerValue(hold.left, y)
                 if (crossed(hold.value, value, 0.5f) || crossed(hold.value, value, 0.98f)) feedback.detent()
@@ -205,7 +210,9 @@ class TouchRouter(
         for (hold in holds.values) {
             when (hold) {
                 is ButtonHold -> buttons = buttons or hold.mask
+
                 is TriggerHold -> if (hold.left) lt = maxOf(lt, hold.value) else rt = maxOf(rt, hold.value)
+
                 is StickHold -> {
                     val axisX = (hold.vx.coerceIn(-1f, 1f) * AXIS_MAX).roundToInt()
                     // O eixo Y do XInput é positivo para cima; o da tela é positivo para baixo.

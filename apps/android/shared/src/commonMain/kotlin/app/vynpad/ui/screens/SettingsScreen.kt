@@ -12,41 +12,41 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import app.vynpad.resources.Res
 import app.vynpad.core.loadCoreInfo
+import app.vynpad.input.RumbleStrength
+import app.vynpad.resources.Res
+import app.vynpad.resources.pad_color_fixed
+import app.vynpad.resources.pad_color_slot
+import app.vynpad.resources.rumble_medium
+import app.vynpad.resources.rumble_soft
+import app.vynpad.resources.rumble_strong
 import app.vynpad.resources.settings_about
-import app.vynpad.resources.settings_core
 import app.vynpad.resources.settings_appearance
+import app.vynpad.resources.settings_core
 import app.vynpad.resources.settings_feedback
 import app.vynpad.resources.settings_haptics
 import app.vynpad.resources.settings_haptics_desc
+import app.vynpad.resources.settings_haptics_strength
+import app.vynpad.resources.settings_pad_color
 import app.vynpad.resources.settings_rumble
 import app.vynpad.resources.settings_rumble_desc
 import app.vynpad.resources.settings_rumble_strength
 import app.vynpad.resources.settings_rumble_test
-import app.vynpad.resources.rumble_medium
-import app.vynpad.resources.rumble_soft
-import app.vynpad.resources.rumble_strong
-import app.vynpad.resources.pad_color_fixed
-import app.vynpad.resources.pad_color_slot
-import app.vynpad.resources.settings_haptics_strength
-import app.vynpad.resources.settings_pad_color
-import app.vynpad.settings.AppSettings
-import app.vynpad.ui.haptics.HapticStrength
-import app.vynpad.input.RumbleStrength
-import app.vynpad.ui.components.ButtonKind
-import app.vynpad.ui.components.VynButton
 import app.vynpad.resources.settings_theme
 import app.vynpad.resources.settings_title
 import app.vynpad.resources.settings_version
 import app.vynpad.resources.theme_dark
 import app.vynpad.resources.theme_light
 import app.vynpad.resources.theme_system
+import app.vynpad.settings.AppSettings
+import app.vynpad.ui.components.ButtonKind
 import app.vynpad.ui.components.GlassCard
+import app.vynpad.ui.components.VynButton
 import app.vynpad.ui.components.VynSegmented
 import app.vynpad.ui.components.VynText
 import app.vynpad.ui.components.VynToggle
 import app.vynpad.ui.components.entrance
+import app.vynpad.ui.haptics.HapticStrength
 import app.vynpad.ui.theme.ThemeMode
 import app.vynpad.ui.theme.VynTheme
 import org.jetbrains.compose.resources.stringResource
@@ -54,12 +54,7 @@ import org.jetbrains.compose.resources.stringResource
 const val AppVersion = "0.1.0"
 
 @Composable
-fun SettingsScreen(
-    settings: AppSettings,
-    onSettings: (AppSettings) -> Unit,
-    onTestRumble: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun SettingsScreen(settings: AppSettings, onSettings: (AppSettings) -> Unit, onTestRumble: () -> Unit, modifier: Modifier = Modifier) {
     val c = VynTheme.colors
     val t = VynTheme.typography
     val themeMode = settings.theme
@@ -158,11 +153,7 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun Section(
-    title: org.jetbrains.compose.resources.StringResource,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
+private fun Section(title: org.jetbrains.compose.resources.StringResource, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val c = VynTheme.colors
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         VynText(

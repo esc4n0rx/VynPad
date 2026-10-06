@@ -149,6 +149,7 @@ fun PairingScreen(
                 haptics.confirm()
                 phase = Phase.Success(result.server)
             }
+
             is PairResult.Failure -> fail(result.error, result.retryAfterSeconds)
         }
     }
@@ -244,6 +245,7 @@ fun PairingScreen(
                             phase = Phase.Idle
                         },
                     )
+
                     Method.Pin -> PinPane(
                         phase = phase,
                         pin = pin,
@@ -281,6 +283,7 @@ fun PairingScreen(
                 PulseRings(Modifier.size(150.dp))
                 VynText(stringResource(Res.string.pair_connecting, current.label), style = t.subtitle)
             }
+
             is Phase.Success -> Overlay {
                 SuccessBadge(Modifier.size(160.dp))
                 VynText(stringResource(Res.string.pair_success_title), style = t.title)
@@ -290,6 +293,7 @@ fun PairingScreen(
                     color = c.textSecondary,
                 )
             }
+
             else -> Unit
         }
     }

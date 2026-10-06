@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import app.vynpad.input.RumbleSettings
 import app.vynpad.input.RumbleStrength
 import app.vynpad.ui.gamepad.PadLayout
-import app.vynpad.ui.haptics.HapticStrength
 import app.vynpad.ui.gamepad.PadLayouts
+import app.vynpad.ui.haptics.HapticStrength
 import app.vynpad.ui.theme.ThemeMode
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

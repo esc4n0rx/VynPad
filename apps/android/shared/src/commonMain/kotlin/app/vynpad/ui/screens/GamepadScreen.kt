@@ -7,9 +7,8 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -17,44 +16,42 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
-import app.vynpad.skin.SkinBitmap
-import app.vynpad.skin.rememberSkinStore
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import app.vynpad.input.GamepadState
 import app.vynpad.pairing.SessionState
 import app.vynpad.resources.Res
 import app.vynpad.resources.gamepad_layout
 import app.vynpad.resources.gamepad_leave
-import app.vynpad.resources.layout_edit
-import app.vynpad.settings.AppSettings
-import app.vynpad.ui.components.VynChip
-import app.vynpad.ui.gamepad.PadEditing
-import app.vynpad.ui.gamepad.PadEditorOverlay
-import app.vynpad.ui.gamepad.PadElement
 import app.vynpad.resources.gamepad_menu_title
 import app.vynpad.resources.gamepad_player_n
 import app.vynpad.resources.gamepad_preview
 import app.vynpad.resources.gamepad_resume
 import app.vynpad.resources.gyro_hold_still
 import app.vynpad.resources.gyro_recenter
+import app.vynpad.resources.layout_edit
 import app.vynpad.resources.session_disconnect
+import app.vynpad.settings.AppSettings
+import app.vynpad.skin.SkinBitmap
+import app.vynpad.skin.rememberSkinStore
 import app.vynpad.ui.PlatformBackHandler
 import app.vynpad.ui.components.ButtonKind
 import app.vynpad.ui.components.GlassCard
 import app.vynpad.ui.components.VynButton
+import app.vynpad.ui.components.VynChip
 import app.vynpad.ui.components.VynIcon
 import app.vynpad.ui.components.VynIconView
 import app.vynpad.ui.components.VynSheet
@@ -62,6 +59,9 @@ import app.vynpad.ui.components.VynText
 import app.vynpad.ui.components.formatRtt
 import app.vynpad.ui.components.rttColor
 import app.vynpad.ui.gamepad.GamepadSurface
+import app.vynpad.ui.gamepad.PadEditing
+import app.vynpad.ui.gamepad.PadEditorOverlay
+import app.vynpad.ui.gamepad.PadElement
 import app.vynpad.ui.gamepad.PadFeedback
 import app.vynpad.ui.haptics.LocalHaptics
 import app.vynpad.ui.theme.VynTheme
@@ -178,37 +178,39 @@ fun GamepadScreen(
         }
 
         // Pílula de status: jogador e PC; tocar abre o menu.
-        if (!editing) GlassCard(
-            Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 10.dp)
-                .clip(CircleShape)
-                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                    haptics.tick()
-                    menuOpen = true
-                },
-            radius = 28.dp,
-            base = c.windowSolid.copy(alpha = 0.7f),
-        ) {
-            Row(
-                Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Box(Modifier.size(10.dp).alpha(if (connected != null) pulse else 0.4f).background(accent, CircleShape))
-                VynText(
-                    if (connected != null) {
-                        stringResource(Res.string.gamepad_player_n, slot + 1) + " · " + connected.serverName
-                    } else {
-                        stringResource(Res.string.gamepad_preview)
+        if (!editing) {
+            GlassCard(
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 10.dp)
+                    .clip(CircleShape)
+                    .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                        haptics.tick()
+                        menuOpen = true
                     },
-                    style = t.bodyStrong,
-                    maxLines = 1,
-                )
-                if (connected != null && rttMicros != null) {
-                    VynText(formatRtt(rttMicros), style = t.caption, color = rttColor(rttMicros))
+                radius = 28.dp,
+                base = c.windowSolid.copy(alpha = 0.7f),
+            ) {
+                Row(
+                    Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Box(Modifier.size(10.dp).alpha(if (connected != null) pulse else 0.4f).background(accent, CircleShape))
+                    VynText(
+                        if (connected != null) {
+                            stringResource(Res.string.gamepad_player_n, slot + 1) + " · " + connected.serverName
+                        } else {
+                            stringResource(Res.string.gamepad_preview)
+                        },
+                        style = t.bodyStrong,
+                        maxLines = 1,
+                    )
+                    if (connected != null && rttMicros != null) {
+                        VynText(formatRtt(rttMicros), style = t.caption, color = rttColor(rttMicros))
+                    }
+                    VynIconView(VynIcon.Menu, tint = c.textSecondary, size = 20.dp)
                 }
-                VynIconView(VynIcon.Menu, tint = c.textSecondary, size = 20.dp)
             }
         }
 

@@ -40,18 +40,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import app.vynpad.discovery.DiscoveredPc
-import app.vynpad.input.GamepadState
-import app.vynpad.settings.AppSettings
-import app.vynpad.skin.rememberSkinStore
-import app.vynpad.settings.rememberSettingsStore
-import kotlinx.coroutines.delay
 import app.vynpad.discovery.rememberDiscoveryEngine
+import app.vynpad.input.GamepadState
 import app.vynpad.pairing.DeepLinks
 import app.vynpad.pairing.SessionState
 import app.vynpad.pairing.rememberPairingController
 import app.vynpad.resources.Res
 import app.vynpad.resources.nav_connect
 import app.vynpad.resources.nav_settings
+import app.vynpad.settings.AppSettings
+import app.vynpad.settings.rememberSettingsStore
+import app.vynpad.skin.rememberSkinStore
 import app.vynpad.ui.components.GlassCard
 import app.vynpad.ui.components.VynBackground
 import app.vynpad.ui.components.VynIcon
@@ -71,6 +70,7 @@ import app.vynpad.ui.theme.PageTransitionOffsetDp
 import app.vynpad.ui.theme.ThemeMode
 import app.vynpad.ui.theme.VynTheme
 import app.vynpad.ui.theme.vynSpring
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
 enum class Screen { Connect, Settings, Gamepad }
@@ -152,8 +152,10 @@ fun VynApp() {
                         AnimatedContent(
                             targetState = screen,
                             transitionSpec = {
-                                (fadeIn(tween(PageTransitionMillis, delayMillis = 40)) +
-                                    slideInVertically(tween(PageTransitionMillis)) { offsetPx })
+                                (
+                                    fadeIn(tween(PageTransitionMillis, delayMillis = 40)) +
+                                        slideInVertically(tween(PageTransitionMillis)) { offsetPx }
+                                    )
                                     .togetherWith(fadeOut(tween(PageTransitionMillis / 2)))
                             },
                             label = "screen",
@@ -172,6 +174,7 @@ fun VynApp() {
                                     onDisconnect = { pairing.session.disconnect() },
                                     modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
                                 )
+
                                 else -> Shell(tab = target, onTab = { screen = it }) {
                                     when (target) {
                                         Screen.Settings -> SettingsScreen(
@@ -179,6 +182,7 @@ fun VynApp() {
                                             onSettings = { settings = it },
                                             onTestRumble = { pairing.session.testRumble() },
                                         )
+
                                         else -> ConnectScreen(
                                             pcs = pcs,
                                             status = status,

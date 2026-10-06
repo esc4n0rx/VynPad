@@ -1,20 +1,15 @@
 package app.vynpad.ui.gamepad
 
+import kotlin.io.encoding.Base64
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlin.io.encoding.Base64
 
 /**
  * O arquivo de um layout compartilhado (`.vynlayout`): o layout, sem o nome do arquivo da imagem
  * (que só existe neste aparelho), e a imagem de fundo embutida em Base64 (JPEG).
  */
 @Serializable
-data class LayoutPackage(
-    val format: String = FORMAT,
-    val version: Int = VERSION,
-    val layout: PadLayout,
-    val image: String? = null,
-) {
+data class LayoutPackage(val format: String = FORMAT, val version: Int = VERSION, val layout: PadLayout, val image: String? = null) {
     companion object {
         const val FORMAT = "vynpad-layout"
         const val VERSION = 1
@@ -45,8 +40,7 @@ data class LayoutPackage(
         }
 
         /** A imagem embutida, ou `null` se não há ou o Base64 está quebrado. */
-        fun imageBytes(pkg: LayoutPackage): ByteArray? =
-            pkg.image?.let { runCatching { Base64.decode(it) }.getOrNull() }?.takeIf { it.isNotEmpty() }
+        fun imageBytes(pkg: LayoutPackage): ByteArray? = pkg.image?.let { runCatching { Base64.decode(it) }.getOrNull() }?.takeIf { it.isNotEmpty() }
     }
 }
 

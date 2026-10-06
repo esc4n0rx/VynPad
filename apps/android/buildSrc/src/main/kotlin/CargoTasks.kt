@@ -1,3 +1,4 @@
+import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.ListProperty
@@ -8,7 +9,6 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
-import javax.inject.Inject
 
 /** Roda um comando do cargo na raiz do workspace Rust; o cargo decide o que está desatualizado. */
 abstract class RunCargo : DefaultTask() {

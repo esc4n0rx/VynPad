@@ -25,13 +25,7 @@ enum class PadElement {
  * da tela (0–1), então o layout vale em qualquer tamanho de tela.
  */
 @Serializable
-data class ElementSpec(
-    val x: Float,
-    val y: Float,
-    val scale: Float = 1f,
-    val opacity: Float = 1f,
-    val visible: Boolean = true,
-)
+data class ElementSpec(val x: Float, val y: Float, val scale: Float = 1f, val opacity: Float = 1f, val visible: Boolean = true)
 
 /**
  * Como um analógico responde ao dedo, à parte do tamanho da peça.
@@ -41,11 +35,7 @@ data class ElementSpec(
  *   independente da zona morta do perfil no PC.
  */
 @Serializable
-data class StickConfig(
-    val floating: Boolean = true,
-    val travelScale: Float = 1f,
-    val deadzone: Float = 0f,
-)
+data class StickConfig(val floating: Boolean = true, val travelScale: Float = 1f, val deadzone: Float = 0f)
 
 /** Um layout salvo: o nome que o usuário vê e a posição de cada peça. */
 @Serializable
@@ -59,8 +49,7 @@ data class PadLayout(
 ) {
     fun stick(left: Boolean): StickConfig = if (left) leftStick else rightStick
 
-    fun withStick(left: Boolean, config: StickConfig): PadLayout =
-        if (left) copy(leftStick = config) else copy(rightStick = config)
+    fun withStick(left: Boolean, config: StickConfig): PadLayout = if (left) copy(leftStick = config) else copy(rightStick = config)
 
     /** Peças que o layout não menciona caem no padrão (um layout antigo continua válido). */
     fun spec(element: PadElement): ElementSpec = elements[element] ?: PadLayouts.DefaultSpecs.getValue(element)
@@ -105,27 +94,39 @@ object PadLayouts {
     fun fromPreset(preset: PadPreset, id: String, name: String): PadLayout {
         val specs: Map<PadElement, ElementSpec> = when (preset) {
             PadPreset.Default -> DefaultSpecs
+
             PadPreset.Compact -> DefaultSpecs.mapValues { (element, s) ->
                 when (element) {
                     // Encolhe tudo e aproxima dos cantos, para mãos pequenas ou telas menores.
                     PadElement.LeftStick -> s.copy(x = 0.12f, scale = 0.85f)
+
                     PadElement.RightStick -> s.copy(x = 0.70f, scale = 0.85f)
+
                     PadElement.Dpad -> s.copy(x = 0.28f, scale = 0.85f)
+
                     PadElement.Face -> s.copy(x = 0.88f, scale = 0.85f)
+
                     else -> s.copy(scale = 0.85f)
                 }
             }
+
             // Espelho: o que era da esquerda vai para a direita, mantendo a função de cada peça.
             PadPreset.LeftHanded -> DefaultSpecs.mapValues { (_, s) -> s.copy(x = 1f - s.x) }
+
             // Retrô: sem analógicos nem gatilhos; o direcional cresce e os ombros ficam.
             PadPreset.DpadOnly -> DefaultSpecs.mapValues { (element, s) ->
                 when (element) {
                     PadElement.LeftStick, PadElement.RightStick, PadElement.LT, PadElement.RT ->
                         s.copy(visible = false)
+
                     PadElement.Dpad -> s.copy(x = 0.20f, y = 0.60f, scale = 1.3f)
+
                     PadElement.Face -> s.copy(x = 0.82f, y = 0.58f, scale = 1.1f)
+
                     PadElement.LB -> s.copy(x = 0.14f)
+
                     PadElement.RB -> s.copy(x = 0.86f)
+
                     else -> s
                 }
             }
@@ -164,8 +165,7 @@ object PadEditing {
     fun setOpacity(layout: PadLayout, element: PadElement, opacity: Float): PadLayout =
         layout.with(element, layout.spec(element).copy(opacity = opacity.coerceIn(PadLayouts.MIN_OPACITY, 1f)))
 
-    fun setVisible(layout: PadLayout, element: PadElement, visible: Boolean): PadLayout =
-        layout.with(element, layout.spec(element).copy(visible = visible))
+    fun setVisible(layout: PadLayout, element: PadElement, visible: Boolean): PadLayout = layout.with(element, layout.spec(element).copy(visible = visible))
 
     fun setStick(layout: PadLayout, left: Boolean, config: StickConfig): PadLayout = layout.withStick(
         left,

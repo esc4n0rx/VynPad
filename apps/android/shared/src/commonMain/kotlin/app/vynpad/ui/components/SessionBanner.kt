@@ -31,12 +31,7 @@ import org.jetbrains.compose.resources.stringResource
  * slot), conectando/reconectando (com anéis pulsando) ou o motivo de a sessão ter terminado.
  */
 @Composable
-fun SessionBanner(
-    state: SessionState,
-    rttMicros: Int?,
-    onDisconnect: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun SessionBanner(state: SessionState, rttMicros: Int?, onDisconnect: () -> Unit, modifier: Modifier = Modifier) {
     if (state is SessionState.Idle) return
     val c = VynTheme.colors
     val t = VynTheme.typography
@@ -64,10 +59,13 @@ fun SessionBanner(
                             color = slotColor ?: c.accent,
                         )
                     }
+
                     is SessionState.Connecting ->
                         VynText(stringResource(Res.string.session_connecting, state.serverName), style = t.bodyStrong, maxLines = 2)
+
                     is SessionState.Reconnecting ->
                         VynText(stringResource(Res.string.session_reconnecting, state.serverName), style = t.bodyStrong, maxLines = 2)
+
                     is SessionState.Ended -> VynText(
                         stringResource(
                             when (state.reason) {
@@ -80,6 +78,7 @@ fun SessionBanner(
                         style = t.body,
                         maxLines = 3,
                     )
+
                     SessionState.Idle -> Unit
                 }
             }

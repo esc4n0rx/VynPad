@@ -5,17 +5,17 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,14 +39,14 @@ import app.vynpad.resources.el_right_stick
 import app.vynpad.resources.el_rt
 import app.vynpad.resources.el_start
 import app.vynpad.resources.layout_delete
+import app.vynpad.resources.layout_done
 import app.vynpad.resources.layout_export
 import app.vynpad.resources.layout_export_error
 import app.vynpad.resources.layout_exported
+import app.vynpad.resources.layout_hint
 import app.vynpad.resources.layout_import
 import app.vynpad.resources.layout_import_error
 import app.vynpad.resources.layout_imported
-import app.vynpad.resources.layout_done
-import app.vynpad.resources.layout_hint
 import app.vynpad.resources.layout_models
 import app.vynpad.resources.layout_my_layouts
 import app.vynpad.resources.layout_name_hint
@@ -61,17 +61,15 @@ import app.vynpad.resources.layout_size
 import app.vynpad.resources.layout_snap
 import app.vynpad.resources.layout_visible
 import app.vynpad.resources.preset_compact
+import app.vynpad.resources.preset_default
+import app.vynpad.resources.preset_dpad
+import app.vynpad.resources.preset_left
+import app.vynpad.resources.skin_open
 import app.vynpad.resources.stick_deadzone
 import app.vynpad.resources.stick_fixed
 import app.vynpad.resources.stick_floating
 import app.vynpad.resources.stick_mode
 import app.vynpad.resources.stick_travel
-import app.vynpad.ui.components.VynSegmented
-import app.vynpad.ui.gamepad.StickConfig
-import app.vynpad.resources.preset_default
-import app.vynpad.resources.preset_dpad
-import app.vynpad.resources.preset_left
-import app.vynpad.resources.skin_open
 import app.vynpad.settings.AppSettings
 import app.vynpad.skin.SkinBitmap
 import app.vynpad.skin.rememberLayoutExport
@@ -80,6 +78,7 @@ import app.vynpad.ui.components.ButtonKind
 import app.vynpad.ui.components.GlassCard
 import app.vynpad.ui.components.VynButton
 import app.vynpad.ui.components.VynChip
+import app.vynpad.ui.components.VynSegmented
 import app.vynpad.ui.components.VynSheet
 import app.vynpad.ui.components.VynSlider
 import app.vynpad.ui.components.VynText
@@ -90,6 +89,7 @@ import app.vynpad.ui.gamepad.PadElement
 import app.vynpad.ui.gamepad.PadLayout
 import app.vynpad.ui.gamepad.PadLayouts
 import app.vynpad.ui.gamepad.PadPreset
+import app.vynpad.ui.gamepad.StickConfig
 import app.vynpad.ui.theme.VynTheme
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -178,87 +178,87 @@ fun LayoutEditorChrome(
             val spec = draft.spec(selected)
             val onRight = spec.x < 0.5f
             BoxWithConstraints(Modifier.fillMaxSize()) {
-            GlassCard(
-                Modifier
-                    .align(if (onRight) Alignment.CenterEnd else Alignment.CenterStart)
-                    .padding(horizontal = 12.dp)
-                    .width(250.dp)
-                    // Os analógicos têm mais ajustes: o painel rola em vez de passar da tela.
-                    .heightIn(max = maxHeight - 76.dp),
-                radius = 22.dp,
-                base = c.windowSolid.copy(alpha = 0.88f),
-            ) {
-                Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    VynText(stringResource(selected.label()), style = t.bodyStrong, maxLines = 1)
-                    VynText(stringResource(Res.string.layout_size), style = t.caption, color = c.textSecondary)
-                    VynSlider(
-                        value = spec.scale,
-                        onValueChange = { onDraft(PadEditing.setScale(draft, selected, it)) },
-                        valueRange = PadLayouts.MIN_SCALE..PadLayouts.MAX_SCALE,
-                        onValueChangeFinished = { onCommit(draft) },
-                    )
-                    if (selected == PadElement.LeftStick || selected == PadElement.RightStick) {
-                        val left = selected == PadElement.LeftStick
-                        val stick = draft.stick(left)
-                        VynText(stringResource(Res.string.stick_mode), style = t.caption, color = c.textSecondary)
-                        VynSegmented(
-                            options = listOf(
-                                true to stringResource(Res.string.stick_floating),
-                                false to stringResource(Res.string.stick_fixed),
-                            ),
-                            selected = stick.floating,
-                            onSelect = {
-                                val next = PadEditing.setStick(draft, left, stick.copy(floating = it))
+                GlassCard(
+                    Modifier
+                        .align(if (onRight) Alignment.CenterEnd else Alignment.CenterStart)
+                        .padding(horizontal = 12.dp)
+                        .width(250.dp)
+                        // Os analógicos têm mais ajustes: o painel rola em vez de passar da tela.
+                        .heightIn(max = maxHeight - 76.dp),
+                    radius = 22.dp,
+                    base = c.windowSolid.copy(alpha = 0.88f),
+                ) {
+                    Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        VynText(stringResource(selected.label()), style = t.bodyStrong, maxLines = 1)
+                        VynText(stringResource(Res.string.layout_size), style = t.caption, color = c.textSecondary)
+                        VynSlider(
+                            value = spec.scale,
+                            onValueChange = { onDraft(PadEditing.setScale(draft, selected, it)) },
+                            valueRange = PadLayouts.MIN_SCALE..PadLayouts.MAX_SCALE,
+                            onValueChangeFinished = { onCommit(draft) },
+                        )
+                        if (selected == PadElement.LeftStick || selected == PadElement.RightStick) {
+                            val left = selected == PadElement.LeftStick
+                            val stick = draft.stick(left)
+                            VynText(stringResource(Res.string.stick_mode), style = t.caption, color = c.textSecondary)
+                            VynSegmented(
+                                options = listOf(
+                                    true to stringResource(Res.string.stick_floating),
+                                    false to stringResource(Res.string.stick_fixed),
+                                ),
+                                selected = stick.floating,
+                                onSelect = {
+                                    val next = PadEditing.setStick(draft, left, stick.copy(floating = it))
+                                    onDraft(next)
+                                    onCommit(next)
+                                },
+                            )
+                            VynText(stringResource(Res.string.stick_travel), style = t.caption, color = c.textSecondary)
+                            VynSlider(
+                                value = stick.travelScale,
+                                onValueChange = { onDraft(PadEditing.setStick(draft, left, stick.copy(travelScale = it))) },
+                                valueRange = PadLayouts.MIN_TRAVEL..PadLayouts.MAX_TRAVEL,
+                                onValueChangeFinished = { onCommit(draft) },
+                            )
+                            VynText(
+                                stringResource(Res.string.stick_deadzone) + " · " + (stick.deadzone * 100).toInt() + "%",
+                                style = t.caption,
+                                color = c.textSecondary,
+                            )
+                            VynSlider(
+                                value = stick.deadzone,
+                                onValueChange = { onDraft(PadEditing.setStick(draft, left, stick.copy(deadzone = it))) },
+                                valueRange = 0f..PadLayouts.MAX_DEADZONE,
+                                onValueChangeFinished = { onCommit(draft) },
+                            )
+                        }
+                        VynText(stringResource(Res.string.layout_opacity), style = t.caption, color = c.textSecondary)
+                        VynSlider(
+                            value = spec.opacity,
+                            onValueChange = { onDraft(PadEditing.setOpacity(draft, selected, it)) },
+                            valueRange = PadLayouts.MIN_OPACITY..1f,
+                            onValueChangeFinished = { onCommit(draft) },
+                        )
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            VynText(stringResource(Res.string.layout_visible), style = t.body, modifier = Modifier.weight(1f))
+                            VynToggle(spec.visible, {
+                                val next = PadEditing.setVisible(draft, selected, it)
+                                onDraft(next)
+                                onCommit(next)
+                            })
+                        }
+                        VynButton(
+                            stringResource(Res.string.layout_reset_part),
+                            {
+                                val next = PadEditing.resetElement(draft, selected)
                                 onDraft(next)
                                 onCommit(next)
                             },
-                        )
-                        VynText(stringResource(Res.string.stick_travel), style = t.caption, color = c.textSecondary)
-                        VynSlider(
-                            value = stick.travelScale,
-                            onValueChange = { onDraft(PadEditing.setStick(draft, left, stick.copy(travelScale = it))) },
-                            valueRange = PadLayouts.MIN_TRAVEL..PadLayouts.MAX_TRAVEL,
-                            onValueChangeFinished = { onCommit(draft) },
-                        )
-                        VynText(
-                            stringResource(Res.string.stick_deadzone) + " · " + (stick.deadzone * 100).toInt() + "%",
-                            style = t.caption,
-                            color = c.textSecondary,
-                        )
-                        VynSlider(
-                            value = stick.deadzone,
-                            onValueChange = { onDraft(PadEditing.setStick(draft, left, stick.copy(deadzone = it))) },
-                            valueRange = 0f..PadLayouts.MAX_DEADZONE,
-                            onValueChangeFinished = { onCommit(draft) },
+                            kind = ButtonKind.Secondary,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
-                    VynText(stringResource(Res.string.layout_opacity), style = t.caption, color = c.textSecondary)
-                    VynSlider(
-                        value = spec.opacity,
-                        onValueChange = { onDraft(PadEditing.setOpacity(draft, selected, it)) },
-                        valueRange = PadLayouts.MIN_OPACITY..1f,
-                        onValueChangeFinished = { onCommit(draft) },
-                    )
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        VynText(stringResource(Res.string.layout_visible), style = t.body, modifier = Modifier.weight(1f))
-                        VynToggle(spec.visible, {
-                            val next = PadEditing.setVisible(draft, selected, it)
-                            onDraft(next)
-                            onCommit(next)
-                        })
-                    }
-                    VynButton(
-                        stringResource(Res.string.layout_reset_part),
-                        {
-                            val next = PadEditing.resetElement(draft, selected)
-                            onDraft(next)
-                            onCommit(next)
-                        },
-                        kind = ButtonKind.Secondary,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
                 }
-            }
             }
         }
 
@@ -334,7 +334,10 @@ private fun ModelsSheet(
 
         val editing = renaming
         if (editing != null) {
-            val save = { onSettings(settings.rename(draft.id, editing)); renaming = null }
+            val save = {
+                onSettings(settings.rename(draft.id, editing))
+                renaming = null
+            }
             VynTextField(
                 value = editing,
                 onValueChange = { renaming = it.take(AppSettings.MAX_NAME) },

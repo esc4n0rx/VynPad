@@ -35,16 +35,10 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
 
-private fun hasCameraPermission(context: Context) =
-    ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+private fun hasCameraPermission(context: Context) = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
 
 @Composable
-actual fun QrScanner(
-    onCode: (String) -> Unit,
-    onPermission: (granted: Boolean) -> Unit,
-    attempt: Int,
-    modifier: Modifier,
-) {
+actual fun QrScanner(onCode: (String) -> Unit, onPermission: (granted: Boolean) -> Unit, attempt: Int, modifier: Modifier) {
     val context = LocalContext.current
     var granted by remember { mutableStateOf(hasCameraPermission(context)) }
     val onPermissionState = rememberUpdatedState(onPermission)

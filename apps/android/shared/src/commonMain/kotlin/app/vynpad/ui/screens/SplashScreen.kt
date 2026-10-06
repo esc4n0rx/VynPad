@@ -107,7 +107,11 @@ fun SplashScreen(onFinished: () -> Unit, modifier: Modifier = Modifier) {
             val reach = size.maxDimension * 0.55f
             drawCircle(
                 Brush.radialGradient(
-                    listOf(c.accent.copy(alpha = 0.30f * glow.value), c.indigo.copy(alpha = 0.10f * glow.value), androidx.compose.ui.graphics.Color.Transparent),
+                    listOf(
+                        c.accent.copy(alpha = 0.30f * glow.value),
+                        c.indigo.copy(alpha = 0.10f * glow.value),
+                        androidx.compose.ui.graphics.Color.Transparent,
+                    ),
                     center,
                     reach,
                 ),

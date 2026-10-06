@@ -6,7 +6,7 @@
 | Prioridade | P1 |
 | Estimativa | M |
 | Depende de | T-904, T-905, T-906, T-907, T-908 |
-| Status | ⬜ A fazer |
+| Status | 🟡 Em andamento (build, CI, lint e documentação prontos; falta o que depende do Play Console e de aparelhos) |
 
 ## Objetivo
 Publicar o client e fechar o ecossistema VynPad 1.0.
@@ -26,3 +26,17 @@ Publicar o client e fechar o ecossistema VynPad 1.0.
 
 ## Fora de escopo
 - iOS.
+
+## Entregue (2026-10-06)
+- Build de release com R8 e regras para JNA/UniFFI, kotlinx.serialization e ML Kit; App Bundle (`bundleRelease`).
+- Assinatura por variáveis de ambiente (`VYNPAD_KEYSTORE*`), sem segredos no repositório.
+- ktlint (`.editorconfig`, binário fixado por hash no CI), Android Lint (um erro real corrigido: `windowLayoutInDisplayCutoutMode` exige API 27) e job `android` no `ci.yml`.
+- `data_extraction_rules.xml` (sem backup nem transferência de dados).
+- Procedimento, "Segurança dos dados", política de privacidade e texto da loja em `docs/android/PUBLICACAO.md`.
+
+## Pendente
+- Decidir e implementar o serviço em primeiro plano (pendência da T-906) e o tipo a declarar no Play Console.
+- Conta no Play Console, chave de upload, política de privacidade hospedada, screenshots e faixas (interno → fechado → produção).
+- Testes instrumentados no CI contra o server de teste e a matriz de aparelhos.
+- Medição de latência ponta a ponta com câmera em 3 aparelhos (T-702) e registro em `docs/benchmarks/`.
+- Onboarding do desktop com o link da Play Store (T-601).

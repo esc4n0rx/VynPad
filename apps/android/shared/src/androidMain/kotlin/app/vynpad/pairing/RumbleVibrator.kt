@@ -8,6 +8,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import app.vynpad.input.RumbleMix
 import app.vynpad.input.RumbleSettings
+import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.concurrent.atomic.AtomicLong
 
 /** A cada quanto o efeito é renovado enquanto o jogo mantém o rumble ligado. */
 private const val RENEW_MILLIS = 100L

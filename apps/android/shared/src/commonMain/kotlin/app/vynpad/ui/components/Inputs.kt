@@ -1,5 +1,6 @@
 package app.vynpad.ui.components
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -28,7 +29,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.foundation.Canvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -88,13 +88,7 @@ fun VynSlider(
 
 /** Campo de texto de uma linha, com o visual dos campos do app. */
 @Composable
-fun VynTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    placeholder: String = "",
-    onDone: () -> Unit = {},
-) {
+fun VynTextField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier, placeholder: String = "", onDone: () -> Unit = {}) {
     val c = VynTheme.colors
     val t = VynTheme.typography
     BasicTextField(

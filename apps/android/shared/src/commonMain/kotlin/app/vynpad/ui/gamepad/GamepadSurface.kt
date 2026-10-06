@@ -21,29 +21,29 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.ImageBitmap
-import app.vynpad.skin.SkinBitmap
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import app.vynpad.input.GamepadState
 import app.vynpad.input.PadButtons
+import app.vynpad.skin.SkinBitmap
 import app.vynpad.ui.theme.VynColors
 import app.vynpad.ui.theme.VynTheme
 import app.vynpad.ui.theme.vynSpring
@@ -340,10 +340,12 @@ private fun DrawScope.drawCenterButton(button: RoundButton, pressed: Float, c: V
                 val y = s.cy + (i - 1) * u * 0.6f
                 drawLine(ink, Offset(s.cx - u * 0.7f, y), Offset(s.cx + u * 0.7f, y), stroke.width, stroke.cap)
             }
+
             CenterGlyph.Back -> {
                 drawRoundRect(ink, Offset(s.cx - u * 0.8f, s.cy - u * 0.35f), Size(u * 1.1f, u * 0.9f), CornerRadius(u * 0.2f), style = stroke)
                 drawRoundRect(ink, Offset(s.cx - u * 0.3f, s.cy - u * 0.65f), Size(u * 1.1f, u * 0.9f), CornerRadius(u * 0.2f), style = stroke)
             }
+
             CenterGlyph.Guide -> {
                 drawCircle(ink, u * 0.95f, center, style = stroke)
                 drawCircle(ink, u * 0.32f, center)

@@ -78,6 +78,7 @@ internal class AndroidSessionManager(
 
     private val lock = Any()
     private var connection: ControlConnection? = null
+
     @Volatile
     private var pump: InputPump? = null
     private var padState: GamepadState? = null
@@ -176,8 +177,7 @@ internal class AndroidSessionManager(
                         _rtt.value = if (previous == null) measured else (previous + (measured - previous) * weight).toInt()
                     }
 
-                    override fun onRumble(rumbleId: UShort, large: UByte, small: UByte) =
-                        rumble.onRumble(large.toInt(), small.toInt())
+                    override fun onRumble(rumbleId: UShort, large: UByte, small: UByte) = rumble.onRumble(large.toInt(), small.toInt())
 
                     override fun onStopped(reason: String) {
                         // O contador de pacotes acabou ou o socket falhou: abre uma sessão nova.
@@ -309,6 +309,7 @@ internal class AndroidSessionManager(
                         attach(result.connection, server)
                         return@launch
                     }
+
                     is Refused -> if (result.reason != SessionEnd.Lost) {
                         finish(server, result.reason)
                         return@launch

@@ -14,8 +14,7 @@ data class Box(val left: Float, val top: Float, val right: Float, val bottom: Fl
     val width get() = right - left
     val height get() = bottom - top
 
-    fun contains(x: Float, y: Float, slop: Float = 0f): Boolean =
-        x >= left - slop && x <= right + slop && y >= top - slop && y <= bottom + slop
+    fun contains(x: Float, y: Float, slop: Float = 0f): Boolean = x >= left - slop && x <= right + slop && y >= top - slop && y <= bottom + slop
 }
 
 /** Botão redondo do controle: a máscara que ele aciona e o rótulo desenhado nele. */
@@ -63,8 +62,7 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
     val stickKnobRadius = 0.085f * h
 
     /** Curso deste analógico, que acompanha o tamanho que o usuário deu à peça. */
-    fun travelOf(left: Boolean) =
-        stickTravel * spec(if (left) PadElement.LeftStick else PadElement.RightStick).scale * layout.stick(left).travelScale
+    fun travelOf(left: Boolean) = stickTravel * spec(if (left) PadElement.LeftStick else PadElement.RightStick).scale * layout.stick(left).travelScale
 
     /** Onde o centro do analógico fica em repouso (e, no modo fixo, o tempo todo). */
     fun stickRest(left: Boolean): Circle = if (left) leftStickZone else rightStickZone
@@ -134,9 +132,8 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
         else -> PadElement.Start
     }
 
-    private fun nearestFace(x: Float, y: Float): RoundButton? =
-        faceButtons.filter { it.shape.contains(x, y, 1.35f) }
-            .minByOrNull { hypot(x - it.shape.cx, y - it.shape.cy) }
+    private fun nearestFace(x: Float, y: Float): RoundButton? = faceButtons.filter { it.shape.contains(x, y, 1.35f) }
+        .minByOrNull { hypot(x - it.shape.cx, y - it.shape.cy) }
 
     private fun shoulderHit(x: Float, y: Float): Hit? {
         val slop = 0.015f * h
@@ -154,18 +151,28 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
     /** Retângulo que envolve a peça (para selecioná-la e destacá-la no editor). */
     fun bounds(element: PadElement): Box = when (element) {
         PadElement.LeftStick -> leftStickZone.box()
+
         PadElement.RightStick -> rightStickZone.box()
+
         PadElement.Dpad -> dpad.box()
+
         PadElement.Face -> {
             val r = faceCenter.r + faceRadius
             Box(faceCenter.cx - r, faceCenter.cy - r, faceCenter.cx + r, faceCenter.cy + r)
         }
+
         PadElement.Back -> back.shape.box()
+
         PadElement.Guide -> guide.shape.box()
+
         PadElement.Start -> start.shape.box()
+
         PadElement.LT -> lt
+
         PadElement.LB -> lb
+
         PadElement.RB -> rb
+
         PadElement.RT -> rt
     }
 
@@ -173,10 +180,9 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
      * A peça sob o dedo no editor, **inclusive as escondidas**. Em empate (peças sobrepostas)
      * vence a de menor área: a peça pequena não fica presa debaixo de uma zona grande.
      */
-    fun elementAt(x: Float, y: Float): PadElement? =
-        PadElement.entries
-            .filter { bounds(it).contains(x, y) }
-            .minByOrNull { bounds(it).let { b -> b.width * b.height } }
+    fun elementAt(x: Float, y: Float): PadElement? = PadElement.entries
+        .filter { bounds(it).contains(x, y) }
+        .minByOrNull { bounds(it).let { b -> b.width * b.height } }
 
     private fun Circle.box() = Box(cx - r, cy - r, cx + r, cy + r)
 

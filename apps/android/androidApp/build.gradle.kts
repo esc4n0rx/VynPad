@@ -29,17 +29,39 @@ android {
         versionName = "0.1.0"
     }
 
+    // Assinatura de release: o keystore e as senhas vêm do ambiente (CI ou máquina de quem
+    // publica), nunca do repositório. Sem elas o release sai sem assinar, e o Play App Signing
+    // assina o bundle de upload com a chave de envio.
+    val uploadKeystore = System.getenv("VYNPAD_KEYSTORE")
+    if (uploadKeystore != null) {
+        signingConfigs.create("upload") {
+            storeFile = file(uploadKeystore)
+            storePassword = System.getenv("VYNPAD_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("VYNPAD_KEY_ALIAS")
+            keyPassword = System.getenv("VYNPAD_KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
+            signingConfigs.findByName("upload")?.let { signingConfig = it }
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 
     sourceSets.getByName("main").jniLibs.directories.add(
         layout.buildDirectory.dir("rustJniLibs").get().asFile.path,
     )
+
+    lint {
+        abortOnError = true
+        // Avisos não derrubam o build; erros sim. targetSdk 36 é deliberado (a 37 ainda é prévia no Play).
+        warningsAsErrors = false
+        // O ícone adaptativo exige a pasta -v26 mesmo com minSdk 26 (o AAPT não o acha sem ela).
+        disable += listOf("OldTargetApi", "ObsoleteSdkInt")
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -43,13 +43,7 @@ enum class ButtonKind { Primary, Secondary, Ghost, Destructive }
 
 /** Botão do design system; ao pressionar encolhe com a mola padrão e dá um toque de haptic. */
 @Composable
-fun VynButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    kind: ButtonKind = ButtonKind.Primary,
-    enabled: Boolean = true,
-) {
+fun VynButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, kind: ButtonKind = ButtonKind.Primary, enabled: Boolean = true) {
     val c = VynTheme.colors
     val haptics = LocalHaptics.current
     val interaction = remember { MutableInteractionSource() }
@@ -132,12 +126,7 @@ fun VynToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Mo
 
 /** Controle segmentado: a pílula de seleção desliza entre as opções com a mola padrão. */
 @Composable
-fun <T> VynSegmented(
-    options: List<Pair<T, String>>,
-    selected: T,
-    onSelect: (T) -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun <T> VynSegmented(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit, modifier: Modifier = Modifier) {
     val c = VynTheme.colors
     val haptics = LocalHaptics.current
     val index = options.indexOfFirst { it.first == selected }.coerceAtLeast(0)

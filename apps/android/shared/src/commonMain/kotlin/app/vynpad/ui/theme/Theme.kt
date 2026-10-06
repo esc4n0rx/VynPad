@@ -135,10 +135,7 @@ object VynTheme {
 }
 
 @Composable
-fun VynTheme(
-    mode: ThemeMode = ThemeMode.Dark,
-    content: @Composable () -> Unit,
-) {
+fun VynTheme(mode: ThemeMode = ThemeMode.Dark, content: @Composable () -> Unit) {
     val dark = when (mode) {
         ThemeMode.System -> isSystemInDarkTheme()
         ThemeMode.Dark -> true

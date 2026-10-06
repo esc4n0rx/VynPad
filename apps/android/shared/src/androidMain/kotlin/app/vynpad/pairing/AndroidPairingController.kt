@@ -77,13 +77,7 @@ internal class AndroidPairingController(context: Context) : PairingController {
     }
 
     /** Tenta cada endereço em ordem; só passa ao próximo quando o anterior não foi alcançado. */
-    private fun attempt(
-        hosts: List<String>,
-        port: Int,
-        trust: TrustPolicy,
-        credential: Credential,
-        badAuth: PairError,
-    ): PairResult {
+    private fun attempt(hosts: List<String>, port: Int, trust: TrustPolicy, credential: Credential, badAuth: PairError): PairResult {
         if (hosts.isEmpty()) return PairResult.Failure(PairError.Unreachable)
         for (host in hosts) {
             try {

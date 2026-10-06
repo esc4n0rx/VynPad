@@ -14,10 +14,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import app.vynpad.ui.gamepad.LayoutPackage
 import app.vynpad.ui.gamepad.PadLayout
+import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
 
 /** Extensão sugerida ao salvar; o seletor de importação aceita qualquer arquivo e valida o conteúdo. */
 private const val EXTENSION = "vynlayout"

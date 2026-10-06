@@ -1,9 +1,9 @@
 package app.vynpad.ui.gamepad
 
-import kotlinx.serialization.Serializable
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import kotlinx.serialization.Serializable
 
 /**
  * O visual de um layout: o banner de um jogo ao fundo, um véu escuro para os botões
@@ -56,9 +56,11 @@ class LumaGrid(val cols: Int, val rows: Int, private val values: FloatArray) {
         val r1 = (bottom.coerceIn(0f, 1f) * rows).toInt().coerceIn(r0, rows - 1)
         var sum = 0f
         var n = 0
-        for (r in r0..r1) for (c in c0..c1) {
-            sum += values[r * cols + c]
-            n++
+        for (r in r0..r1) {
+            for (c in c0..c1) {
+                sum += values[r * cols + c]
+                n++
+            }
         }
         return sum / n
     }

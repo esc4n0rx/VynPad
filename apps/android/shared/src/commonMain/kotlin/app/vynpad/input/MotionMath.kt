@@ -52,10 +52,7 @@ object MotionMath {
  * da média (o aparelho mexeu), descarta a janela e recomeça. Ao fechar uma janela quieta, devolve
  * a média em [feed]. Os tempos vêm de fora (ms monotônicos), então é testável sem relógio.
  */
-class GyroBiasEstimator(
-    private val windowMillis: Long = 2_000,
-    private val stillnessLimit: Float = 0.03f,
-) {
+class GyroBiasEstimator(private val windowMillis: Long = 2_000, private val stillnessLimit: Float = 0.03f) {
     private var startedAt = -1L
     private var count = 0
     private var sx = 0.0
@@ -65,8 +62,7 @@ class GyroBiasEstimator(
     private var maxV = Vec3.Zero
 
     /** Progresso da janela atual, de 0 a 1. */
-    fun progress(nowMillis: Long): Float =
-        if (startedAt < 0) 0f else ((nowMillis - startedAt).toFloat() / windowMillis).coerceIn(0f, 1f)
+    fun progress(nowMillis: Long): Float = if (startedAt < 0) 0f else ((nowMillis - startedAt).toFloat() / windowMillis).coerceIn(0f, 1f)
 
     fun reset() {
         startedAt = -1

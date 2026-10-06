@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 8.1+: igual ao tema base, mas com o recorte de tela (notch) em bordas curtas, atributo que só existe a partir da API 27. -->
+    <style name="Theme.VynPad" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/vynpad_window</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>

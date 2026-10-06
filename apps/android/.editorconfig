@@ -1,0 +1,24 @@
+root = true
+
+[*.{kt,kts}]
+charset = utf-8
+indent_size = 4
+insert_final_newline = true
+max_line_length = 160
+
+# Estilo do Android Studio (o mais próximo do código existente); o ktlint roda no CI (job `android`) com a versão fixada lá.
+ktlint_code_style = android_studio
+
+# Composables são nomeadas em PascalCase e as de teste usam frases em português.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+ktlint_standard_function-naming = disabled
+ktlint_standard_backing-property-naming = disabled
+# Os arquivos têm vários tipos pequenos por tópico (modelo, estado, desenho).
+ktlint_standard_filename = disabled
+
+# O código usa vírgula final em chamadas e declarações multilinha.
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+
+# Constantes de design em PascalCase (convenção do Compose: `PageTransitionMillis`).
+ktlint_standard_property-naming = disabled
