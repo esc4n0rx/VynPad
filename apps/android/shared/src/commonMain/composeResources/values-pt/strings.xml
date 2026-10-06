@@ -59,4 +59,48 @@
     <string name="gamepad_back">Voltar</string>
     <string name="gamepad_player">Jogador 1</string>
     <string name="gamepad_wip">O layout do gamepad chega na próxima etapa.</string>
+
+    <string name="connect_pair_qr">Parear com QR</string>
+    <string name="pc_paired">Pareado</string>
+    <string name="pc_forget">Esquecer PC</string>
+
+    <string name="pair_title">Parear PC</string>
+    <string name="pair_method_qr">Câmera</string>
+    <string name="pair_method_pin">PIN</string>
+    <string name="pair_qr_hint">No PC, abra Dispositivos, toque em Parear novo e aponte a câmera para o QR.</string>
+    <string name="pair_camera_denied_title">Câmera desativada</string>
+    <string name="pair_camera_denied_body">Permita a câmera para ler o QR, ou pareie pelo PIN.</string>
+    <string name="pair_allow_camera">Permitir câmera</string>
+    <string name="pair_open_settings">Abrir ajustes</string>
+    <string name="pair_use_pin">Usar PIN</string>
+    <string name="pair_use_qr">Ler o QR</string>
+    <string name="pair_pin_title">Digite o PIN mostrado no PC</string>
+    <string name="pair_pin_check">Confira no PC: %1$s</string>
+    <string name="pair_pin_choose">Escolha um PC</string>
+    <string name="pair_pin_none">Nenhum PC encontrado. Volte e procure, ou leia o QR.</string>
+    <string name="pair_connecting">Conectando a %1$s…</string>
+    <string name="pair_success_title">Pareado!</string>
+    <string name="pair_success_body">%1$s · Jogador %2$d</string>
+    <string name="pair_retry">Tentar de novo</string>
+    <string name="pair_err_wrong_pin">PIN incorreto. Confira o código no PC.</string>
+    <string name="pair_err_expired_qr">Este QR expirou ou já foi usado. Gere outro no PC.</string>
+    <string name="pair_err_locked">Muitas tentativas erradas. Tente de novo em %1$d s.</string>
+    <string name="pair_err_no_slot">Os 4 slots de controle do PC estão ocupados.</string>
+    <string name="pair_err_revoked">Este celular foi removido no PC. Pareie de novo por lá.</string>
+    <string name="pair_err_version">O app e o PC estão em versões diferentes. Atualize os dois.</string>
+    <string name="pair_err_unreachable">Não consegui falar com o PC. Confira se os dois estão na mesma rede Wi-Fi.</string>
+    <string name="pair_err_fingerprint">Este não é o PC esperado (certificado diferente). Nada foi enviado.</string>
+    <string name="pair_err_invalid_qr">Este não é um QR do VynPad.</string>
+    <string name="pair_err_unknown">Algo deu errado. Tente de novo.</string>
+
+    <string name="action_ok">OK</string>
+    <string name="session_connected">Conectado a %1$s</string>
+    <string name="session_slot">Jogador %1$d</string>
+    <string name="session_connecting">Conectando a %1$s…</string>
+    <string name="session_reconnecting">Conexão perdida. Reconectando a %1$s…</string>
+    <string name="session_disconnect">Desconectar</string>
+    <string name="session_connect">Conectar</string>
+    <string name="session_ended_kicked">%1$s desconectou este celular.</string>
+    <string name="session_ended_revoked">Este celular foi removido em %1$s. Pareie de novo para usar.</string>
+    <string name="session_ended_lost">Não consegui reconectar a %1$s.</string>
 </resources>

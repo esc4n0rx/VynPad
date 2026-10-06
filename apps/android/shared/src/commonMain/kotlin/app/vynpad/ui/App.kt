@@ -41,6 +41,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import app.vynpad.discovery.DiscoveredPc
 import app.vynpad.discovery.rememberDiscoveryEngine
+import app.vynpad.pairing.DeepLinks
+import app.vynpad.pairing.SessionState
+import app.vynpad.pairing.rememberPairingController
 import app.vynpad.resources.Res
 import app.vynpad.resources.nav_connect
 import app.vynpad.resources.nav_settings
@@ -54,6 +57,7 @@ import app.vynpad.ui.haptics.ProvideHaptics
 import app.vynpad.ui.screens.ConnectScreen
 import app.vynpad.ui.screens.GamepadScreen
 import app.vynpad.ui.screens.ManualPcSheet
+import app.vynpad.ui.screens.PairingScreen
 import app.vynpad.ui.screens.PcSheet
 import app.vynpad.ui.screens.SettingsScreen
 import app.vynpad.ui.screens.SplashScreen
@@ -76,9 +80,28 @@ fun VynApp() {
     var selectedPc by remember { mutableStateOf<DiscoveredPc?>(null) }
     var manualOpen by remember { mutableStateOf(false) }
 
+    var pairingOpen by remember { mutableStateOf(false) }
+    var pairingPc by remember { mutableStateOf<DiscoveredPc?>(null) }
+    var pairingUri by remember { mutableStateOf<String?>(null) }
+
     val engine = rememberDiscoveryEngine()
+    val pairing = rememberPairingController()
+    val pairedServers by pairing.paired.collectAsState()
+    val pairedIds = remember(pairedServers) { pairedServers.map { it.serverId }.toSet() }
+    val session by pairing.session.state.collectAsState()
     val pcs by engine.pcs.collectAsState()
     val status by engine.status.collectAsState()
+
+    // QR lido pela câmera nativa chega como link `vynpad://pair?...`.
+    val deepLink by DeepLinks.pairingUri.collectAsState()
+    LaunchedEffect(deepLink) {
+        deepLink?.let {
+            pairingUri = it
+            pairingPc = null
+            pairingOpen = true
+            DeepLinks.pairingUri.value = null
+        }
+    }
 
     // A busca e o anúncio do celular só existem enquanto a tela Conectar está aberta.
     LaunchedEffect(screen, splashDone) {
@@ -90,6 +113,7 @@ fun VynApp() {
 
     VynTheme(themeMode) {
         ProvideHaptics(hapticsEnabled) {
+            PlatformBackHandler(enabled = pairingOpen) { pairingOpen = false }
             PlatformBackHandler(enabled = manualOpen) { manualOpen = false }
             PlatformBackHandler(enabled = selectedPc != null) { selectedPc = null }
             PlatformBackHandler(enabled = screen == Screen.Gamepad) { screen = Screen.Connect }
@@ -125,8 +149,15 @@ fun VynApp() {
                                         else -> ConnectScreen(
                                             pcs = pcs,
                                             status = status,
+                                            pairedIds = pairedIds,
+                                            session = session,
+                                            onDisconnect = { pairing.session.disconnect() },
                                             onSearch = { engine.start() },
                                             onSelectPc = { selectedPc = it },
+                                            onPairQr = {
+                                                pairingPc = null
+                                                pairingOpen = true
+                                            },
                                             onAddByIp = { manualOpen = true },
                                             onPreviewGamepad = { screen = Screen.Gamepad },
                                         )
@@ -137,8 +168,43 @@ fun VynApp() {
                     }
                 }
 
-                if (splashDone && screen == Screen.Connect) {
-                    PcSheet(pc = selectedPc, onDismiss = { selectedPc = null })
+                if (pairingOpen) {
+                    PairingScreen(
+                        controller = pairing,
+                        candidates = pcs,
+                        preselected = pairingPc,
+                        initialUri = pairingUri,
+                        onClose = {
+                            pairingOpen = false
+                            pairingUri = null
+                        },
+                    )
+                }
+
+                if (splashDone && screen == Screen.Connect && !pairingOpen) {
+                    PcSheet(
+                        pc = selectedPc,
+                        paired = selectedPc?.id in pairedIds,
+                        connected = (session as? SessionState.Connected)?.serverId == selectedPc?.id,
+                        onConnect = { pc ->
+                            pairedServers.firstOrNull { it.serverId == pc.id }?.let(pairing.session::connect)
+                            selectedPc = null
+                        },
+                        onDisconnect = {
+                            pairing.session.disconnect()
+                            selectedPc = null
+                        },
+                        onPair = {
+                            pairingPc = it
+                            selectedPc = null
+                            pairingOpen = true
+                        },
+                        onForget = {
+                            pairing.forget(it.id)
+                            selectedPc = null
+                        },
+                        onDismiss = { selectedPc = null },
+                    )
                     ManualPcSheet(
                         visible = manualOpen,
                         onDismiss = { manualOpen = false },

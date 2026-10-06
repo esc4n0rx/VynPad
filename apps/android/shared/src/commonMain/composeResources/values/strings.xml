@@ -59,4 +59,48 @@
     <string name="gamepad_back">Back</string>
     <string name="gamepad_player">Player 1</string>
     <string name="gamepad_wip">The gamepad layout arrives in the next step.</string>
+
+    <string name="connect_pair_qr">Pair with QR</string>
+    <string name="pc_paired">Paired</string>
+    <string name="pc_forget">Forget PC</string>
+
+    <string name="pair_title">Pair PC</string>
+    <string name="pair_method_qr">Camera</string>
+    <string name="pair_method_pin">PIN</string>
+    <string name="pair_qr_hint">On your PC, open Devices, tap Pair new and point the camera at the QR code.</string>
+    <string name="pair_camera_denied_title">Camera is off</string>
+    <string name="pair_camera_denied_body">Allow the camera to scan the QR code, or pair with the PIN instead.</string>
+    <string name="pair_allow_camera">Allow camera</string>
+    <string name="pair_open_settings">Open settings</string>
+    <string name="pair_use_pin">Use PIN instead</string>
+    <string name="pair_use_qr">Scan QR instead</string>
+    <string name="pair_pin_title">Enter the PIN shown on your PC</string>
+    <string name="pair_pin_check">Check on your PC: %1$s</string>
+    <string name="pair_pin_choose">Choose a PC</string>
+    <string name="pair_pin_none">No PC found yet. Go back and search, or scan the QR code.</string>
+    <string name="pair_connecting">Connecting to %1$s…</string>
+    <string name="pair_success_title">Paired!</string>
+    <string name="pair_success_body">%1$s · Player %2$d</string>
+    <string name="pair_retry">Try again</string>
+    <string name="pair_err_wrong_pin">Wrong PIN. Check the code on your PC.</string>
+    <string name="pair_err_expired_qr">This QR code expired or was already used. Generate a new one on your PC.</string>
+    <string name="pair_err_locked">Too many wrong attempts. Try again in %1$d s.</string>
+    <string name="pair_err_no_slot">All 4 controller slots are in use on your PC.</string>
+    <string name="pair_err_revoked">This phone was removed on your PC. Pair it again there.</string>
+    <string name="pair_err_version">The app and your PC have different versions. Update both.</string>
+    <string name="pair_err_unreachable">Could not reach the PC. Check that both are on the same Wi-Fi.</string>
+    <string name="pair_err_fingerprint">This is not the PC you expected (certificate mismatch). Nothing was sent.</string>
+    <string name="pair_err_invalid_qr">This is not a VynPad QR code.</string>
+    <string name="pair_err_unknown">Something went wrong. Try again.</string>
+
+    <string name="action_ok">OK</string>
+    <string name="session_connected">Connected to %1$s</string>
+    <string name="session_slot">Player %1$d</string>
+    <string name="session_connecting">Connecting to %1$s…</string>
+    <string name="session_reconnecting">Connection lost. Reconnecting to %1$s…</string>
+    <string name="session_disconnect">Disconnect</string>
+    <string name="session_connect">Connect</string>
+    <string name="session_ended_kicked">%1$s disconnected this phone.</string>
+    <string name="session_ended_revoked">This phone was removed on %1$s. Pair it again to use it.</string>
+    <string name="session_ended_lost">Could not reconnect to %1$s.</string>
 </resources>

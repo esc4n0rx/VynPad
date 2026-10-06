@@ -39,8 +39,10 @@ import app.vynpad.resources.pc_address
 import app.vynpad.resources.pc_fingerprint
 import app.vynpad.resources.pc_found_via
 import app.vynpad.resources.pc_pair
-import app.vynpad.resources.pc_pair_soon
+import app.vynpad.resources.pc_forget
 import app.vynpad.resources.pc_slots
+import app.vynpad.resources.session_connect
+import app.vynpad.resources.session_disconnect
 import app.vynpad.resources.pc_system
 import app.vynpad.resources.via_broadcast
 import app.vynpad.resources.via_manual
@@ -60,7 +62,16 @@ import org.jetbrains.compose.resources.stringResource
 
 /** Detalhes do PC tocado no radar ou na lista. O pareamento entra na subtask D. */
 @Composable
-fun PcSheet(pc: DiscoveredPc?, onDismiss: () -> Unit) {
+fun PcSheet(
+    pc: DiscoveredPc?,
+    paired: Boolean,
+    connected: Boolean,
+    onPair: (DiscoveredPc) -> Unit,
+    onConnect: (DiscoveredPc) -> Unit,
+    onDisconnect: () -> Unit,
+    onForget: (DiscoveredPc) -> Unit,
+    onDismiss: () -> Unit,
+) {
     val c = VynTheme.colors
     val t = VynTheme.typography
     // Mantém o último PC para o conteúdo não sumir durante a animação de saída.
@@ -101,11 +112,16 @@ fun PcSheet(pc: DiscoveredPc?, onDismiss: () -> Unit) {
                 }
             }
         }
-        VynText(stringResource(Res.string.pc_pair_soon), style = t.caption, color = c.textTertiary)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             VynButton(stringResource(Res.string.action_close), onDismiss, kind = ButtonKind.Secondary, modifier = Modifier.weight(1f))
-            // O pareamento (QR/PIN) é a subtask D: por ora o botão fica visível e desabilitado.
-            VynButton(stringResource(Res.string.pc_pair), onClick = {}, enabled = false, modifier = Modifier.weight(1f))
+            when {
+                connected -> VynButton(stringResource(Res.string.session_disconnect), onDisconnect, modifier = Modifier.weight(1f))
+                paired -> VynButton(stringResource(Res.string.session_connect), { onConnect(item) }, modifier = Modifier.weight(1f))
+                else -> VynButton(stringResource(Res.string.pc_pair), { onPair(item) }, modifier = Modifier.weight(1f))
+            }
+        }
+        if (paired) {
+            VynButton(stringResource(Res.string.pc_forget), { onForget(item) }, kind = ButtonKind.Destructive, modifier = Modifier.fillMaxWidth())
         }
     }
 }

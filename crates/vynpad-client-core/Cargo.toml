@@ -24,10 +24,18 @@ required-features = ["bindgen"]
 vynpad-protocol = { workspace = true }
 thiserror = { workspace = true }
 uniffi = "0.32"
+# Só TLS 1.3, com o provedor `ring` (igual ao server).
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+sha2 = { version = "0.11", default-features = false }
 
 [dev-dependencies]
 hex = "0.4"
 serde_json = { workspace = true }
+# O handshake é testado contra o server de controle de verdade (loopback + driver de mentira).
+tokio = { workspace = true }
+vynpad-core = { workspace = true }
+vynpad-driver = { workspace = true, features = ["mock"] }
+vynpad-net = { workspace = true }
 
 [lints]
 workspace = true

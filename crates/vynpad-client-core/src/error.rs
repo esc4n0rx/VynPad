@@ -25,6 +25,23 @@ pub enum CoreError {
         /// Descrição do problema.
         reason: String,
     },
+    /// O server recusou a conexão (`bad_auth`, `locked`, `no_slot`, `revoked`, `version`…).
+    #[error("o server recusou: {reason}")]
+    Rejected {
+        /// Motivo (`reject.reason` do protocolo).
+        reason: String,
+        /// Segundos até poder tentar de novo (com `locked`).
+        retry_after_s: Option<u32>,
+    },
+    /// Falha de rede ou de TLS (sem rota, tempo esgotado, conexão derrubada).
+    #[error("rede: {detail}")]
+    Network {
+        /// Descrição do problema (não se chama `message` para não colidir com `Throwable.message`).
+        detail: String,
+    },
+    /// O certificado do server não é o esperado (pareamento trocado, ou algo no meio do caminho).
+    #[error("o certificado do server não é o esperado")]
+    FingerprintMismatch,
     /// Argumento fora do contrato (por exemplo, chave que não tem 32 bytes).
     #[error("argumento inválido: {reason}")]
     InvalidArgument {

@@ -63,6 +63,11 @@ kotlin {
                 implementation(libs.androidx.core.ktx)
                 // O UniFFI chama a biblioteca nativa por JNA; no Android vem como AAR.
                 implementation("${libs.jna.get()}@aar")
+                // Leitura do QR de pareamento: CameraX (preview e análise) + ML Kit (modelo embutido).
+                implementation(libs.androidx.camera.camera2)
+                implementation(libs.androidx.camera.lifecycle)
+                implementation(libs.androidx.camera.view)
+                implementation(libs.mlkit.barcode.scanning)
             }
         }
     }

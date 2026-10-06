@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.vynpad.discovery.DiscoveredPc
 import app.vynpad.discovery.ScanStatus
+import app.vynpad.pairing.SessionState
 import app.vynpad.resources.Res
 import app.vynpad.resources.app_name
 import app.vynpad.resources.connect_add_ip
@@ -30,6 +31,7 @@ import app.vynpad.resources.connect_empty_title
 import app.vynpad.resources.connect_found_body
 import app.vynpad.resources.connect_found_title
 import app.vynpad.resources.connect_list_title
+import app.vynpad.resources.connect_pair_qr
 import app.vynpad.resources.connect_preview_gamepad
 import app.vynpad.resources.connect_scanning_body
 import app.vynpad.resources.connect_scanning_title
@@ -39,6 +41,7 @@ import app.vynpad.resources.connect_searching
 import app.vynpad.resources.connect_tagline
 import app.vynpad.resources.pc_manual
 import app.vynpad.resources.pc_new
+import app.vynpad.resources.pc_paired
 import app.vynpad.resources.pc_slots_free
 import app.vynpad.resources.pc_slots_full
 import app.vynpad.resources.status_found
@@ -48,6 +51,7 @@ import app.vynpad.ui.components.BadgeTone
 import app.vynpad.ui.components.ButtonKind
 import app.vynpad.ui.components.DiscoveryRadar
 import app.vynpad.ui.components.GlassCard
+import app.vynpad.ui.components.SessionBanner
 import app.vynpad.ui.components.VynBadge
 import app.vynpad.ui.components.VynButton
 import app.vynpad.ui.components.VynIcon
@@ -64,7 +68,11 @@ fun ConnectScreen(
     pcs: List<DiscoveredPc>,
     status: ScanStatus,
     onSearch: () -> Unit,
+    pairedIds: Set<String>,
+    session: SessionState,
+    onDisconnect: () -> Unit,
     onSelectPc: (DiscoveredPc) -> Unit,
+    onPairQr: () -> Unit,
     onAddByIp: () -> Unit,
     onPreviewGamepad: () -> Unit,
     modifier: Modifier = Modifier,
@@ -83,6 +91,8 @@ fun ConnectScreen(
             VynText(stringResource(Res.string.app_name), style = t.hero)
             VynText(stringResource(Res.string.connect_tagline), style = t.body, color = c.textSecondary)
         }
+
+        SessionBanner(session, onDisconnect)
 
         GlassCard(Modifier.fillMaxWidth().entrance(1)) {
             Column(
@@ -147,11 +157,17 @@ fun ConnectScreen(
                     color = c.textTertiary,
                     modifier = Modifier.padding(start = 6.dp),
                 )
-                pcs.forEach { pc -> PcRow(pc, onClick = { onSelectPc(pc) }) }
+                pcs.forEach { pc -> PcRow(pc, paired = pc.id in pairedIds, onClick = { onSelectPc(pc) }) }
             }
         }
 
-        Row(Modifier.fillMaxWidth().entrance(3), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        VynButton(
+            text = stringResource(Res.string.connect_pair_qr),
+            onClick = onPairQr,
+            modifier = Modifier.fillMaxWidth().entrance(3),
+        )
+
+        Row(Modifier.fillMaxWidth().entrance(4), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             VynButton(
                 text = stringResource(Res.string.connect_add_ip),
                 onClick = onAddByIp,
@@ -169,7 +185,7 @@ fun ConnectScreen(
 }
 
 @Composable
-private fun PcRow(pc: DiscoveredPc, onClick: () -> Unit) {
+private fun PcRow(pc: DiscoveredPc, paired: Boolean, onClick: () -> Unit) {
     val c = VynTheme.colors
     val t = VynTheme.typography
     val haptics = LocalHaptics.current
@@ -203,8 +219,18 @@ private fun PcRow(pc: DiscoveredPc, onClick: () -> Unit) {
                 )
             }
             VynBadge(
-                text = stringResource(if (pc.isManual) Res.string.pc_manual else Res.string.pc_new),
-                tone = if (pc.isManual) BadgeTone.Neutral else BadgeTone.Info,
+                text = stringResource(
+                    when {
+                        paired -> Res.string.pc_paired
+                        pc.isManual -> Res.string.pc_manual
+                        else -> Res.string.pc_new
+                    },
+                ),
+                tone = when {
+                    paired -> BadgeTone.Success
+                    pc.isManual -> BadgeTone.Neutral
+                    else -> BadgeTone.Info
+                },
             )
         }
     }

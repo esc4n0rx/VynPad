@@ -8,12 +8,17 @@
 // O scaffolding gerado pelo UniFFI usa `unsafe`; o código escrito à mão deste crate não.
 #![allow(unsafe_code)]
 
+mod control;
 mod error;
 mod pairing;
 mod scan;
 mod session;
 mod types;
 
+pub use control::{
+    ConfigInfo, ControlConnection, Credential, DeviceInfo, SessionListener, TrustPolicy,
+    WelcomeInfo,
+};
 pub use error::CoreError;
 pub use pairing::{
     DiscoveredServer, PairingInfo, discovery_port, discovery_request, parse_discovery_response,

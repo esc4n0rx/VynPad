@@ -1,0 +1,41 @@
+package app.vynpad.pairing
+
+import kotlinx.coroutines.flow.StateFlow
+
+/** Por que a sessão acabou sem o usuário pedir. */
+enum class SessionEnd {
+    /** O PC desconectou este celular (pela interface do VynPad). */
+    Kicked,
+
+    /** O PC removeu este celular: é preciso parear de novo. */
+    Revoked,
+
+    /** Não foi possível reconectar. */
+    Lost,
+}
+
+/** Estado da conexão com um PC pareado. */
+sealed interface SessionState {
+    data object Idle : SessionState
+
+    data class Connecting(val serverName: String) : SessionState
+
+    /** Conectado: o PC mostra este celular no [slot] (0–3). */
+    data class Connected(val serverId: String, val serverName: String, val slot: Int) : SessionState
+
+    /** A conexão caiu e o app tenta voltar (0,5 s → 1 → 2 → 4 → 5 s, como no protocolo). */
+    data class Reconnecting(val serverName: String, val attempt: Int) : SessionState
+
+    data class Ended(val serverName: String, val reason: SessionEnd) : SessionState
+}
+
+/** A conexão (canal de controle e, depois, o input) com um PC pareado. */
+interface SessionManager {
+    val state: StateFlow<SessionState>
+
+    /** Conecta a um PC já pareado com o token do dispositivo. */
+    fun connect(server: PairedServer)
+
+    /** Encerra a conexão (ou dispensa o aviso de uma sessão que terminou). */
+    fun disconnect()
+}
