@@ -56,6 +56,19 @@ data class AppSettings(
         return copy(layouts = layouts + copy, activeLayoutId = copy.id)
     }
 
+    /** Acrescenta um layout vindo de arquivo (com id novo e nome livre) e o torna ativo. */
+    fun addImported(layout: PadLayout): AppSettings {
+        var name = layout.name.take(MAX_NAME)
+        var n = 2
+        while (layouts.any { it.name == name }) {
+            val suffix = " ($n)"
+            name = layout.name.take(MAX_NAME - suffix.length) + suffix
+            n++
+        }
+        val added = layout.copy(id = newId(), name = name)
+        return copy(layouts = layouts + added, activeLayoutId = added.id)
+    }
+
     fun rename(id: String, name: String): AppSettings {
         val clean = name.trim().take(MAX_NAME)
         return if (clean.isEmpty()) this else copy(layouts = layouts.map { if (it.id == id) it.copy(name = clean) else it })

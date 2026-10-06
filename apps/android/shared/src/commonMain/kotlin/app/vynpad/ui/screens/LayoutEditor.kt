@@ -39,6 +39,12 @@ import app.vynpad.resources.el_right_stick
 import app.vynpad.resources.el_rt
 import app.vynpad.resources.el_start
 import app.vynpad.resources.layout_delete
+import app.vynpad.resources.layout_export
+import app.vynpad.resources.layout_export_error
+import app.vynpad.resources.layout_exported
+import app.vynpad.resources.layout_import
+import app.vynpad.resources.layout_import_error
+import app.vynpad.resources.layout_imported
 import app.vynpad.resources.layout_done
 import app.vynpad.resources.layout_hint
 import app.vynpad.resources.layout_models
@@ -68,6 +74,8 @@ import app.vynpad.resources.preset_left
 import app.vynpad.resources.skin_open
 import app.vynpad.settings.AppSettings
 import app.vynpad.skin.SkinBitmap
+import app.vynpad.skin.rememberLayoutExport
+import app.vynpad.skin.rememberLayoutImport
 import app.vynpad.ui.components.ButtonKind
 import app.vynpad.ui.components.GlassCard
 import app.vynpad.ui.components.VynButton
@@ -301,6 +309,15 @@ private fun ModelsSheet(
     val t = VynTheme.typography
     var renaming by remember(visible) { mutableStateOf<String?>(null) }
     var confirmDelete by remember(visible, settings.activeLayoutId) { mutableStateOf(false) }
+    // Resultado da última exportação/importação, mostrado na própria folha.
+    var transfer by remember(visible) { mutableStateOf<StringResource?>(null) }
+    val export = rememberLayoutExport { ok ->
+        transfer = if (ok) Res.string.layout_exported else Res.string.layout_export_error
+    }
+    val import = rememberLayoutImport { layout ->
+        if (layout != null) onSettings(settings.addImported(layout))
+        transfer = if (layout != null) Res.string.layout_imported else Res.string.layout_import_error
+    }
 
     VynSheet(visible = visible, onDismiss = onDismiss, maxWidth = 520.dp) {
         VynText(stringResource(Res.string.layout_models), style = t.title)
@@ -369,6 +386,24 @@ private fun ModelsSheet(
                     )
                 }
             }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            VynButton(
+                stringResource(Res.string.layout_export),
+                { export(draft) },
+                kind = ButtonKind.Secondary,
+                modifier = Modifier.weight(1f),
+            )
+            VynButton(
+                stringResource(Res.string.layout_import),
+                import,
+                kind = ButtonKind.Secondary,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        transfer?.let {
+            val failed = it == Res.string.layout_export_error || it == Res.string.layout_import_error
+            VynText(stringResource(it), style = t.caption, color = if (failed) c.danger else c.success)
         }
         VynButton(
             stringResource(Res.string.layout_restore),

@@ -6,7 +6,7 @@
 | Prioridade | P2 |
 | Estimativa | G |
 | Depende de | T-905 |
-| Status | 🟡 Em andamento (persistência e editor de layout feitos) |
+| Status | ✅ Concluída (estilos de tecla e sincronia com o PC ficam como follow-up) |
 
 ## Objetivo
 Cada jogador ajusta o controle na tela às próprias mãos.
@@ -20,9 +20,9 @@ Cada jogador ajusta o controle na tela às próprias mãos.
 - **Visual personalizado por jogo** ("skin"): ver a seção abaixo.
 
 ## Critérios de aceite
-- [ ] O layout editado persiste e funciona no próximo jogo.
-- [ ] "Restaurar padrão" sempre disponível.
-- [ ] Um layout com banner de jogo mantém todos os botões legíveis (o app avisa quando o contraste é ruim) e o gamepad continua fluido.
+- [x] O layout editado persiste e funciona no próximo jogo.
+- [x] "Restaurar padrão" sempre disponível.
+- [x] Um layout com banner de jogo mantém todos os botões legíveis (o app avisa quando o contraste é ruim) e o gamepad continua fluido.
 
 ## Fora de escopo
 - Sincronizar o layout (as posições) com o server.
@@ -46,3 +46,11 @@ Hoje o fundo do gamepad é só o grafite do tema. A ideia é o usuário carregar
 - **Desempenho:** decodificar uma vez, no tamanho da tela (sem `inSampleSize` frouxo que estoure a memória), e nunca desfocar em tempo real. O gamepad não pode perder fluidez nem a latência de toque.
 - **Direitos autorais:** a imagem fica só no aparelho do usuário; o app **não** traz arte de jogos. Os presets que formos oferecer devem ser originais, sem marcas ou personagens de terceiros.
 - **Privacidade:** a imagem nunca sai do aparelho, exceto na exportação explícita feita pelo usuário.
+
+## Entregue (2026-10-06)
+Ajustes persistentes (`AppSettings`, SharedPreferences); editor de layout (mover com ímã na grade, tamanho, opacidade, esconder, restaurar peça); layouts múltiplos (criar, renomear, excluir, trocar pelo menu de pausa); modelos Padrão, Compacto, Canhoto e Só direcional; analógicos fixo/flutuante com curso e zona morta de toque; intensidade do haptic de toque e cor do controle por jogador ou fixa; visual por jogo (banner pelo Photo Picker, véu, desfoque calculado na importação, cor extraída, opacidade dos botões, aviso de legibilidade com ajuste automático); exportar/importar `.vynlayout` com a imagem embutida e validação do arquivo.
+
+## Follow-up (não entregue)
+- Estilos de tecla (vidro, sólido, fosco, só contorno), cor das letras e formato dos botões.
+- Mensagem `appearance` no protocolo para o card do slot no desktop usar a cor e a miniatura do banner.
+- Rotação EXIF das imagens importadas é ignorada.

@@ -171,5 +171,11 @@
     <string name="skin_contrast_warn">Alguns botões podem ficar difíceis de ver nesta imagem.</string>
     <string name="skin_contrast_fix">Ajustar automaticamente</string>
     <string name="skin_open">Visual</string>
+    <string name="layout_export">Exportar layout</string>
+    <string name="layout_import">Importar layout</string>
+    <string name="layout_exported">Layout salvo no arquivo que você escolheu.</string>
+    <string name="layout_imported">Layout importado.</string>
+    <string name="layout_export_error">Não foi possível salvar o arquivo.</string>
+    <string name="layout_import_error">Esse arquivo não é um layout do VynPad.</string>
     <string name="gamepad_leave">Sair do gamepad</string>
 </resources>

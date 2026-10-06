@@ -19,7 +19,9 @@ import app.vynpad.ui.gamepad.LumaGrid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.InputStream
 import java.util.UUID
 
 /** Imagem importada: no máximo este lado maior, para a memória não estourar numa tela pequena ou enorme. */
@@ -35,7 +37,7 @@ private const val BLUR_FACTOR = 14
 /** Amostra pequena para a cor de destaque. */
 private const val ACCENT_SAMPLE_SIDE = 64
 
-private class AndroidSkinStore(context: Context) : SkinStore {
+internal class AndroidSkinStore(context: Context) : SkinStore {
     private val appContext = context.applicationContext
     private val dir = File(appContext.filesDir, "skins").apply { mkdirs() }
 
@@ -64,10 +66,18 @@ private class AndroidSkinStore(context: Context) : SkinStore {
     }
 
     /** Lê o que o usuário escolheu, reduz, guarda (com a versão desfocada) e extrai a cor. */
-    suspend fun import(uri: Uri): ImportedSkin? = withContext(Dispatchers.IO) {
+    suspend fun import(uri: Uri): ImportedSkin? = import { appContext.contentResolver.openInputStream(uri) }
+
+    /** Importa uma imagem que veio embutida num layout compartilhado. */
+    suspend fun importBytes(bytes: ByteArray): ImportedSkin? = import { ByteArrayInputStream(bytes) }
+
+    /** Os bytes da imagem guardada (para embutir num layout exportado). */
+    fun readImage(file: String): ByteArray? = fileOf(file, false).takeIf { it.exists() }?.readBytes()
+
+    private suspend fun import(open: () -> InputStream?): ImportedSkin? = withContext(Dispatchers.IO) {
         runCatching {
             val target = targetLongSide()
-            val decoded = decodeScaled(uri, target) ?: return@runCatching null
+            val decoded = decodeScaled(open, target) ?: return@runCatching null
             val name = "s" + UUID.randomUUID().toString().replace("-", "").take(12)
             save(decoded, fileOf(name, false))
             save(blurred(decoded), fileOf(name, true))
@@ -78,16 +88,15 @@ private class AndroidSkinStore(context: Context) : SkinStore {
     }
 
     /** Decodifica já reduzido: primeiro só as medidas, depois com o menor `inSampleSize` que não fica abaixo do alvo. */
-    private fun decodeScaled(uri: Uri, target: Int): Bitmap? {
-        val resolver = appContext.contentResolver
+    private fun decodeScaled(open: () -> InputStream?, target: Int): Bitmap? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+        open()?.use { BitmapFactory.decodeStream(it, null, bounds) }
         val longSide = maxOf(bounds.outWidth, bounds.outHeight)
         if (longSide <= 0) return null
         var sample = 1
         while (longSide / (sample * 2) >= target) sample *= 2
         val options = BitmapFactory.Options().apply { inSampleSize = sample }
-        val bitmap = resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) } ?: return null
+        val bitmap = open()?.use { BitmapFactory.decodeStream(it, null, options) } ?: return null
         val side = maxOf(bitmap.width, bitmap.height)
         if (side <= target) return bitmap
         val k = target.toFloat() / side
