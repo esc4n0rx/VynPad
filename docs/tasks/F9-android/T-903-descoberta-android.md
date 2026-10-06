@@ -25,3 +25,6 @@ O usuário abre o app e vê o PC na lista, sem digitar nada.
 
 ## Fora de escopo
 - Pareamento (T-904).
+
+## Requisito de UX (2026-10-05)
+A busca de PCs na tela Conectar é um **radar animado no tema do app**: varredura circular em accent, anéis que expandem e cada PC descoberto surge como um ponto que "acende" (glow e haptic de confirmação). Tocar no ponto abre a configuração/conexão daquele PC (nome, IP, parear). Reaproveita o `Radar` do `ConnectScreen`.

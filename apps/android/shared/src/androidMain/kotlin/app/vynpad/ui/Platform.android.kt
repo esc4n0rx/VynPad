@@ -1,0 +1,45 @@
+package app.vynpad.ui
+
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.pm.ActivityInfo
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+
+@Composable
+actual fun PlatformBackHandler(enabled: Boolean, onBack: () -> Unit) {
+    BackHandler(enabled = enabled, onBack = onBack)
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
+@Composable
+actual fun ImmersiveLandscapeEffect(active: Boolean) {
+    val view = LocalView.current
+    DisposableEffect(active, view) {
+        val activity = view.context.findActivity()
+        if (!active || activity == null) {
+            onDispose { }
+        } else {
+            val previous = activity.requestedOrientation
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            val controller = WindowCompat.getInsetsController(activity.window, view)
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            onDispose {
+                controller.show(WindowInsetsCompat.Type.systemBars())
+                activity.requestedOrientation = previous
+            }
+        }
+    }
+}

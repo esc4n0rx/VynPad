@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Gamepad na zona segura (66 dp centrais). -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M39,38 L69,38 C77,38 81.5,44 81.5,54 C81.5,62 78,66 74,63.5 L66.5,58.5 L41.5,58.5 L34,63.5 C30,66 26.5,62 26.5,54 C26.5,44 31,38 39,38 Z" />
+    <path
+        android:fillColor="#0A84FF"
+        android:pathData="M37,50.5 h8 v3 h-8 z M39.5,48 h3 v8 h-3 z" />
+    <path
+        android:fillColor="#5E5CE6"
+        android:pathData="M62,50 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0 M69,54.5 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0" />
+</vector>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VynPad</string>
+
+    <string name="nav_connect">Connect</string>
+    <string name="nav_settings">Settings</string>
+
+    <string name="connect_tagline">Your phone, your gamepad.</string>
+    <string name="connect_empty_title">No PC found yet</string>
+    <string name="connect_empty_body">Open VynPad on your PC and make sure both devices are on the same Wi-Fi network.</string>
+    <string name="connect_search">Search for PCs</string>
+    <string name="connect_searching">Searching…</string>
+    <string name="connect_preview_gamepad">Preview gamepad</string>
+    <string name="status_offline">Offline</string>
+    <string name="status_searching">Searching</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
+    <string name="settings_feedback">Feedback</string>
+    <string name="settings_haptics">Haptics</string>
+    <string name="settings_haptics_desc">Vibrate when you tap buttons and controls.</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version</string>
+
+    <string name="gamepad_back">Back</string>
+    <string name="gamepad_player">Player 1</string>
+    <string name="gamepad_wip">The gamepad layout arrives in the next step.</string>
+</resources>

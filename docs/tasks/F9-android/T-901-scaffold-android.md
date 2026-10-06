@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | — (iniciar após o M4, conforme o roadmap) |
-| Status | ⬜ A fazer |
+| Status | 🟨 Em andamento (subtask A: scaffold e design system) |
 
 > **Atualização (D-26, 2026-10-04):** o client passa a ser **Compose Multiplatform** (Android primeiro, iOS depois), com o núcleo de rede e protocolo em **Rust via UniFFI**. Esta task começa por uma **prova de conceito** que valida a arquitetura antes do scaffold final; os módulos abaixo viram `shared/` (commonMain) + `androidApp/`, e `core:protocol` e `core:network` passam a ser o crate Rust. Ver "Prova de conceito" no fim.
 
@@ -28,7 +28,12 @@ Base do app Android alinhada à identidade visual do server.
 ## Fora de escopo
 - Lógica de rede (T-902+).
 
-## Prova de conceito (primeira entrega, 2–3 dias)
+## Andamento (2026-10-05)
+A prova de conceito abaixo foi **dispensada**: seguimos direto para o scaffold final, em subtasks aprovadas uma a uma (A scaffold e design system, B núcleo Rust, C descoberta, D pareamento, E gamepad, F motor de envio, G rumble e gyro, H personalização, I QA e release).
+
+- **A (feita):** `apps/android` com `shared/` (Compose Multiplatform) e `androidApp/`; tema com os tokens do desktop, Inter, mola 380/32, `GlassCard`, botão, toggle, segmented, ícones, haptics (`Haptics`), telas Conectar, Ajustes e Gamepad (invólucro imersivo) e i18n PT/EN. Versões: AGP 9.4.1, Kotlin 2.4.20, Compose Multiplatform 1.12.1, Gradle 9.6.0, `compileSdk` 37, `minSdk` 26. Ainda sem ktlint/detekt e sem job de CI.
+
+## Prova de conceito (dispensada)
 Decide a arquitetura com números. Só vale seguir com Compose Multiplatform + Rust se tudo abaixo passar; senão, plano B: Flutter.
 1. **UI:** uma tela de gamepad em Compose a 120 fps, com as animações do server (glow na cor do slot, molas equivalentes a stiffness 380 / damping 32, vidro e tema dark com os tokens do design system).
 2. **Núcleo Rust via UniFFI:** crate `vynpad-client-core` (reaproveitando `vynpad-protocol`) enviando input a 250 Hz para o `dev_server`, com build integrado ao Gradle (`cargo-ndk`) e checagem dos test vectors.
