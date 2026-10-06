@@ -41,7 +41,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import app.vynpad.discovery.DiscoveredPc
 import app.vynpad.input.GamepadState
-import app.vynpad.input.RumbleSettings
+import app.vynpad.settings.AppSettings
+import app.vynpad.settings.rememberSettingsStore
+import kotlinx.coroutines.delay
 import app.vynpad.discovery.rememberDiscoveryEngine
 import app.vynpad.pairing.DeepLinks
 import app.vynpad.pairing.SessionState
@@ -72,13 +74,23 @@ import org.jetbrains.compose.resources.stringResource
 
 enum class Screen { Connect, Settings, Gamepad }
 
+private const val SAVE_DEBOUNCE_MILLIS = 400L
+
 /** Raiz do app compartilhado (Android hoje, iOS depois). */
 @Composable
 fun VynApp() {
     var screen by remember { mutableStateOf(Screen.Connect) }
-    var themeMode by remember { mutableStateOf(ThemeMode.Dark) }
-    var hapticsEnabled by remember { mutableStateOf(true) }
-    var rumble by remember { mutableStateOf(RumbleSettings()) }
+    // Os ajustes (tema, vibrações, layouts) vêm do aparelho e voltam a ele a cada mudança.
+    val settingsStore = rememberSettingsStore()
+    var settings by remember { mutableStateOf(AppSettings.decode(settingsStore.load())) }
+    LaunchedEffect(settings) {
+        // Pequena espera: um arrastar de slider muda o valor várias vezes e só o último vai ao disco.
+        delay(SAVE_DEBOUNCE_MILLIS)
+        settingsStore.save(AppSettings.encode(settings))
+    }
+    val themeMode = settings.theme
+    val hapticsEnabled = settings.hapticsEnabled
+    val rumble = settings.rumble
     var splashDone by remember { mutableStateOf(false) }
     var selectedPc by remember { mutableStateOf<DiscoveredPc?>(null) }
     var manualOpen by remember { mutableStateOf(false) }
@@ -150,6 +162,8 @@ fun VynApp() {
                                     gyroActive = gyroActive,
                                     gyroCalibrating = gyroCalibrating,
                                     onRecenterGyro = { pairing.session.recenterGyro() },
+                                    settings = settings,
+                                    onSettings = { settings = it },
                                     onBack = { screen = Screen.Connect },
                                     onDisconnect = { pairing.session.disconnect() },
                                     modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
@@ -158,11 +172,11 @@ fun VynApp() {
                                     when (target) {
                                         Screen.Settings -> SettingsScreen(
                                             themeMode = themeMode,
-                                            onThemeMode = { themeMode = it },
+                                            onThemeMode = { settings = settings.copy(theme = it) },
                                             hapticsEnabled = hapticsEnabled,
-                                            onHapticsEnabled = { hapticsEnabled = it },
+                                            onHapticsEnabled = { settings = settings.copy(hapticsEnabled = it) },
                                             rumble = rumble,
-                                            onRumble = { rumble = it },
+                                            onRumble = { settings = settings.withRumble(it) },
                                             onTestRumble = { pairing.session.testRumble() },
                                         )
                                         else -> ConnectScreen(

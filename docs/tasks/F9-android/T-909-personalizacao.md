@@ -6,7 +6,7 @@
 | Prioridade | P2 |
 | Estimativa | G |
 | Depende de | T-905 |
-| Status | ⬜ A fazer |
+| Status | 🟡 Em andamento (persistência e editor de layout feitos) |
 
 ## Objetivo
 Cada jogador ajusta o controle na tela às próprias mãos.

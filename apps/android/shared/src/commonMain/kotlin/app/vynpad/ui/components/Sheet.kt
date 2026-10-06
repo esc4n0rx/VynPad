@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -73,7 +75,8 @@ fun VynSheet(
                     base = c.windowSolid.copy(alpha = 0.97f),
                 ) {
                     Column(
-                        Modifier.fillMaxWidth().padding(22.dp),
+                        // Rola quando o conteúdo não cabe (em paisagem a folha é baixa).
+                        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(22.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                         content = content,
                     )

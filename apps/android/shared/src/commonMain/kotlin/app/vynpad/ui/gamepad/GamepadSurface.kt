@@ -17,9 +17,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
@@ -28,6 +31,7 @@ import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
@@ -85,6 +89,7 @@ fun GamepadSurface(
     state: GamepadState,
     accent: Color,
     feedback: PadFeedback,
+    layout: PadLayout,
     modifier: Modifier = Modifier,
     /** Falso com o menu aberto: solta tudo e ignora os toques. */
     enabled: Boolean = true,
@@ -99,11 +104,16 @@ fun GamepadSurface(
     }
 
     val visuals = remember { PadVisuals() }
-    var geometry by remember { mutableStateOf<GamepadGeometry?>(null) }
+    var size by remember { mutableStateOf(IntSize.Zero) }
+    // A geometria acompanha o layout: editar uma peça move o desenho e a área de toque juntos.
+    val geometry = remember(size, layout) {
+        if (size.width > 0 && size.height > 0) GamepadGeometry(size.width.toFloat(), size.height.toFloat(), layout) else null
+    }
+    val currentGeometry by rememberUpdatedState(geometry)
     val currentFeedback by rememberUpdatedState(feedback)
     val router = remember(state) {
         TouchRouter(
-            geometry = { geometry ?: GamepadGeometry(1f, 1f) },
+            geometry = { currentGeometry ?: GamepadGeometry(1f, 1f) },
             state = state,
             visuals = visuals,
             feedback = object : PadFeedback {
@@ -136,7 +146,7 @@ fun GamepadSurface(
     Canvas(
         modifier
             .fillMaxSize()
-            .onSizeChanged { geometry = GamepadGeometry(it.width.toFloat(), it.height.toFloat()) }
+            .onSizeChanged { size = it }
             .pointerInput(router) {
                 awaitPointerEventScope {
                     while (true) {
@@ -187,26 +197,53 @@ private fun DrawScope.drawPad(
     labels: Map<String, TextLayoutResult>,
     measurer: TextMeasurer,
 ) {
+    // Cada peça some se o usuário a escondeu e usa a opacidade que ele escolheu.
+    fun part(element: PadElement, draw: DrawScope.() -> Unit) {
+        val spec = g.layout.spec(element)
+        if (spec.visible) layer(spec.opacity, g.bounds(element), draw)
+    }
+
     // ---- Gatilhos e ombros
-    drawTrigger(g.lt, visuals.lt, c, accent, labels["LT"])
-    drawTrigger(g.rt, visuals.rt, c, accent, labels["RT"])
-    drawShoulder(g.lb, presses[PadButtons.LEFT_SHOULDER], c, accent, labels["LB"])
-    drawShoulder(g.rb, presses[PadButtons.RIGHT_SHOULDER], c, accent, labels["RB"])
+    part(PadElement.LT) { drawTrigger(g.lt, visuals.lt, c, accent, labels["LT"]) }
+    part(PadElement.RT) { drawTrigger(g.rt, visuals.rt, c, accent, labels["RT"]) }
+    part(PadElement.LB) { drawShoulder(g.lb, presses[PadButtons.LEFT_SHOULDER], c, accent, labels["LB"]) }
+    part(PadElement.RB) { drawShoulder(g.rb, presses[PadButtons.RIGHT_SHOULDER], c, accent, labels["RB"]) }
 
     // ---- Centro
-    drawCenterButton(g.back, presses[PadButtons.BACK], c, accent, CenterGlyph.Back)
-    drawCenterButton(g.guide, presses[PadButtons.GUIDE], c, accent, CenterGlyph.Guide)
-    drawCenterButton(g.start, presses[PadButtons.START], c, accent, CenterGlyph.Start)
+    part(PadElement.Back) { drawCenterButton(g.back, presses[PadButtons.BACK], c, accent, CenterGlyph.Back) }
+    part(PadElement.Guide) { drawCenterButton(g.guide, presses[PadButtons.GUIDE], c, accent, CenterGlyph.Guide) }
+    part(PadElement.Start) { drawCenterButton(g.start, presses[PadButtons.START], c, accent, CenterGlyph.Start) }
 
     // ---- Direcional e ABXY
-    drawDpad(g.dpad, presses, c, accent)
-    for (button in g.faceButtons) {
-        drawRound(button.shape, presses[button.mask], c, accent, labels[button.label])
+    part(PadElement.Dpad) { drawDpad(g.dpad, presses, c, accent) }
+    part(PadElement.Face) {
+        for (button in g.faceButtons) {
+            drawRound(button.shape, presses[button.mask], c, accent, labels[button.label])
+        }
     }
 
     // ---- Analógicos
-    drawStick(g.leftStickZone, g, left, presses[PadButtons.LEFT_THUMB], c, accent)
-    drawStick(g.rightStickZone, g, right, presses[PadButtons.RIGHT_THUMB], c, accent)
+    part(PadElement.LeftStick) { drawStick(g.leftStickZone, g, true, left, presses[PadButtons.LEFT_THUMB], c, accent) }
+    part(PadElement.RightStick) { drawStick(g.rightStickZone, g, false, right, presses[PadButtons.RIGHT_THUMB], c, accent) }
+}
+
+/**
+ * Desenha [draw] com a opacidade da peça. Com opacidade total não há custo; abaixo disso a peça
+ * vai para uma camada própria (halos e contornos se fundem antes de esmaecer, sem manchas).
+ */
+private fun DrawScope.layer(opacity: Float, bounds: Box, draw: DrawScope.() -> Unit) {
+    if (opacity >= 0.99f) {
+        draw()
+        return
+    }
+    val margin = maxOf(bounds.width, bounds.height) * 0.4f
+    val rect = Rect(bounds.left - margin, bounds.top - margin, bounds.right + margin, bounds.bottom + margin)
+    val paint = Paint().apply { alpha = opacity }
+    drawIntoCanvas { canvas ->
+        canvas.saveLayer(rect, paint)
+        draw()
+        canvas.restore()
+    }
 }
 
 private fun padFill(c: VynColors, accent: Color, pressed: Float, top: Float, height: Float): Brush {
@@ -324,24 +361,24 @@ private fun DrawScope.drawDpad(zone: Circle, presses: PressAnimators, c: VynColo
  * Analógico flutuante: em repouso é só uma base apagada na zona; ao tocar, a base nasce onde o
  * dedo pousou e o polegar acompanha o dedo; ao soltar, o polegar volta ao centro com mola.
  */
-private fun DrawScope.drawStick(zone: Circle, g: GamepadGeometry, anim: StickAnimator, clicked: Float, c: VynColors, accent: Color) {
+private fun DrawScope.drawStick(zone: Circle, g: GamepadGeometry, left: Boolean, anim: StickAnimator, clicked: Float, c: VynColors, accent: Color) {
     val rest = Offset(zone.cx, zone.cy)
+    val travel = g.travelOf(left)
     val active = anim.active.value
     // Base de repouso (some quando o analógico está em uso).
-    drawCircle(c.padWell.copy(alpha = c.padWell.alpha * (1f - 0.6f * active)), g.stickTravel * 1.25f, rest)
-    drawCircle(c.padEdge.copy(alpha = c.padEdge.alpha * (1f - active)), g.stickTravel * 1.25f, rest, style = Stroke(1.5.dp.toPx()))
-    if (active < 0.99f) drawKnob(rest + anim.knob.value * (1f - active), g, c, accent, clicked, 0f)
+    drawCircle(c.padWell.copy(alpha = c.padWell.alpha * (1f - 0.6f * active)), travel * 1.25f, rest)
+    drawCircle(c.padEdge.copy(alpha = c.padEdge.alpha * (1f - active)), travel * 1.25f, rest, style = Stroke(1.5.dp.toPx()))
+    if (active < 0.99f) drawKnob(rest + anim.knob.value * (1f - active), g.knobOf(left), c, accent, clicked, 0f)
 
     if (active > 0.01f) {
         val origin = anim.origin
-        drawCircle(accent.copy(alpha = 0.10f * active), g.stickTravel * 1.25f, origin)
-        drawCircle(accent.copy(alpha = 0.55f * active), g.stickTravel * 1.25f, origin, style = Stroke(2.dp.toPx()))
-        drawKnob(origin + anim.knob.value, g, c, accent, clicked, active)
+        drawCircle(accent.copy(alpha = 0.10f * active), travel * 1.25f, origin)
+        drawCircle(accent.copy(alpha = 0.55f * active), travel * 1.25f, origin, style = Stroke(2.dp.toPx()))
+        drawKnob(origin + anim.knob.value, g.knobOf(left), c, accent, clicked, active)
     }
 }
 
-private fun DrawScope.drawKnob(at: Offset, g: GamepadGeometry, c: VynColors, accent: Color, clicked: Float, active: Float) {
-    val r = g.stickKnobRadius
+private fun DrawScope.drawKnob(at: Offset, r: Float, c: VynColors, accent: Color, clicked: Float, active: Float) {
     if (active > 0.01f || clicked > 0.01f) {
         drawCircle(accent.copy(alpha = 0.28f * maxOf(active, clicked)), r * 1.5f, at)
     }

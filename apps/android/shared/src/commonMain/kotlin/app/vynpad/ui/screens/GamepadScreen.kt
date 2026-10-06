@@ -8,6 +8,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -29,7 +31,14 @@ import androidx.compose.ui.unit.dp
 import app.vynpad.input.GamepadState
 import app.vynpad.pairing.SessionState
 import app.vynpad.resources.Res
+import app.vynpad.resources.gamepad_layout
 import app.vynpad.resources.gamepad_leave
+import app.vynpad.resources.layout_edit
+import app.vynpad.settings.AppSettings
+import app.vynpad.ui.components.VynChip
+import app.vynpad.ui.gamepad.PadEditing
+import app.vynpad.ui.gamepad.PadEditorOverlay
+import app.vynpad.ui.gamepad.PadElement
 import app.vynpad.resources.gamepad_menu_title
 import app.vynpad.resources.gamepad_player_n
 import app.vynpad.resources.gamepad_preview
@@ -65,6 +74,8 @@ fun GamepadScreen(
     gyroActive: Boolean,
     gyroCalibrating: Boolean,
     onRecenterGyro: () -> Unit,
+    settings: AppSettings,
+    onSettings: (AppSettings) -> Unit,
     onBack: () -> Unit,
     onDisconnect: () -> Unit,
     modifier: Modifier = Modifier,
@@ -73,6 +84,14 @@ fun GamepadScreen(
     val t = VynTheme.typography
     val haptics = LocalHaptics.current
     var menuOpen by remember { mutableStateOf(false) }
+
+    // Editor de layout: `draft` é o layout em edição (a tela já o mostra enquanto se arrasta);
+    // só vai para os ajustes (e para o disco) quando o dedo solta.
+    var editing by remember { mutableStateOf(false) }
+    var selected by remember { mutableStateOf<PadElement?>(null) }
+    var snap by remember { mutableStateOf(true) }
+    var draft by remember(settings.activeLayout) { mutableStateOf(settings.activeLayout) }
+    val layout = if (editing) draft else settings.activeLayout
 
     val connected = session as? SessionState.Connected
     val slot = connected?.slot ?: 0
@@ -87,7 +106,14 @@ fun GamepadScreen(
     }
 
     // Voltar abre o menu (em vez de sair sem querer no meio do jogo); com o menu aberto, fecha-o.
-    PlatformBackHandler(enabled = true) { menuOpen = !menuOpen }
+    PlatformBackHandler(enabled = true) {
+        if (editing) {
+            editing = false
+            selected = null
+        } else {
+            menuOpen = !menuOpen
+        }
+    }
 
     val pulse by rememberInfiniteTransition().animateFloat(
         initialValue = 0.5f,
@@ -96,10 +122,37 @@ fun GamepadScreen(
     )
 
     Box(modifier.fillMaxSize()) {
-        GamepadSurface(state = state, accent = accent, feedback = feedback, enabled = !menuOpen)
+        GamepadSurface(state = state, accent = accent, feedback = feedback, layout = layout, enabled = !menuOpen && !editing)
+
+        if (editing) {
+            PadEditorOverlay(
+                layout = draft,
+                selected = selected,
+                snap = snap,
+                onSelect = { selected = it },
+                onMove = { element, x, y, aspect ->
+                    draft = PadEditing.moveTo(draft, element, x, y, aspect, snap)
+                },
+                onMoveEnd = { onSettings(settings.withLayout(draft)) },
+            )
+            LayoutEditorChrome(
+                settings = settings,
+                draft = draft,
+                selected = selected,
+                snap = snap,
+                onSnap = { snap = it },
+                onDraft = { draft = it },
+                onCommit = { onSettings(settings.withLayout(it)) },
+                onSettings = onSettings,
+                onDone = {
+                    editing = false
+                    selected = null
+                },
+            )
+        }
 
         // Pílula de status: jogador e PC; tocar abre o menu.
-        GlassCard(
+        if (!editing) GlassCard(
             Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 10.dp)
@@ -136,6 +189,27 @@ fun GamepadScreen(
         VynSheet(visible = menuOpen, onDismiss = { menuOpen = false }, maxWidth = 380.dp) {
             VynText(stringResource(Res.string.gamepad_menu_title), style = t.title)
             VynButton(stringResource(Res.string.gamepad_resume), { menuOpen = false }, modifier = Modifier.fillMaxWidth())
+            if (settings.layouts.size > 1) {
+                VynText(stringResource(Res.string.gamepad_layout), style = t.caption, color = c.textSecondary)
+                Row(
+                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    settings.layouts.forEach { l ->
+                        VynChip(l.name, l.id == settings.activeLayoutId, { onSettings(settings.select(l.id)) })
+                    }
+                }
+            }
+            VynButton(
+                stringResource(Res.string.layout_edit),
+                {
+                    menuOpen = false
+                    selected = null
+                    editing = true
+                },
+                kind = ButtonKind.Secondary,
+                modifier = Modifier.fillMaxWidth(),
+            )
             if (connected != null && gyroActive) {
                 VynButton(
                     stringResource(if (gyroCalibrating) Res.string.gyro_hold_still else Res.string.gyro_recenter),

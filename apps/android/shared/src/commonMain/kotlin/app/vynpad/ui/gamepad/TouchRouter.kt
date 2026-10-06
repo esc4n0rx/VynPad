@@ -137,7 +137,7 @@ class TouchRouter(
                 val dx = x - hold.origin.x
                 val dy = y - hold.origin.y
                 val length = hypot(dx, dy)
-                val travel = g.stickTravel
+                val travel = g.travelOf(hold.left)
                 val scale = if (length > travel) travel / length else 1f
                 hold.vx = dx * scale / travel
                 hold.vy = dy * scale / travel
@@ -184,7 +184,7 @@ class TouchRouter(
         var ly = 0
         var rx = 0
         var ry = 0
-        val travel = geometry().stickTravel
+        val g = geometry()
         for (hold in holds.values) {
             when (hold) {
                 is ButtonHold -> buttons = buttons or hold.mask
@@ -193,6 +193,7 @@ class TouchRouter(
                     val axisX = (hold.vx.coerceIn(-1f, 1f) * AXIS_MAX).roundToInt()
                     // O eixo Y do XInput é positivo para cima; o da tela é positivo para baixo.
                     val axisY = (-hold.vy.coerceIn(-1f, 1f) * AXIS_MAX).roundToInt()
+                    val travel = g.travelOf(hold.left)
                     val visual = StickVisual(hold.origin, Offset(hold.vx * travel, hold.vy * travel))
                     if (hold.left) {
                         lx = axisX
