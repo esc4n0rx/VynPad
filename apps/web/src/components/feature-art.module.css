@@ -1,0 +1,492 @@
+/*
+ * Os desenhos de cada recurso. São ilustrações vivas, feitas só com CSS e SVG: nada de captura de
+ * tela nem imagem de banco. Cor vem dos tokens; movimento some com `prefers-reduced-motion`.
+ */
+
+.art {
+  position: relative;
+  width: 100%;
+}
+
+/* ---- Latência ---- */
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+
+.chartLine {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chartArea {
+  fill: url(#latency-fill);
+}
+
+.chartScroll {
+  animation: scrollX 9s linear infinite;
+}
+
+.goal {
+  stroke: var(--text-tertiary);
+  stroke-width: 1;
+  stroke-dasharray: 4 5;
+}
+
+.goalLabel {
+  fill: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ---- Slots ---- */
+
+.slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.slotPill {
+  --c: var(--slot-1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  height: 3rem;
+  padding: 0 0.85rem;
+  border-radius: 0.9rem;
+  background: var(--bg-control);
+  font-size: 0.875rem;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.slotPill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0.1rem var(--c);
+  background: radial-gradient(
+    80% 140% at 50% 130%,
+    color-mix(in srgb, var(--c) 30%, transparent),
+    transparent
+  );
+  opacity: 0;
+  animation: connect 8s ease-in-out infinite;
+  animation-delay: var(--d);
+}
+
+.slotDot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 0.6rem var(--c);
+}
+
+.slotName {
+  color: var(--c);
+}
+
+/* ---- Gyro ---- */
+
+.gyro {
+  display: grid;
+  place-items: center;
+  height: 11rem;
+}
+
+.gyroStage {
+  position: relative;
+  width: 14rem;
+  height: 9.5rem;
+}
+
+.gyroArc {
+  position: absolute;
+  left: 50%;
+  top: 0.4rem;
+  width: 12rem;
+  height: 6rem;
+  margin-left: -6rem;
+  fill: none;
+  stroke: var(--separator);
+  stroke-width: 2;
+  stroke-dasharray: 3 5;
+}
+
+.gyroPhone {
+  position: absolute;
+  left: 50%;
+  top: 1.7rem;
+  width: 6.2rem;
+  height: 3rem;
+  margin-left: -3.1rem;
+  border-radius: 0.9rem;
+  background: var(--device-body);
+  box-shadow: 0 0 0 0.09rem var(--device-edge);
+  animation: tilt 6s ease-in-out infinite;
+}
+
+.gyroPhone::after {
+  content: "";
+  position: absolute;
+  inset: 0.28rem;
+  border-radius: 0.65rem;
+  background: var(--screen);
+  background-image:
+    radial-gradient(circle at 24% 50%, var(--pad-edge) 0 0.5rem, transparent 0.55rem),
+    radial-gradient(circle at 78% 50%, var(--pad-edge) 0 0.5rem, transparent 0.55rem);
+}
+
+.gyroTrack {
+  position: absolute;
+  left: 50%;
+  bottom: 0.2rem;
+  width: 11rem;
+  height: 0.5rem;
+  margin-left: -5.5rem;
+  border-radius: 999px;
+  background: var(--bg-control);
+}
+
+.gyroDot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: -0.55rem 0 0 -0.55rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0.9rem var(--accent);
+  animation: steer 6s ease-in-out infinite;
+}
+
+/* ---- Vibração ---- */
+
+.rumble {
+  display: grid;
+  place-items: center;
+  height: 11rem;
+}
+
+.rumbleStage {
+  position: relative;
+  width: 12rem;
+  height: 8rem;
+  display: grid;
+  place-items: center;
+}
+
+.rumblePhone {
+  width: 5.2rem;
+  height: 2.6rem;
+  border-radius: 0.8rem;
+  background: var(--device-body);
+  box-shadow: 0 0 0 0.09rem var(--device-edge);
+  animation: shake 1.6s ease-in-out infinite;
+}
+
+.wave {
+  position: absolute;
+  top: 50%;
+  width: 1rem;
+  height: 3.6rem;
+  margin-top: -1.8rem;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: wave 2.4s ease-out infinite;
+  animation-delay: var(--d);
+}
+
+.waveL {
+  left: 50%;
+  margin-left: -4.8rem;
+  border-right-color: transparent;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.waveR {
+  right: 50%;
+  margin-right: -4.8rem;
+  border-left-color: transparent;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  --dir: 1;
+}
+
+/* ---- Layouts ---- */
+
+.layouts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.layoutCard {
+  --c: var(--slot-1);
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 0.8rem;
+  overflow: hidden;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--c) 55%, var(--screen)) 0%,
+    var(--screen) 78%
+  );
+  box-shadow: 0 0 0 0.07rem var(--separator);
+}
+
+.layoutCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0.14rem var(--accent);
+  opacity: 0;
+  animation: pick 9s ease-in-out infinite;
+  animation-delay: var(--d);
+}
+
+.layoutCard i {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.55);
+}
+
+.layoutName {
+  margin-top: 0.4rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ---- Privacidade ---- */
+
+.nodes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.node {
+  display: grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 1rem;
+  background: var(--bg-control);
+  color: var(--text-primary);
+}
+
+.wire {
+  position: relative;
+  width: 3.2rem;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--accent) 0 5px, transparent 5px 9px);
+  background-size: 18px 2px;
+  animation: wire 1s linear infinite;
+}
+
+.cloud {
+  opacity: 0.45;
+}
+
+/* ---- Passo a passo (como funciona) ---- */
+
+.wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wizardRow {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  height: 1.6rem;
+  padding: 0 0.7rem;
+  border-radius: 0.6rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  animation: wizardRow 7.5s linear infinite;
+  animation-delay: var(--d);
+}
+
+.wizardDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+@keyframes wizardRow {
+  0% {
+    background: var(--accent-soft);
+    color: var(--text-primary);
+  }
+  18%,
+  100% {
+    background: transparent;
+    color: var(--text-tertiary);
+  }
+}
+
+.qr {
+  display: block;
+  width: 6.5rem;
+  height: 6.5rem;
+  border-radius: 0.7rem;
+  background: var(--text-primary);
+  padding: 0.5rem;
+}
+
+.qr rect {
+  fill: var(--bg-page);
+}
+
+.scan {
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  top: 0.5rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 0.8rem var(--accent);
+  animation: scan 2.6s ease-in-out infinite;
+}
+
+/* ---- Movimento ---- */
+
+@keyframes scrollX {
+  to {
+    /* Em SVG a porcentagem é da viewBox: -100% = uma volta inteira da onda. */
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes connect {
+  0%,
+  8% {
+    opacity: 0;
+  }
+  14%,
+  70% {
+    opacity: 1;
+  }
+  80%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes tilt {
+  0%,
+  100% {
+    transform: rotate(-26deg);
+  }
+  50% {
+    transform: rotate(26deg);
+  }
+}
+
+@keyframes steer {
+  0%,
+  100% {
+    transform: translateX(-4.3rem);
+  }
+  50% {
+    transform: translateX(4.3rem);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+  15% {
+    transform: translate(-2px, 1px) rotate(-1.2deg);
+  }
+  30% {
+    transform: translate(2px, -1px) rotate(1deg);
+  }
+  45% {
+    transform: translate(-1px, 2px) rotate(-0.8deg);
+  }
+  60% {
+    transform: translate(2px, 0) rotate(1.1deg);
+  }
+  75% {
+    transform: translate(0, 0) rotate(0);
+  }
+}
+
+@keyframes wave {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.4) translateX(0);
+  }
+  25% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1.5) translateX(calc(var(--dir, -1) * 1.4rem));
+  }
+}
+
+@keyframes pick {
+  0%,
+  8% {
+    opacity: 0;
+  }
+  14%,
+  30% {
+    opacity: 1;
+  }
+  38%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes wire {
+  to {
+    background-position: 18px 0;
+  }
+}
+
+@keyframes scan {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.2;
+  }
+  10%,
+  90% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(5.3rem);
+  }
+}

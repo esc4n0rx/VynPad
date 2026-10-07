@@ -1,0 +1,163 @@
+/*
+ * O controle desenhado. `--c` é a cor do slot e `--o` a defasagem (s) da animação. Cada botão
+ * "aperta" uma vez por volta de 8 s, em momentos diferentes, e o analógico faz um arrasto.
+ * Tudo vem dos tokens do design system; nada de cor fixa aqui.
+ */
+
+.pad {
+  --loop: 8s;
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.shell {
+  fill: var(--pad-surface);
+  stroke: var(--pad-edge);
+  stroke-width: 1.2;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.well {
+  fill: var(--pad-well);
+  stroke: var(--pad-edge);
+  stroke-width: 1;
+}
+
+.cap {
+  fill: var(--pad-top);
+  stroke: var(--pad-edge);
+  stroke-width: 1.2;
+}
+
+.capRing {
+  fill: none;
+  stroke: var(--pad-edge);
+  stroke-width: 1;
+}
+
+.glyph text {
+  fill: var(--pad-glyph);
+  font-size: 8px;
+  font-weight: 600;
+}
+
+/* Camadas que acendem por cima do botão: começam transparentes. */
+.a,
+.b,
+.y,
+.rb,
+.dpadRight,
+.trigger,
+.trigger2 {
+  fill: var(--c);
+  stroke: none;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.knobL,
+.knobR {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.live.a {
+  animation: press var(--loop) ease-in-out infinite;
+  animation-delay: calc(0.2s + var(--o));
+}
+.live.y {
+  animation: press var(--loop) ease-in-out infinite;
+  animation-delay: calc(2.6s + var(--o));
+}
+.live.b {
+  animation: press var(--loop) ease-in-out infinite;
+  animation-delay: calc(6.4s + var(--o));
+}
+.live.rb {
+  animation: press var(--loop) ease-in-out infinite;
+  animation-delay: calc(5.4s + var(--o));
+}
+.live.dpadRight {
+  animation: press var(--loop) ease-in-out infinite;
+  animation-delay: calc(1.4s + var(--o));
+}
+.live.trigger2 {
+  animation: pull var(--loop) ease-in-out infinite;
+  animation-delay: calc(3.8s + var(--o));
+}
+.live.knobL {
+  animation: drift var(--loop) ease-in-out infinite;
+  animation-delay: var(--o);
+}
+.live.knobR {
+  animation: driftSmall var(--loop) ease-in-out infinite;
+  animation-delay: calc(4.8s + var(--o));
+}
+
+@keyframes press {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  3%,
+  9% {
+    opacity: 0.95;
+    transform: scale(0.9);
+  }
+  13% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+/* O gatilho enche de baixo para cima e solta. */
+@keyframes pull {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  6%,
+  14% {
+    opacity: 0.9;
+  }
+  20% {
+    opacity: 0;
+  }
+}
+
+@keyframes drift {
+  0%,
+  22%,
+  100% {
+    transform: translate(0, 0);
+  }
+  30%,
+  42% {
+    transform: translate(7px, -4px);
+  }
+  50% {
+    transform: translate(-3px, 5px);
+  }
+  58% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes driftSmall {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  12%,
+  22% {
+    transform: translate(-4px, -3px);
+  }
+  34% {
+    transform: translate(0, 0);
+  }
+}

@@ -1,0 +1,250 @@
+@import "tailwindcss";
+
+/*
+ * Tokens do design system (docs/00-visao-geral/DESIGN-SYSTEM.md), os mesmos do app desktop e do
+ * Android: o site e o produto parecem da mesma casa. Os valores vivem em variáveis CSS por tema
+ * (`data-theme` no <html>); o `@theme inline` as expõe como utilitários do Tailwind. Cor só entra
+ * por aqui: fora deste arquivo, nada de hex/rgb nos componentes.
+ */
+
+@theme inline {
+  --font-sans: "Inter Variable", "Segoe UI Variable", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-indigo: var(--indigo);
+
+  --color-page: var(--bg-page);
+  --color-elevated: var(--bg-elevated);
+  --color-control: var(--bg-control);
+  --color-control-hover: var(--bg-control-hover);
+  --color-separator: var(--separator);
+  --color-overlay: var(--bg-overlay);
+
+  --color-fg: var(--text-primary);
+  --color-fg-2: var(--text-secondary);
+  --color-fg-3: var(--text-tertiary);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --color-slot-1: var(--slot-1);
+  --color-slot-2: var(--slot-2);
+  --color-slot-3: var(--slot-3);
+  --color-slot-4: var(--slot-4);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+
+  --shadow-card: var(--elev-card);
+  --shadow-popover: var(--elev-popover);
+
+  /* Escala de marketing: o app usa 13 px; uma página de leitura pede mais respiro. */
+  --text-display: clamp(2.5rem, 1.3rem + 5vw, 4.75rem);
+  --text-display--line-height: 1.03;
+  --text-display--letter-spacing: -0.04em;
+  --text-h2: clamp(1.85rem, 1.25rem + 2.4vw, 3rem);
+  --text-h2--line-height: 1.08;
+  --text-h2--letter-spacing: -0.03em;
+  --text-lead: 1.1875rem;
+  --text-lead--line-height: 1.55;
+}
+
+:root {
+  --accent: #0a84ff;
+  --accent-hover: color-mix(in srgb, var(--accent) 78%, white);
+  --accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
+  --on-accent: #ffffff;
+  --indigo: #5e5ce6;
+
+  --slot-1: #0a84ff;
+  --slot-2: #30d158;
+  --slot-3: #ff9f0a;
+  --slot-4: #bf5af2;
+
+  --traffic-close: #ff5f57;
+  --traffic-minimize: #febc2e;
+  --traffic-maximize: #28c840;
+
+  --blur: 24px;
+
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Dark é o padrão (também vale antes de o tema ser aplicado). */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-page: #1c1c1e;
+  --bg-elevated: rgb(58 58 60 / 0.55);
+  --bg-control: rgb(118 118 128 / 0.24);
+  --bg-control-hover: rgb(118 118 128 / 0.36);
+  --bg-overlay: rgb(0 0 0 / 0.5);
+  --separator: rgb(84 84 88 / 0.45);
+
+  --text-primary: rgb(255 255 255 / 0.92);
+  --text-secondary: rgb(235 235 245 / 0.64);
+  --text-tertiary: rgb(235 235 245 / 0.38);
+
+  --success: #30d158;
+  --warning: #ffd60a;
+  --danger: #ff453a;
+
+  /* O controle desenhado (mesmos valores do app). */
+  --pad-top: rgb(86 86 92);
+  --pad-bottom: rgb(40 40 44);
+  --pad-edge: rgb(255 255 255 / 0.16);
+  --pad-surface: rgb(30 30 34);
+  --pad-well: rgb(20 20 24 / 0.75);
+  --pad-glyph: rgb(235 235 245 / 0.55);
+  --pad-shine: rgb(255 255 255 / 0.14);
+  --device-body: rgb(10 10 12);
+  --device-edge: rgb(255 255 255 / 0.22);
+  --screen: rgb(18 18 22);
+
+  --elev-card: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 8px 24px rgb(0 0 0 / 0.35);
+  --elev-popover: 0 1px 0 rgb(255 255 255 / 0.08) inset, 0 16px 40px rgb(0 0 0 / 0.55);
+  --glow-a: 0.2;
+  --glow-b: 0.14;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-page: #f5f5f7;
+  --bg-elevated: rgb(255 255 255 / 0.74);
+  --bg-control: rgb(118 118 128 / 0.12);
+  --bg-control-hover: rgb(118 118 128 / 0.2);
+  --bg-overlay: rgb(0 0 0 / 0.3);
+  --separator: rgb(60 60 67 / 0.2);
+
+  --text-primary: rgb(0 0 0 / 0.88);
+  --text-secondary: rgb(60 60 67 / 0.7);
+  --text-tertiary: rgb(60 60 67 / 0.42);
+
+  /* Mais escuras: as de dark não passam em contraste AA sobre fundo claro. */
+  --success: #1f8a3a;
+  --warning: #9a6700;
+  --danger: #d70015;
+
+  --pad-top: rgb(252 252 253);
+  --pad-bottom: rgb(214 214 222);
+  --pad-edge: rgb(0 0 0 / 0.18);
+  --pad-surface: rgb(236 236 242);
+  --pad-well: rgb(60 60 67 / 0.2);
+  --pad-glyph: rgb(60 60 67 / 0.6);
+  --pad-shine: rgb(255 255 255 / 0.8);
+  --device-body: rgb(28 28 30);
+  --device-edge: rgb(0 0 0 / 0.3);
+  --screen: rgb(236 236 242);
+
+  --elev-card: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 8px 24px rgb(0 0 0 / 0.1);
+  --elev-popover: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 16px 40px rgb(0 0 0 / 0.18);
+  --glow-a: 0.12;
+  --glow-b: 0.08;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+  background: var(--bg-page);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/*
+ * O mesmo fundo do app Android: o accent num canto de cima e o índigo no de baixo, bem suaves.
+ * Fica atrás de tudo e não recebe toque.
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      70vmax 60vmax at 4% -6%,
+      color-mix(in srgb, var(--accent) calc(var(--glow-a) * 100%), transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      60vmax 50vmax at 104% 106%,
+      color-mix(in srgb, var(--indigo) calc(var(--glow-b) * 100%), transparent),
+      transparent 70%
+    );
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* Foco visível, na cor do accent, para quem navega por teclado. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+}
+
+/* Superfície de vidro (cards, menus): mesma receita do app. */
+@utility glass {
+  background: var(--bg-elevated);
+  box-shadow: var(--elev-card);
+  backdrop-filter: blur(var(--blur)) saturate(1.4);
+}
+
+/* Variante para a barra fixa do topo: mais opaca, para o texto de baixo não vazar. */
+@utility glass-bar {
+  background: color-mix(in srgb, var(--bg-page) 88%, transparent);
+  box-shadow: var(--elev-card);
+  backdrop-filter: blur(var(--blur)) saturate(1.6);
+}
+
+/* Fio fino, no lugar de borda dura. */
+@utility hairline {
+  box-shadow: 0 0 0 1px var(--separator);
+}
+
+/* Sem animação longa nem deslocamento para quem pediu menos movimento. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .motion-only {
+    display: none !important;
+  }
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}

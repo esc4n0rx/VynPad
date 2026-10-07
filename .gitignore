@@ -36,3 +36,7 @@ Thumbs.db
 *.db-wal
 *.log
 logs/
+
+# Next.js (apps/web)
+.next/
+apps/web/.next/

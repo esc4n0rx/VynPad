@@ -1,5 +1,6 @@
 packages:
   - apps/desktop
+  - apps/web
   - protocol
   - e2e
 allowBuilds:
@@ -10,3 +11,15 @@ allowBuilds:
   edgedriver: false
   geckodriver: false
   esbuild: false
+minimumReleaseAgeExclude:
+  - '@next/env@16.4.0'
+  - '@next/eslint-plugin-next@16.4.0'
+  - '@next/swc-darwin-arm64@16.4.0'
+  - '@next/swc-darwin-x64@16.4.0'
+  - '@next/swc-linux-arm64-gnu@16.4.0'
+  - '@next/swc-linux-arm64-musl@16.4.0'
+  - '@next/swc-linux-x64-gnu@16.4.0'
+  - '@next/swc-linux-x64-musl@16.4.0'
+  - '@next/swc-win32-arm64-msvc@16.4.0'
+  - '@next/swc-win32-x64-msvc@16.4.0'
+  - next@16.4.0

@@ -279,6 +279,23 @@ jobs:
             apps/android/androidApp/build/outputs/bundle/release/*.aab
           retention-days: 7
 
+  # Site oficial (apps/web): lint, tipos e testes já rodam no job `lint`; aqui vai o build de
+  # produção, que também confere o CSP, o sitemap e as páginas estáticas.
+  web:
+    name: Site (build)
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: https://vynpad.example
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @vynpad/web build
+
   bundle:
     name: Build do app (${{ matrix.os }})
     needs: [lint, rust]
