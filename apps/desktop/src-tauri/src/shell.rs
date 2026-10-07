@@ -82,7 +82,17 @@ where
 
 /// Mostra a janela principal; se ela não existe (começou minimizado ou foi fechada para a
 /// bandeja), cria a partir da configuração do `tauri.conf.json`.
+///
+/// Quem chama costuma estar dentro de um tratador síncrono do sistema (a segunda instância, a
+/// bandeja, uma notificação). No Windows, mexer na janela de dentro de um tratador assim
+/// (principalmente criá-la) trava o laço de eventos e o app para de responder. Por isso o
+/// trabalho roda sempre numa tarefa própria, fora do tratador.
 pub fn show_main_window<R: Runtime>(app: &AppHandle<R>) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move { show_main_window_now(&app) });
+}
+
+fn show_main_window_now<R: Runtime>(app: &AppHandle<R>) {
     if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
         let _ = window.unminimize();
         let _ = window.show();
