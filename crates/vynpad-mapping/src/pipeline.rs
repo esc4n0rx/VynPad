@@ -14,18 +14,44 @@ use crate::compiled::{
     Target,
 };
 use crate::filter::OneEuro;
-use crate::input::{BUTTON_COUNT, Button, Gyro, RawInput};
-use crate::profile::{DeadzoneShape, GyroAxis, StickSide};
+use crate::input::{Accel, BUTTON_COUNT, Button, Gyro, RawInput};
+use crate::profile::{DeadzoneShape, GyroAxis, GyroResponse, StickSide};
 
 /// Maior `dt` aceito em segundos; acima disso (pausa, troca de aba) o intervalo é limitado.
 const MAX_DT: f32 = 1.0;
 /// Depois deste tempo o relógio do turbo dá a volta, para o `f32` não perder precisão.
 const TURBO_WRAP_S: f32 = 1024.0;
 
+/// Gravidade padrão, em m/s².
+const GRAVITY: f32 = 9.806_65;
+/// Quanto o módulo da aceleração pode fugir da gravidade (m/s²) e ainda valer como "para baixo".
+/// Acima disso (solavanco, trepidação) só o giroscópio conduz o ângulo.
+const ACCEL_TRUST_TOLERANCE: f32 = 3.0;
+/// Componente mínima da gravidade (m/s²) no plano do eixo para o ângulo medido ser confiável: com
+/// o aparelho quase perpendicular ao plano, a direção da gravidade vira ruído.
+const ACCEL_MIN_PLANE: f32 = 3.0;
+/// Constante de tempo (s) com que o acelerômetro corrige a deriva do giroscópio.
+const TILT_TAU: f32 = 0.3;
+
+/// O ângulo de inclinação de um eixo: giroscópio integrado e corrigido pela gravidade.
+#[derive(Debug, Clone, Copy, Default)]
+struct TiltAxis {
+    /// Ângulo absoluto (rad) estimado.
+    angle: f32,
+    /// Ângulo tomado como neutro (o que o botão de recentralizar fixa).
+    reference: f32,
+    /// O ângulo já foi semeado pela gravidade (senão a próxima amostra o semeia).
+    seeded: bool,
+    /// Ao semear, também define a referência (pedido de recentralizar).
+    rebase: bool,
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 struct GyroState {
     filter_x: OneEuro,
     filter_y: OneEuro,
+    tilt_x: TiltAxis,
+    tilt_y: TiltAxis,
     /// Modo alternado: ligado?
     toggled: bool,
     toggle_was_down: bool,
@@ -36,6 +62,16 @@ impl GyroState {
     fn reset_filters(&mut self) {
         self.filter_x.reset();
         self.filter_y.reset();
+        // O ângulo é semeado de novo pela gravidade (sem acumular deriva enquanto o gyro dormia).
+        self.tilt_x.seeded = false;
+        self.tilt_y.seeded = false;
+    }
+
+    /// Recentralizar no modo de inclinação: a posição atual do aparelho vira o neutro.
+    fn recenter(&mut self) {
+        self.reset_filters();
+        self.tilt_x.rebase = true;
+        self.tilt_y.rebase = true;
     }
 }
 
@@ -145,6 +181,77 @@ fn gyro_signal(axis: GyroAxis, g: &Gyro) -> f32 {
     }
 }
 
+/// Leva um ângulo para o intervalo (−π, π].
+fn wrap_angle(a: f32) -> f32 {
+    let mut a = a % core::f32::consts::TAU;
+    if a > core::f32::consts::PI {
+        a -= core::f32::consts::TAU;
+    } else if a <= -core::f32::consts::PI {
+        a += core::f32::consts::TAU;
+    }
+    a
+}
+
+/// Ângulo (rad) do eixo medido só pela gravidade, e o tamanho da gravidade no plano dele.
+///
+/// - `Roll`: girar como um volante (em torno de Z), positivo = anti-horário.
+/// - `Pitch`: topo do aparelho para o jogador (em torno de X), positivo = topo para o jogador.
+/// - `Yaw`: com o aparelho deitado, inclinar para os lados (em torno de Y), positivo = lado
+///   direito para baixo.
+fn tilt_measure(axis: GyroAxis, a: &Accel) -> (f32, f32) {
+    let (y, x) = match axis {
+        GyroAxis::Roll => (a.x, a.y),
+        GyroAxis::Pitch => (-a.z, a.y),
+        GyroAxis::Yaw => (-a.x, a.z),
+    };
+    (y.atan2(x), y.hypot(x))
+}
+
+/// Velocidade de giro (rad/s) em torno do eixo, com o mesmo sinal de [`tilt_measure`].
+fn tilt_rate(axis: GyroAxis, g: &Gyro) -> f32 {
+    match axis {
+        GyroAxis::Roll => g.z,
+        GyroAxis::Pitch => g.x,
+        GyroAxis::Yaw => g.y,
+    }
+}
+
+/// Sinal do analógico (positivo = direita / cima) para um ângulo positivo do eixo: girar o volante
+/// no sentido horário, inclinar o topo para longe e baixar o lado direito levam à direita / para cima.
+const fn tilt_polarity(axis: GyroAxis) -> f32 {
+    match axis {
+        GyroAxis::Roll | GyroAxis::Pitch => -1.0,
+        GyroAxis::Yaw => 1.0,
+    }
+}
+
+/// Avança o ângulo de um eixo: integra o giroscópio e o puxa para o que a gravidade indica.
+fn tilt_update(t: &mut TiltAxis, axis: GyroAxis, accel: &Accel, gyro: &Gyro, dt: f32) {
+    let (measured, plane) = tilt_measure(axis, accel);
+    let magnitude = accel.x.hypot(accel.y).hypot(accel.z);
+    let gravity_like =
+        (magnitude - GRAVITY).abs() <= ACCEL_TRUST_TOLERANCE && plane >= ACCEL_MIN_PLANE;
+    if !t.seeded {
+        t.angle = if gravity_like { measured } else { 0.0 };
+        if t.rebase {
+            t.reference = t.angle;
+            t.rebase = false;
+        }
+        t.seeded = true;
+        return;
+    }
+    t.angle = wrap_angle(t.angle + tilt_rate(axis, gyro) * dt);
+    if gravity_like {
+        let k = dt / (TILT_TAU + dt);
+        t.angle = wrap_angle(t.angle + k * wrap_angle(measured - t.angle));
+    }
+}
+
+/// O ângulo do eixo em relação ao neutro, normalizado pelo fim de curso e com a polaridade do analógico.
+fn tilt_signal(t: &TiltAxis, axis: GyroAxis, range_rad: f32) -> f32 {
+    tilt_polarity(axis) * wrap_angle(t.angle - t.reference) / range_rad
+}
+
 fn soft_deadzone(v: f32, dz: f32) -> f32 {
     let a = v.abs();
     if a <= dz { 0.0 } else { (a - dz).copysign(v) }
@@ -165,7 +272,7 @@ fn gyro_step(g: &CompiledGyro, st: &mut GyroState, raw: &RawInput, dt: f32) -> O
     }
     let recenter_down = g.recenter_mask != 0 && raw.buttons & g.recenter_mask != 0;
     if recenter_down && !st.recenter_was_down {
-        st.reset_filters();
+        st.recenter();
         st.toggled = false;
     }
     st.recenter_was_down = recenter_down;
@@ -180,8 +287,31 @@ fn gyro_step(g: &CompiledGyro, st: &mut GyroState, raw: &RawInput, dt: f32) -> O
         return None;
     };
 
-    let mut x = soft_deadzone(gyro_signal(g.axis_x, gyro), g.deadzone);
-    let mut y = soft_deadzone(gyro_signal(g.axis_y, gyro), g.deadzone);
+    let (mut x, mut y) = match g.response {
+        GyroResponse::Rate => (
+            soft_deadzone(gyro_signal(g.axis_x, gyro), g.deadzone),
+            soft_deadzone(gyro_signal(g.axis_y, gyro), g.deadzone),
+        ),
+        GyroResponse::Tilt => {
+            // Sem acelerômetro no pacote não há ângulo: o modo fica quieto.
+            let Some(accel) = raw.accel.as_ref() else {
+                st.reset_filters();
+                return None;
+            };
+            tilt_update(&mut st.tilt_x, g.axis_x, accel, gyro, dt);
+            tilt_update(&mut st.tilt_y, g.axis_y, accel, gyro, dt);
+            (
+                soft_deadzone(
+                    tilt_signal(&st.tilt_x, g.axis_x, g.tilt_range_rad),
+                    g.deadzone,
+                ),
+                soft_deadzone(
+                    tilt_signal(&st.tilt_y, g.axis_y, g.tilt_range_rad),
+                    g.deadzone,
+                ),
+            )
+        }
+    };
     if g.smoothing.enabled {
         x = st
             .filter_x
@@ -190,7 +320,12 @@ fn gyro_step(g: &CompiledGyro, st: &mut GyroState, raw: &RawInput, dt: f32) -> O
             .filter_y
             .filter(y, dt, g.smoothing.min_cutoff, g.smoothing.beta);
     }
-    Some((x * g.gain_x, y * g.gain_y))
+    let (x, y) = (x * g.gain_x, y * g.gain_y);
+    // Inclinação além do fim de curso (ou sensibilidade alta) trava no máximo, em vez de passar.
+    Some(match g.response {
+        GyroResponse::Rate => (x, y),
+        GyroResponse::Tilt => (x.clamp(-1.0, 1.0), y.clamp(-1.0, 1.0)),
+    })
 }
 
 /// Aplica o perfil a um quadro de input.

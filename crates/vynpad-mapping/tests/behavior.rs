@@ -65,6 +65,7 @@ fn identity_profile_returns_the_input_untouched() {
         rx: 1234,
         ry: -4321,
         gyro: None,
+        accel: None,
     };
     let out = run(&Profile::identity(), &raw);
     assert_eq!(out.buttons, raw.buttons);

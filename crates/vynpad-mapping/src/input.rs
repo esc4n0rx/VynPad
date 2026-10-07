@@ -147,6 +147,20 @@ pub struct Gyro {
     pub z: f32,
 }
 
+/// Acelerômetro no referencial do controle, em m/s², **com a gravidade** (PROTOCOLO §6.4).
+///
+/// Parado e na vertical (paisagem, tela para o jogador), mede ~+9,8 em Y: é daí que sai o ângulo
+/// de inclinação do modo "Inclinação" do gyro.
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct Accel {
+    /// Para a direita.
+    pub x: f32,
+    /// Para cima.
+    pub y: f32,
+    /// Saindo da tela, em direção ao jogador.
+    pub z: f32,
+}
+
 /// Estado bruto de um controle, antes do perfil.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct RawInput {
@@ -166,6 +180,8 @@ pub struct RawInput {
     pub ry: i16,
     /// Giroscópio, se o pacote trouxe motion.
     pub gyro: Option<Gyro>,
+    /// Acelerômetro (com gravidade), se o pacote trouxe motion.
+    pub accel: Option<Accel>,
 }
 
 impl RawInput {
@@ -183,6 +199,11 @@ impl RawInput {
                 x: f32::from(m.gx) / 1000.0,
                 y: f32::from(m.gy) / 1000.0,
                 z: f32::from(m.gz) / 1000.0,
+            }),
+            accel: motion.map(|m| Accel {
+                x: f32::from(m.ax) / 100.0,
+                y: f32::from(m.ay) / 100.0,
+                z: f32::from(m.az) / 100.0,
             }),
         }
     }

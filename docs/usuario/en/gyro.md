@@ -6,6 +6,17 @@ The gyro uses the phone’s motion sensor to move a stick, like console games wi
 
 In **Mapping → Gyro**, turn on **Turn the gyro on**. The phone starts sending motion along with the buttons (only if the device has the sensor).
 
+## Two ways to use it {#resposta}
+
+Under **How motion acts** you choose:
+
+- **Speed (aiming)**: the stick moves *while* the phone turns and returns to center when it stops. This is how console motion aiming works.
+- **Tilt (steering)**: the stick follows the phone's **angle** and **stays where it is**. Turn the phone like a steering wheel and the left stick follows, precisely. This is the right one for simulators and racing games (Euro Truck Simulator, for example).
+
+Choosing **Tilt** sets the profile up as a wheel (left stick, X axis, turn like a steering wheel, no smoothing). You can change it afterwards. **Angle to full travel** is how many degrees take the stick to its maximum (45° by default: fewer degrees = more sensitive wheel). The **recenter** button now takes the phone's current position as the neutral point.
+
+The angle comes from the gravity the phone measures, corrected by the gyroscope, so it copes well with vibration. If you hold the phone flat (like a tray), use the **Turn sideways** motion.
+
 ## When it acts {#quando-age}
 
 - **Always**: the gyro moves the stick all the time.

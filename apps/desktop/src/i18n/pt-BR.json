@@ -346,6 +346,12 @@
     },
     "gyro": {
       "title": "Gyro",
+      "response": "Como o movimento age",
+      "responseRate": "Velocidade (mira)",
+      "responseTilt": "Inclinação (volante)",
+      "responseRateHint": "O analógico se move enquanto o celular gira e volta ao centro quando ele para. Bom para mirar.",
+      "responseTiltHint": "O analógico acompanha o ângulo do celular e fica onde ele está. Bom para volante e jogos de corrida: gire o celular como um volante.",
+      "tiltRange": "Ângulo até o fim do curso",
       "enabled": "Ativar o gyro",
       "mode": "Quando age",
       "always": "Sempre",
@@ -374,6 +380,7 @@
     },
     "percent": "{{value}}%",
     "hz": "{{value}} Hz",
+    "degrees": "{{value}}°",
     "multiplier": "{{value}}×",
     "rumble": {
       "title": "Vibração",

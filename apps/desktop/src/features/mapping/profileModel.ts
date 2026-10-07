@@ -5,6 +5,7 @@ import type {
   DeadzoneShape,
   GyroAxis,
   GyroMode,
+  GyroResponse,
   Profile,
   StickSide,
   Turbo,
@@ -34,6 +35,8 @@ export interface ResolvedGyro {
   target: StickSide;
   axis_x: GyroAxis;
   axis_y: GyroAxis;
+  response: GyroResponse;
+  tilt_range_deg: number;
   sensitivity_x: number;
   sensitivity_y: number;
   invert_x: boolean;
@@ -68,6 +71,8 @@ export const GYRO_DEFAULTS = {
   target: "right",
   axis_x: "yaw",
   axis_y: "pitch",
+  response: "rate",
+  tilt_range_deg: 45,
   sensitivity_x: 1,
   sensitivity_y: 1,
   invert_x: false,
@@ -166,6 +171,8 @@ export function gyroOf(profile: Profile): ResolvedGyro {
     target: g.target ?? GYRO_DEFAULTS.target,
     axis_x: g.axis_x ?? GYRO_DEFAULTS.axis_x,
     axis_y: g.axis_y ?? GYRO_DEFAULTS.axis_y,
+    response: g.response ?? GYRO_DEFAULTS.response,
+    tilt_range_deg: g.tilt_range_deg ?? GYRO_DEFAULTS.tilt_range_deg,
     sensitivity_x: g.sensitivity_x ?? GYRO_DEFAULTS.sensitivity_x,
     sensitivity_y: g.sensitivity_y ?? GYRO_DEFAULTS.sensitivity_y,
     invert_x: g.invert_x ?? GYRO_DEFAULTS.invert_x,
@@ -235,6 +242,37 @@ export function setRumble(
 
 export function setGyro(profile: Profile, patch: Partial<ResolvedGyro>): Profile {
   return { ...profile, gyro: { ...gyroOf(profile), ...patch } };
+}
+
+/**
+ * Troca o jeito de o movimento virar analógico e já arruma o resto para ele:
+ * - `tilt` (volante / corrida): o analógico esquerdo X acompanha o ângulo do celular girado como
+ *   volante, sem nada no Y e sem suavização (o ângulo já sai estável do filtro do backend);
+ * - `rate` (mira): volta aos eixos e à suavização do padrão.
+ * Tudo isso continua editável depois.
+ */
+export function setGyroResponse(profile: Profile, response: GyroResponse): Profile {
+  if (response === "tilt") {
+    return setGyro(profile, {
+      response,
+      target: "left",
+      axis_x: "roll",
+      sensitivity_x: 1,
+      sensitivity_y: 0,
+      deadzone: 0.02,
+      smoothing: { ...GYRO_DEFAULTS.smoothing, enabled: false },
+    });
+  }
+  return setGyro(profile, {
+    response,
+    target: GYRO_DEFAULTS.target,
+    axis_x: GYRO_DEFAULTS.axis_x,
+    axis_y: GYRO_DEFAULTS.axis_y,
+    sensitivity_x: GYRO_DEFAULTS.sensitivity_x,
+    sensitivity_y: GYRO_DEFAULTS.sensitivity_y,
+    deadzone: GYRO_DEFAULTS.deadzone,
+    smoothing: { ...GYRO_DEFAULTS.smoothing },
+  });
 }
 
 /** Para onde o botão vai (`undefined` = para ele mesmo, que não precisa constar no perfil). */

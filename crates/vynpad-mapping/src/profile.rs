@@ -201,6 +201,22 @@ pub enum GyroAxis {
     Roll,
 }
 
+/// Como o movimento do aparelho vira analógico.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "specta", derive(specta::Type))]
+#[serde(rename_all = "snake_case")]
+pub enum GyroResponse {
+    /// Pela **velocidade** de giro: o analógico se move enquanto o aparelho gira e volta ao centro
+    /// ao parar (mira, como um mouse).
+    #[default]
+    Rate,
+    /// Pelo **ângulo** de inclinação: o analógico acompanha o quanto o aparelho está inclinado e
+    /// fica onde ele está parado (volante e jogos de corrida). Usa a gravidade do acelerômetro,
+    /// corrigida pelo giroscópio. Só `Roll` (volante), `Pitch` e `Yaw` (inclinar para os lados,
+    /// com o aparelho deitado) têm ângulo; os três valem como eixos.
+    Tilt,
+}
+
 /// Filtro 1-Euro (suaviza o tremor sem atrasar movimentos rápidos).
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "specta", derive(specta::Type))]
@@ -241,7 +257,12 @@ pub struct GyroConfig {
     pub axis_x: GyroAxis,
     /// Movimento que move o eixo Y do analógico.
     pub axis_y: GyroAxis,
-    /// Sensibilidade em X (0–10). 1,0 = analógico no fim do curso a ~115°/s.
+    /// Velocidade (`rate`) ou ângulo de inclinação (`tilt`).
+    pub response: GyroResponse,
+    /// No modo `tilt`: o ângulo, em graus, que leva o analógico ao fim do curso (10–180).
+    pub tilt_range_deg: f32,
+    /// Sensibilidade em X (0–10). Em `rate`, 1,0 = analógico no fim do curso a ~115°/s; em `tilt`,
+    /// multiplica a inclinação (1,0 = fim do curso no `tilt_range_deg`).
     pub sensitivity_x: f32,
     /// Sensibilidade em Y (0–10).
     pub sensitivity_y: f32,
@@ -267,6 +288,8 @@ impl Default for GyroConfig {
             target: StickSide::Right,
             axis_x: GyroAxis::Yaw,
             axis_y: GyroAxis::Pitch,
+            response: GyroResponse::Rate,
+            tilt_range_deg: 45.0,
             sensitivity_x: 1.0,
             sensitivity_y: 1.0,
             invert_x: false,
@@ -551,6 +574,11 @@ fn validate_gyro(g: &GyroConfig) -> Result<(), ProfileError> {
             "deve estar entre 0 e 10",
         )?;
     }
+    check(
+        "gyro.tilt_range_deg",
+        g.tilt_range_deg.is_finite() && (10.0..=180.0).contains(&g.tilt_range_deg),
+        "deve estar entre 10 e 180 graus",
+    )?;
     check(
         "gyro.deadzone",
         g.deadzone.is_finite() && (0.0..=1.0).contains(&g.deadzone),

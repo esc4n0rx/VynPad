@@ -2,8 +2,9 @@
 
 use proptest::prelude::*;
 use vynpad_mapping::{
-    Button, ButtonTarget, CompiledProfile, Curve, DeadzoneShape, Gyro, GyroAxis, GyroMode,
-    MapperState, Profile, RawInput, StickConfig, StickSide, TriggerConfig, Turbo, apply,
+    Accel, Button, ButtonTarget, CompiledProfile, Curve, DeadzoneShape, Gyro, GyroAxis, GyroMode,
+    GyroResponse, MapperState, Profile, RawInput, StickConfig, StickSide, TriggerConfig, Turbo,
+    apply,
 };
 
 fn button() -> impl Strategy<Value = Button> {
@@ -20,8 +21,9 @@ fn raw_input() -> impl Strategy<Value = RawInput> {
         any::<i16>(),
         any::<i16>(),
         proptest::option::of((-40.0f32..40.0, -40.0f32..40.0, -40.0f32..40.0)),
+        proptest::option::of((-60.0f32..60.0, -60.0f32..60.0, -60.0f32..60.0)),
     )
-        .prop_map(|(buttons, lt, rt, lx, ly, rx, ry, gyro)| RawInput {
+        .prop_map(|(buttons, lt, rt, lx, ly, rx, ry, gyro, accel)| RawInput {
             buttons,
             lt,
             rt,
@@ -30,6 +32,7 @@ fn raw_input() -> impl Strategy<Value = RawInput> {
             rx,
             ry,
             gyro: gyro.map(|(x, y, z)| Gyro { x, y, z }),
+            accel: accel.map(|(x, y, z)| Accel { x, y, z }),
         })
 }
 
@@ -138,6 +141,12 @@ fn profile(monotone_only: bool) -> impl Strategy<Value = Profile> {
             p.gyro.enabled = enabled;
             p.gyro.mode = mode;
             p.gyro.target = target;
+            // `swap` já é sorteado: aproveita-o para sortear também o modo por ângulo.
+            p.gyro.response = if swap {
+                GyroResponse::Tilt
+            } else {
+                GyroResponse::Rate
+            };
             p.gyro.axis_x = GyroAxis::Roll;
             p.gyro.sensitivity_x = sx;
             p.gyro.sensitivity_y = sy;

@@ -5,8 +5,8 @@ use std::hint::black_box;
 use criterion::{Criterion, criterion_group, criterion_main};
 use vynpad_driver::xbuttons;
 use vynpad_mapping::{
-    Button, ButtonTarget, CompiledProfile, Curve, Gyro, MapperState, Profile, RawInput, Turbo,
-    apply,
+    Accel, Button, ButtonTarget, CompiledProfile, Curve, Gyro, MapperState, Profile, RawInput,
+    Turbo, apply,
 };
 
 /// Perfil que liga todas as etapas: curvas, deadzones, gyro com filtro, remapeamento e turbo.
@@ -44,6 +44,11 @@ fn bench(c: &mut Criterion) {
             x: 0.3,
             y: -0.8,
             z: 0.1,
+        }),
+        accel: Some(Accel {
+            x: 1.2,
+            y: 9.6,
+            z: 0.4,
         }),
     };
 

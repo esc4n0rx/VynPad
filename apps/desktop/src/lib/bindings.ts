@@ -451,7 +451,14 @@ export type GyroConfig = {
 	axis_x?: GyroAxis,
 	/**  Movimento que move o eixo Y do analógico. */
 	axis_y?: GyroAxis,
-	/**  Sensibilidade em X (0–10). 1,0 = analógico no fim do curso a ~115°/s. */
+	/**  Velocidade (`rate`) ou ângulo de inclinação (`tilt`). */
+	response?: GyroResponse,
+	/**  No modo `tilt`: o ângulo, em graus, que leva o analógico ao fim do curso (10–180). */
+	tilt_range_deg?: number | null,
+	/**
+	 *  Sensibilidade em X (0–10). Em `rate`, 1,0 = analógico no fim do curso a ~115°/s; em `tilt`,
+	 *  multiplica a inclinação (1,0 = fim do curso no `tilt_range_deg`).
+	 */
 	sensitivity_x?: number | null,
 	/**  Sensibilidade em Y (0–10). */
 	sensitivity_y?: number | null,
@@ -481,6 +488,21 @@ button: Button } |
 { type: "toggle"; 
 /**  O botão (lido da entrada bruta, antes do remapeamento). */
 button: Button };
+
+/**  Como o movimento do aparelho vira analógico. */
+export type GyroResponse = 
+/**
+ *  Pela **velocidade** de giro: o analógico se move enquanto o aparelho gira e volta ao centro
+ *  ao parar (mira, como um mouse).
+ */
+"rate" | 
+/**
+ *  Pelo **ângulo** de inclinação: o analógico acompanha o quanto o aparelho está inclinado e
+ *  fica onde ele está parado (volante e jogos de corrida). Usa a gravidade do acelerômetro,
+ *  corrigida pelo giroscópio. Só `Roll` (volante), `Pitch` e `Yaw` (inclinar para os lados,
+ *  com o aparelho deitado) têm ângulo; os três valem como eixos.
+ */
+"tilt";
 
 /**  Quanto o perfil está em uso. */
 export type InUse = {

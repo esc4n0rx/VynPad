@@ -6,6 +6,17 @@ O gyro usa o sensor de movimento do celular para mover um analógico, como em jo
 
 Em **Mapeamento → Gyro**, ligue **Ativar o gyro**. O celular passa a mandar o movimento junto com os botões (só se o aparelho tiver o sensor).
 
+## Dois jeitos de usar {#resposta}
+
+Em **Como o movimento age** você escolhe:
+
+- **Velocidade (mira)**: o analógico se move *enquanto* o celular gira e volta ao centro quando ele para. É o jeito dos jogos de console com mira por movimento.
+- **Inclinação (volante)**: o analógico acompanha o **ângulo** do celular e **fica onde ele está**. Gire o celular como um volante e o analógico esquerdo vai junto, com precisão. É o certo para simuladores e jogos de corrida (Euro Truck Simulator, por exemplo).
+
+Ao escolher **Inclinação**, o perfil já se arruma como volante (analógico esquerdo, eixo X, girar como um volante, sem suavização). Dá para mudar depois. O **ângulo até o fim do curso** diz quantos graus levam o analógico ao máximo (45° por padrão: menos graus = volante mais sensível). O botão de **recentralizar** passa a fixar a posição atual do celular como o ponto neutro.
+
+O ângulo vem da gravidade medida pelo celular, corrigida pelo giroscópio, então aguenta bem a trepidação. Se o celular for deitado (como uma bandeja), use o movimento **Virar para os lados**.
+
 ## Quando age {#quando-age}
 
 - **Sempre**: o gyro move o analógico o tempo todo.

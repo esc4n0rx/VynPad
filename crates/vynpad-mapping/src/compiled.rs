@@ -3,8 +3,8 @@
 
 use crate::input::{BUTTON_COUNT, Button};
 use crate::profile::{
-    ButtonTarget, Curve, DeadzoneShape, GyroAxis, GyroConfig, GyroMode, Profile, ProfileError,
-    RumbleConfig, Smoothing, StickConfig, StickSide, TriggerConfig,
+    ButtonTarget, Curve, DeadzoneShape, GyroAxis, GyroConfig, GyroMode, GyroResponse, Profile,
+    ProfileError, RumbleConfig, Smoothing, StickConfig, StickSide, TriggerConfig,
 };
 
 /// Divisões da LUT das curvas (a tabela tem `LUT_STEPS + 1` entradas).
@@ -50,6 +50,9 @@ pub struct CompiledGyro {
     pub(crate) target: StickSide,
     pub(crate) axis_x: GyroAxis,
     pub(crate) axis_y: GyroAxis,
+    pub(crate) response: GyroResponse,
+    /// O ângulo (rad) que leva o analógico ao fim do curso, no modo de inclinação.
+    pub(crate) tilt_range_rad: f32,
     /// Já inclui o sinal da inversão e a divisão pela escala de fundo.
     pub(crate) gain_x: f32,
     pub(crate) gain_y: f32,
@@ -187,9 +190,14 @@ fn compile_trigger(t: &TriggerConfig) -> CompiledTrigger {
 }
 
 fn compile_gyro(g: &GyroConfig) -> CompiledGyro {
+    // Em `rate` o ganho já traz a divisão pela escala de fundo (rad/s); em `tilt` o sinal sai
+    // normalizado pelo ângulo de fim de curso, então o ganho é só sinal e sensibilidade.
     let gain = |sensitivity: f32, invert: bool| {
         let sign = if invert { -1.0 } else { 1.0 };
-        sign * sensitivity / GYRO_FULL_SCALE_RAD_S
+        match g.response {
+            GyroResponse::Rate => sign * sensitivity / GYRO_FULL_SCALE_RAD_S,
+            GyroResponse::Tilt => sign * sensitivity,
+        }
     };
     CompiledGyro {
         enabled: g.enabled,
@@ -201,6 +209,8 @@ fn compile_gyro(g: &GyroConfig) -> CompiledGyro {
         target: g.target,
         axis_x: g.axis_x,
         axis_y: g.axis_y,
+        response: g.response,
+        tilt_range_rad: g.tilt_range_deg.to_radians(),
         gain_x: gain(g.sensitivity_x, g.invert_x),
         gain_y: gain(g.sensitivity_y, g.invert_y),
         deadzone: g.deadzone,

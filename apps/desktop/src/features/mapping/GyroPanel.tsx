@@ -4,9 +4,16 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Slider } from "@/components/ui/slider";
 import { Toggle } from "@/components/ui/toggle";
 import { formatNumber } from "@/i18n/format";
-import type { Button, GyroAxis, GyroMode, Profile } from "@/lib/bindings";
+import type { Button, GyroAxis, GyroMode, GyroResponse, Profile } from "@/lib/bindings";
 import { Field, ToggleRow } from "./Field";
-import { ALL_BUTTONS, BUTTON_ELEMENT, GYRO_DEFAULTS, gyroOf, setGyro } from "./profileModel";
+import {
+  ALL_BUTTONS,
+  BUTTON_ELEMENT,
+  GYRO_DEFAULTS,
+  gyroOf,
+  setGyro,
+  setGyroResponse,
+} from "./profileModel";
 
 interface GyroPanelProps {
   profile: Profile;
@@ -57,6 +64,44 @@ export function GyroPanel({ profile, readOnly, edit }: GyroPanelProps) {
           />
         )}
       </ToggleRow>
+
+      <Field label={t("gyro.response")}>
+        {() => (
+          <SegmentedControl
+            label={t("gyro.response")}
+            value={gyro.response}
+            options={[
+              { value: "rate", label: t("gyro.responseRate") },
+              { value: "tilt", label: t("gyro.responseTilt") },
+            ]}
+            onValueChange={(response: GyroResponse) => {
+              if (!readOnly) edit((p) => setGyroResponse(p, response));
+            }}
+          />
+        )}
+      </Field>
+      <p className="text-caption text-fg-2">
+        {t(gyro.response === "tilt" ? "gyro.responseTiltHint" : "gyro.responseRateHint")}
+      </p>
+      {gyro.response === "tilt" && (
+        <Field label={t("gyro.tiltRange")}>
+          {() => (
+            <Slider
+              label={t("gyro.tiltRange")}
+              min={10}
+              max={180}
+              step={5}
+              defaultValue={GYRO_DEFAULTS.tilt_range_deg}
+              value={gyro.tilt_range_deg}
+              disabled={readOnly}
+              format={(v) => t("degrees", { value: decimal(0)(v) })}
+              onValueChange={(tilt_range_deg) => {
+                patch({ tilt_range_deg });
+              }}
+            />
+          )}
+        </Field>
+      )}
 
       <Field label={t("gyro.mode")}>
         {() => (

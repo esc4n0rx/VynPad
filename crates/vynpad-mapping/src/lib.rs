@@ -34,10 +34,10 @@ pub mod pipeline;
 pub mod profile;
 
 pub use compiled::{CompiledProfile, GYRO_FULL_SCALE_RAD_S};
-pub use input::{Button, Gyro, RawInput};
+pub use input::{Accel, Button, Gyro, RawInput};
 pub use pipeline::{Mapper, MapperState, ProfileCell, apply};
 pub use profile::{
-    ButtonTarget, ButtonsConfig, Curve, DeadzoneShape, GyroAxis, GyroConfig, GyroMode, Profile,
-    ProfileError, RumbleConfig, SCHEMA_VERSION, Smoothing, StickConfig, StickSide, SticksConfig,
-    TriggerConfig, TriggersConfig, Turbo,
+    ButtonTarget, ButtonsConfig, Curve, DeadzoneShape, GyroAxis, GyroConfig, GyroMode,
+    GyroResponse, Profile, ProfileError, RumbleConfig, SCHEMA_VERSION, Smoothing, StickConfig,
+    StickSide, SticksConfig, TriggerConfig, TriggersConfig, Turbo,
 };

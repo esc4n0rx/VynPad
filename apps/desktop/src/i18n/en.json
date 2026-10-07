@@ -346,6 +346,12 @@
     },
     "gyro": {
       "title": "Gyro",
+      "response": "How motion acts",
+      "responseRate": "Speed (aiming)",
+      "responseTilt": "Tilt (steering)",
+      "responseRateHint": "The stick moves while the phone turns and returns to center when it stops. Good for aiming.",
+      "responseTiltHint": "The stick follows the phone's angle and stays where it is. Good for steering wheels and racing games: turn the phone like a wheel.",
+      "tiltRange": "Angle to full travel",
       "enabled": "Turn the gyro on",
       "mode": "When it acts",
       "always": "Always",
@@ -374,6 +380,7 @@
     },
     "percent": "{{value}}%",
     "hz": "{{value}} Hz",
+    "degrees": "{{value}}°",
     "multiplier": "{{value}}×",
     "rumble": {
       "title": "Vibration",

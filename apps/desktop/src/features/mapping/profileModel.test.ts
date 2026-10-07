@@ -12,6 +12,7 @@ import {
   remapOf,
   rumbleOf,
   setGyro,
+  setGyroResponse,
   setRumble,
   setRemap,
   setStick,
@@ -148,6 +149,32 @@ describe("gyro", () => {
     expect(gyro.enabled).toBe(true);
     expect(gyro.sensitivity_x).toBe(3);
     expect(gyro.sensitivity_y).toBe(1);
+  });
+
+  it("um perfil antigo, sem a resposta, continua por velocidade (mira)", () => {
+    const gyro = gyroOf({ gyro: { enabled: true } });
+    expect(gyro.response).toBe("rate");
+    expect(gyro.tilt_range_deg).toBe(45);
+  });
+
+  it("trocar para inclinação arruma o perfil como volante, no analógico esquerdo X", () => {
+    const gyro = gyroOf(setGyroResponse({ gyro: { enabled: true } }, "tilt"));
+    expect(gyro.response).toBe("tilt");
+    expect(gyro.target).toBe("left");
+    expect(gyro.axis_x).toBe("roll");
+    expect(gyro.sensitivity_y).toBe(0);
+    expect(gyro.smoothing.enabled).toBe(false);
+    // O que o usuário já tinha ligado fica ligado.
+    expect(gyro.enabled).toBe(true);
+  });
+
+  it("voltar para velocidade restaura os eixos e a suavização da mira", () => {
+    const back = gyroOf(setGyroResponse(setGyroResponse({}, "tilt"), "rate"));
+    expect(back.response).toBe("rate");
+    expect(back.target).toBe("right");
+    expect(back.axis_x).toBe("yaw");
+    expect(back.sensitivity_y).toBe(1);
+    expect(back.smoothing.enabled).toBe(true);
   });
 
   it("os modos que dependem de botão levam o botão junto", () => {
