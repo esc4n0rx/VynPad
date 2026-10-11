@@ -61,7 +61,8 @@ class PillPart(widget: PadWidget, val box: Box) : Part(widget) {
     override val priority get() = 2
 }
 
-class TriggerPart(widget: PadWidget, val box: Box) : Part(widget) {
+/** Gatilho ou pedal; no pedal o dedo percorre a altura toda da peça ([tall]). */
+class TriggerPart(widget: PadWidget, val box: Box, val tall: Boolean = false) : Part(widget) {
     override val bounds get() = box
     override val priority get() = 2
 }
@@ -69,7 +70,7 @@ class TriggerPart(widget: PadWidget, val box: Box) : Part(widget) {
 /** Onde um toque caiu. */
 sealed interface Hit {
     /** Botão redondo, ombro ou botão do centro. */
-    data class Button(val mask: Int) : Hit
+    data class Button(val mask: Int, val latchId: String? = null) : Hit
 
     /** Direcional: `mask` pode ser 0 (centro morto), uma direção ou uma diagonal. */
     data class Dpad(val mask: Int) : Hit
@@ -126,6 +127,12 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
             }
 
             WidgetKind.Trigger -> TriggerPart(w, pill(cx, cy, s.scale))
+
+            WidgetKind.Pedal -> {
+                val halfW = 0.10f * h * s.scale
+                val halfH = 0.30f * h * s.scale
+                TriggerPart(w, Box(cx - halfW, cy - halfH, cx + halfW, cy + halfH), tall = true)
+            }
         }
     }
 
@@ -186,7 +193,7 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
     val triggerReach = 0.30f * h
 
     /** O gatilho vale de 0 (dedo no topo) a 1 (dedo a [triggerReach] abaixo do topo). */
-    fun triggerValue(part: TriggerPart, y: Float): Float = ((y - part.box.top) / triggerReach).coerceIn(0f, 1f)
+    fun triggerValue(part: TriggerPart, y: Float): Float = ((y - part.box.top) / (if (part.tall) part.box.height else triggerReach)).coerceIn(0f, 1f)
 
     // ---- Toque
 
@@ -195,12 +202,12 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
         for (part in byPriority) {
             if (!part.visible) continue
             val hit = when (part) {
-                is RoundPart -> Hit.Button(part.button.mask).takeIf { part.button.shape.contains(x, y, 1.3f) }
+                is RoundPart -> Hit.Button(part.button.mask, part.latchId()).takeIf { part.button.shape.contains(x, y, 1.3f) }
 
                 // Botões do centro e ABXY têm uma folga para dedos grandes.
                 is FacePart -> nearestFace(part, x, y)?.let { Hit.Button(it.mask) }
 
-                is PillPart -> Hit.Button(part.widget.mask).takeIf { part.box.contains(x, y, SHOULDER_SLOP * h) }
+                is PillPart -> Hit.Button(part.widget.mask, part.latchId()).takeIf { part.box.contains(x, y, SHOULDER_SLOP * h) }
 
                 is TriggerPart -> Hit.Trigger(part).takeIf { part.box.contains(x, y, SHOULDER_SLOP * h) }
 
@@ -215,6 +222,8 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
 
     /** Só botões (ABXY, direcional, centro, ombros): usado quando o dedo desliza de um para outro. */
     fun hitButtonOnly(x: Float, y: Float): Hit? = hit(x, y)?.takeIf { it is Hit.Button || it is Hit.Dpad }
+
+    private fun Part.latchId(): String? = widget.id.takeIf { widget.latch }
 
     private fun nearestFace(part: FacePart, x: Float, y: Float): RoundButton? = part.buttons.filter { it.shape.contains(x, y, 1.35f) }
         .minByOrNull { hypot(x - it.shape.cx, y - it.shape.cy) }

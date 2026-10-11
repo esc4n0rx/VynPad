@@ -102,10 +102,12 @@ fun GamepadSurface(
     val colors = VynTheme.colors
     val typography = VynTheme.typography
     val measurer = rememberTextMeasurer()
-    val labels = remember(typography, measurer) {
-        listOf("A", "B", "X", "Y", "LB", "RB", "LT", "RT").associateWith {
-            measurer.measure(AnnotatedString(it), typography.bodyStrong)
-        }
+    // Os textos das peças (padrão ou escolhidos pelo usuário) são medidos uma vez por conjunto.
+    val texts = remember(layout.widgets) {
+        (listOf("A", "B", "X", "Y") + layout.widgets.map { it.displayLabel() }).filter { it.isNotEmpty() }.toSet()
+    }
+    val labels = remember(typography, measurer, texts) {
+        texts.associateWith { measurer.measure(AnnotatedString(it), typography.bodyStrong) }
     }
 
     val visuals = remember { PadVisuals() }
@@ -210,6 +212,7 @@ private fun DrawScope.drawPad(
         val widget = part.widget
         layer(widget.spec.opacity * padOpacity, part.bounds) {
             when (part) {
+                // O pedal é um gatilho alto: o mesmo desenho.
                 is TriggerPart -> drawTrigger(part.box, if (widget.left) visuals.lt else visuals.rt, c, accent, labels[widget.displayLabel()])
 
                 is PillPart -> drawShoulder(part.box, presses[widget.mask], c, accent, labels[widget.displayLabel()])
@@ -311,11 +314,12 @@ private fun DrawScope.drawShoulder(box: Box, pressed: Float, c: VynColors, accen
 private fun DrawScope.drawTrigger(box: Box, value: Float, c: VynColors, accent: Color, label: TextLayoutResult?) {
     val topLeft = Offset(box.left, box.top)
     val size = Size(box.width, box.height)
-    val radius = CornerRadius(box.height * 0.45f)
+    val thin = minOf(box.width, box.height)
+    val radius = CornerRadius(thin * 0.45f)
     drawRoundRect(c.padWell, topLeft, size, radius)
     if (value > 0.01f) {
         val fill = box.height * value.coerceIn(0f, 1f)
-        drawRoundRect(accent.copy(alpha = 0.35f + 0.55f * value), topLeft, Size(size.width, fill.coerceAtLeast(box.height * 0.2f)), radius)
+        drawRoundRect(accent.copy(alpha = 0.35f + 0.55f * value), topLeft, Size(size.width, fill.coerceAtLeast(thin * 0.2f)), radius)
         drawRoundRect(accent.copy(alpha = 0.25f * value), topLeft - Offset(6f, 6f), Size(size.width + 12f, size.height + 12f), radius)
     }
     drawRoundRect(c.padEdge, topLeft, size, radius, style = Stroke(1.5.dp.toPx()))

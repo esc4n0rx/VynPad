@@ -70,7 +70,9 @@ fun PadLayout.sanitized(): PadLayout {
                 scale = f(w.spec.scale, PadLayouts.MIN_SCALE, PadLayouts.MAX_SCALE, 1f),
                 opacity = f(w.spec.opacity, PadLayouts.MIN_OPACITY, 1f, 1f),
             ),
-            label = w.label.take(MAX_LABEL),
+            label = w.label.take(PadLayouts.MAX_LABEL),
+            // Uma máscara fora da lista de botões (um arquivo malicioso poderia apertar tudo) não aciona nada.
+            mask = if (w.kind == WidgetKind.Button && w.mask in PadLayouts.ButtonMasks) w.mask else 0,
             stick = stick(w.stick),
         )
     }
@@ -89,4 +91,3 @@ fun PadLayout.sanitized(): PadLayout {
 
 private const val MAX_NAME = 24
 private const val MAX_ID = 32
-private const val MAX_LABEL = 8

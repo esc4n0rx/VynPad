@@ -59,6 +59,12 @@ enum class WidgetKind {
 
     /** Gatilho analógico do lado [PadWidget.left]: a altura do dedo é a pressão. */
     Trigger,
+
+    /**
+     * Pedal: um gatilho alto (LT/RT) em que o dedo percorre a peça inteira, do topo (solto) à
+     * base (a fundo). Serve de acelerador e freio nos jogos de corrida.
+     */
+    Pedal,
 }
 
 /** Forma e tamanho-base de um [WidgetKind.Button]. */
@@ -107,25 +113,19 @@ data class PadWidget(
     /** Texto desenhado no botão; vazio usa o padrão da máscara (LB, RB, A...). */
     val label: String = "",
     val stick: StickConfig = StickConfig(),
+    /** Botão que trava: um toque o aperta e o próximo o solta (em vez de valer só enquanto o dedo está nele). */
+    val latch: Boolean = false,
 ) {
     /** O texto desenhado na peça: o escolhido pelo usuário ou o padrão do tipo. */
     fun displayLabel(): String = label.ifEmpty {
         when (kind) {
-            WidgetKind.Trigger -> if (left) "LT" else "RT"
+            WidgetKind.Trigger, WidgetKind.Pedal -> if (left) "LT" else "RT"
             WidgetKind.Button -> defaultLabel(mask)
             else -> ""
         }
     }
 
-    private fun defaultLabel(mask: Int) = when (mask) {
-        PadButtons.LEFT_SHOULDER -> "LB"
-        PadButtons.RIGHT_SHOULDER -> "RB"
-        PadButtons.A -> "A"
-        PadButtons.B -> "B"
-        PadButtons.X -> "X"
-        PadButtons.Y -> "Y"
-        else -> ""
-    }
+    private fun defaultLabel(mask: Int) = PadLayouts.buttonName(mask)
 }
 
 /** Um layout salvo: o nome que o usuário vê e as peças, na ordem em que são desenhadas. */
@@ -163,6 +163,14 @@ object PadLayouts {
     const val MAX_TRAVEL = 1.6f
     const val MAX_DEADZONE = 0.4f
 
+    /** Tamanho máximo do texto de um botão. */
+    const val MAX_LABEL = 8
+
+    /** Modelos para o editor acrescentar. */
+    fun newButton(): PadWidget = PadWidget("", WidgetKind.Button, ElementSpec(0.5f, 0.5f), mask = PadButtons.A, style = ButtonStyle.Round)
+
+    fun newPedal(left: Boolean): PadWidget = PadWidget("", WidgetKind.Pedal, ElementSpec(if (left) 0.35f else 0.65f, 0.55f), left = left)
+
     /** Teto de peças num layout (um arquivo importado não pode lotar a tela). */
     const val MAX_WIDGETS = 40
 
@@ -180,6 +188,35 @@ object PadLayouts {
         PadWidget(PadIds.LeftStick, WidgetKind.Stick, ElementSpec(0.14f, 0.47f), left = true),
         PadWidget(PadIds.RightStick, WidgetKind.Stick, ElementSpec(0.68f, 0.75f), left = false),
     )
+
+    /** Os botões do controle que uma peça [WidgetKind.Button] pode acionar, na ordem em que o editor os oferece. */
+    val ButtonMasks: List<Int> = listOf(
+        PadButtons.A, PadButtons.B, PadButtons.X, PadButtons.Y,
+        PadButtons.LEFT_SHOULDER, PadButtons.RIGHT_SHOULDER,
+        PadButtons.LEFT_THUMB, PadButtons.RIGHT_THUMB,
+        PadButtons.BACK, PadButtons.START, PadButtons.GUIDE,
+        PadButtons.DPAD_UP, PadButtons.DPAD_DOWN, PadButtons.DPAD_LEFT, PadButtons.DPAD_RIGHT,
+    )
+
+    /** Nome curto do botão (o texto padrão desenhado na peça); vazio se a máscara não é de um botão. */
+    fun buttonName(mask: Int): String = when (mask) {
+        PadButtons.A -> "A"
+        PadButtons.B -> "B"
+        PadButtons.X -> "X"
+        PadButtons.Y -> "Y"
+        PadButtons.LEFT_SHOULDER -> "LB"
+        PadButtons.RIGHT_SHOULDER -> "RB"
+        PadButtons.LEFT_THUMB -> "L3"
+        PadButtons.RIGHT_THUMB -> "R3"
+        PadButtons.BACK -> "BACK"
+        PadButtons.START -> "START"
+        PadButtons.GUIDE -> "GUIDE"
+        PadButtons.DPAD_UP -> "↑"
+        PadButtons.DPAD_DOWN -> "↓"
+        PadButtons.DPAD_LEFT -> "←"
+        PadButtons.DPAD_RIGHT -> "→"
+        else -> ""
+    }
 
     /** Onde cada peça padrão nasce (e para onde "restaurar" a devolve). */
     val DefaultSpecs: Map<String, ElementSpec> = DefaultWidgets.associate { it.id to it.spec }
@@ -310,11 +347,52 @@ object PadEditing {
         deadzone = config.deadzone.coerceIn(0f, PadLayouts.MAX_DEADZONE),
     )
 
+    /**
+     * Acrescenta [template] ao layout com um id livre e devolve o layout novo e esse id. Não faz
+     * nada (devolve `null`) se o layout já está no limite de peças.
+     */
+    fun add(layout: PadLayout, template: PadWidget): Pair<PadLayout, String>? {
+        if (layout.widgets.size >= PadLayouts.MAX_WIDGETS) return null
+        val taken = layout.widgets.map { it.id }.toSet()
+        var n = 1
+        while ("w$n" in taken) n++
+        val id = "w$n"
+        return layout.copy(widgets = layout.widgets + template.copy(id = id)) to id
+    }
+
+    /** Uma cópia da peça [id], um pouco deslocada para não ficar escondida debaixo dela. */
+    fun duplicate(layout: PadLayout, id: String): Pair<PadLayout, String>? {
+        val source = layout.widget(id) ?: return null
+        val spec = source.spec.copy(
+            x = (source.spec.x + DUPLICATE_SHIFT).coerceIn(EDGE, 1f - EDGE),
+            y = (source.spec.y + DUPLICATE_SHIFT).coerceIn(
+                EDGE,
+                1f - EDGE,
+            ),
+        )
+        return add(layout, source.copy(spec = spec))
+    }
+
+    fun remove(layout: PadLayout, id: String): PadLayout = layout.copy(widgets = layout.widgets.filterNot { it.id == id })
+
+    fun setMask(layout: PadLayout, id: String, mask: Int): PadLayout = layout.mapWidget(id) { it.copy(mask = mask) }
+
+    fun setStyle(layout: PadLayout, id: String, style: ButtonStyle): PadLayout = layout.mapWidget(id) { it.copy(style = style) }
+
+    fun setLabel(layout: PadLayout, id: String, label: String): PadLayout = layout.mapWidget(id) { it.copy(label = label.take(PadLayouts.MAX_LABEL)) }
+
+    fun setLatch(layout: PadLayout, id: String, latch: Boolean): PadLayout = layout.mapWidget(id) { it.copy(latch = latch) }
+
+    /** Para qual lado do XInput vai um gatilho ou pedal (LT = esquerdo, RT = direito). */
+    fun setSide(layout: PadLayout, id: String, left: Boolean): PadLayout = layout.mapWidget(id) { it.copy(left = left) }
+
     /** Devolve só esta peça ao lugar e tamanho originais (peças que não são do padrão ficam como estão). */
     fun resetElement(layout: PadLayout, id: String): PadLayout {
         val original = PadLayouts.DefaultWidgets.firstOrNull { it.id == id } ?: return layout
         return layout.mapWidget(id) { it.copy(spec = original.spec, stick = original.stick) }
     }
+
+    private const val DUPLICATE_SHIFT = 0.05f
 
     private fun snapTo(value: Float, step: Float): Float = kotlin.math.round(value / step) * step
 }

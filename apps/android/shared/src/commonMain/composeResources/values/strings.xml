@@ -179,4 +179,23 @@
     <string name="layout_export_error">Couldn't save the file.</string>
     <string name="layout_import_error">That file isn't a VynPad layout.</string>
     <string name="gamepad_leave">Leave gamepad</string>
+    <string name="el_button">Button</string>
+    <string name="el_pedal">Pedal</string>
+    <string name="part_add">Add</string>
+    <string name="part_add_title">Add a part</string>
+    <string name="part_add_button">Button</string>
+    <string name="part_add_pedal_left">Pedal LT</string>
+    <string name="part_add_pedal_right">Pedal RT</string>
+    <string name="part_limit">Part limit reached</string>
+    <string name="part_action">Presses</string>
+    <string name="part_style">Shape</string>
+    <string name="style_round">Round</string>
+    <string name="style_large">Large</string>
+    <string name="style_pill">Pill</string>
+    <string name="part_text">Text</string>
+    <string name="part_text_hint">Button text</string>
+    <string name="part_latch">Stay pressed after tap</string>
+    <string name="part_axis">Axis</string>
+    <string name="part_duplicate">Duplicate</string>
+    <string name="part_remove">Remove</string>
 </resources>

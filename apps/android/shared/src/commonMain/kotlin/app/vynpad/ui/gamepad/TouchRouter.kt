@@ -99,13 +99,26 @@ class TouchRouter(
     }
 
     private val holds = HashMap<Long, Hold>()
+
+    /** Botões que travam (peça com `latch`): id da peça → máscara, enquanto estão apertados. */
+    private val latched = LinkedHashMap<String, Int>()
     private val lastTapUp = longArrayOf(NEVER, NEVER)
 
     fun down(id: Long, x: Float, y: Float, nowMs: Long) {
         if (holds.containsKey(id)) return
         val g = geometry()
         val hold: Hold = when (val hit = g.hit(x, y) ?: return) {
-            is Hit.Button -> ButtonHold(hit.mask).also { feedback.press() }
+            is Hit.Button -> {
+                val latchId = hit.latchId
+                if (latchId != null) {
+                    // Botão que trava: o toque alterna e não há dedo a acompanhar.
+                    if (latched.remove(latchId) == null) latched[latchId] = hit.mask
+                    feedback.press()
+                    publish()
+                    return
+                }
+                ButtonHold(hit.mask).also { feedback.press() }
+            }
 
             is Hit.Dpad -> ButtonHold(hit.mask).also { if (hit.mask != 0) feedback.press() }
 
@@ -143,8 +156,11 @@ class TouchRouter(
         when (val hold = holds[id] ?: return) {
             is ButtonHold -> {
                 val mask = when (val hit = g.hitButtonOnly(x, y)) {
-                    is Hit.Button -> hit.mask
+                    // Deslizar para um botão que trava não o aciona: só o toque o alterna.
+                    is Hit.Button -> if (hit.latchId == null) hit.mask else 0
+
                     is Hit.Dpad -> hit.mask
+
                     else -> 0
                 }
                 if (mask != hold.mask) {
@@ -192,6 +208,7 @@ class TouchRouter(
     /** Solta tudo (a janela perdeu o foco, o menu abriu, o app foi para segundo plano). */
     fun cancelAll() {
         holds.clear()
+        latched.clear()
         lastTapUp.fill(NEVER)
         publish()
     }
@@ -200,7 +217,7 @@ class TouchRouter(
 
     /** Recalcula o estado do controle inteiro a partir de todos os dedos que estão na tela. */
     private fun publish() {
-        var buttons = 0
+        var buttons = latched.values.fold(0) { all, mask -> all or mask }
         var lt = 0f
         var rt = 0f
         var left = StickVisual.Rest

@@ -166,6 +166,7 @@ fun GamepadScreen(
                 background = background,
                 aspect = screenAspect,
                 onSnap = { snap = it },
+                onSelect = { selected = it },
                 onDraft = { draft = it },
                 onCommit = { onSettings(settings.withLayout(it)) },
                 onSettings = onSettings,

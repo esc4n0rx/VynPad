@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import app.vynpad.resources.Res
 import app.vynpad.resources.el_back
+import app.vynpad.resources.el_button
 import app.vynpad.resources.el_custom
 import app.vynpad.resources.el_dpad
 import app.vynpad.resources.el_face
@@ -35,6 +36,7 @@ import app.vynpad.resources.el_guide
 import app.vynpad.resources.el_lb
 import app.vynpad.resources.el_left_stick
 import app.vynpad.resources.el_lt
+import app.vynpad.resources.el_pedal
 import app.vynpad.resources.el_rb
 import app.vynpad.resources.el_right_stick
 import app.vynpad.resources.el_rt
@@ -61,6 +63,20 @@ import app.vynpad.resources.layout_save
 import app.vynpad.resources.layout_size
 import app.vynpad.resources.layout_snap
 import app.vynpad.resources.layout_visible
+import app.vynpad.resources.part_action
+import app.vynpad.resources.part_add
+import app.vynpad.resources.part_add_button
+import app.vynpad.resources.part_add_pedal_left
+import app.vynpad.resources.part_add_pedal_right
+import app.vynpad.resources.part_add_title
+import app.vynpad.resources.part_axis
+import app.vynpad.resources.part_duplicate
+import app.vynpad.resources.part_latch
+import app.vynpad.resources.part_limit
+import app.vynpad.resources.part_remove
+import app.vynpad.resources.part_style
+import app.vynpad.resources.part_text
+import app.vynpad.resources.part_text_hint
 import app.vynpad.resources.preset_compact
 import app.vynpad.resources.preset_default
 import app.vynpad.resources.preset_dpad
@@ -71,6 +87,9 @@ import app.vynpad.resources.stick_fixed
 import app.vynpad.resources.stick_floating
 import app.vynpad.resources.stick_mode
 import app.vynpad.resources.stick_travel
+import app.vynpad.resources.style_large
+import app.vynpad.resources.style_pill
+import app.vynpad.resources.style_round
 import app.vynpad.settings.AppSettings
 import app.vynpad.skin.SkinBitmap
 import app.vynpad.skin.rememberLayoutExport
@@ -85,6 +104,7 @@ import app.vynpad.ui.components.VynSlider
 import app.vynpad.ui.components.VynText
 import app.vynpad.ui.components.VynTextField
 import app.vynpad.ui.components.VynToggle
+import app.vynpad.ui.gamepad.ButtonStyle
 import app.vynpad.ui.gamepad.PadEditing
 import app.vynpad.ui.gamepad.PadIds
 import app.vynpad.ui.gamepad.PadLayout
@@ -100,17 +120,32 @@ import org.jetbrains.compose.resources.stringResource
 /** O nome da peça no editor: as do controle padrão têm o seu; as demais, um nome genérico. */
 fun PadWidget.label(): StringResource = when (id) {
     PadIds.LeftStick -> Res.string.el_left_stick
+
     PadIds.RightStick -> Res.string.el_right_stick
+
     PadIds.Dpad -> Res.string.el_dpad
+
     PadIds.Face -> Res.string.el_face
+
     PadIds.Back -> Res.string.el_back
+
     PadIds.Guide -> Res.string.el_guide
+
     PadIds.Start -> Res.string.el_start
+
     PadIds.LT -> Res.string.el_lt
+
     PadIds.LB -> Res.string.el_lb
+
     PadIds.RB -> Res.string.el_rb
+
     PadIds.RT -> Res.string.el_rt
-    else -> Res.string.el_custom
+
+    else -> when (kind) {
+        WidgetKind.Button -> Res.string.el_button
+        WidgetKind.Pedal -> Res.string.el_pedal
+        else -> Res.string.el_custom
+    }
 }
 
 private fun PadPreset.label(): StringResource = when (this) {
@@ -137,6 +172,7 @@ fun LayoutEditorChrome(
     background: SkinBitmap?,
     aspect: Float,
     onSnap: (Boolean) -> Unit,
+    onSelect: (String?) -> Unit,
     onDraft: (PadLayout) -> Unit,
     onCommit: (PadLayout) -> Unit,
     onSettings: (AppSettings) -> Unit,
@@ -147,7 +183,9 @@ fun LayoutEditorChrome(
     val t = VynTheme.typography
     val selectedWidget = selected?.let(draft::widget)
     var modelsOpen by remember { mutableStateOf(false) }
+    var addOpen by remember { mutableStateOf(false) }
     var skinOpen by remember { mutableStateOf(false) }
+    var confirmRemove by remember(selected) { mutableStateOf(false) }
     // Escolher uma peça troca o painel do visual pelo painel dela.
     LaunchedEffect(selected) { if (selected != null) skinOpen = false }
 
@@ -166,6 +204,7 @@ fun LayoutEditorChrome(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     VynButton(stringResource(Res.string.layout_done), onDone)
                     VynButton(stringResource(Res.string.layout_models), { modelsOpen = true }, kind = ButtonKind.Secondary)
+                    VynButton(stringResource(Res.string.part_add), { addOpen = true }, kind = ButtonKind.Secondary)
                     VynButton(stringResource(Res.string.skin_open), { skinOpen = !skinOpen }, kind = ButtonKind.Secondary)
                     VynText(stringResource(Res.string.layout_snap), style = t.caption, color = c.textSecondary)
                     VynToggle(snap, onSnap)
@@ -203,6 +242,21 @@ fun LayoutEditorChrome(
                             valueRange = PadLayouts.MIN_SCALE..PadLayouts.MAX_SCALE,
                             onValueChangeFinished = { onCommit(draft) },
                         )
+                        if (selectedWidget.kind == WidgetKind.Button) {
+                            ButtonOptions(selectedWidget, draft, onDraft, onCommit)
+                        }
+                        if (selectedWidget.kind == WidgetKind.Pedal) {
+                            VynText(stringResource(Res.string.part_axis), style = t.caption, color = c.textSecondary)
+                            VynSegmented(
+                                options = listOf(true to "LT", false to "RT"),
+                                selected = selectedWidget.left,
+                                onSelect = {
+                                    val next = PadEditing.setSide(draft, selected, it)
+                                    onDraft(next)
+                                    onCommit(next)
+                                },
+                            )
+                        }
                         if (selectedWidget.kind == WidgetKind.Stick) {
                             val stick = selectedWidget.stick
                             VynText(stringResource(Res.string.stick_mode), style = t.caption, color = c.textSecondary)
@@ -252,16 +306,47 @@ fun LayoutEditorChrome(
                                 onCommit(next)
                             })
                         }
-                        VynButton(
-                            stringResource(Res.string.layout_reset_part),
-                            {
-                                val next = PadEditing.resetElement(draft, selected)
-                                onDraft(next)
-                                onCommit(next)
-                            },
-                            kind = ButtonKind.Secondary,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
+                        if (selected in PadIds.BuiltIn) {
+                            VynButton(
+                                stringResource(Res.string.layout_reset_part),
+                                {
+                                    val next = PadEditing.resetElement(draft, selected)
+                                    onDraft(next)
+                                    onCommit(next)
+                                },
+                                kind = ButtonKind.Secondary,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            VynButton(
+                                stringResource(Res.string.part_duplicate),
+                                {
+                                    PadEditing.duplicate(draft, selected)?.let { (next, id) ->
+                                        onDraft(next)
+                                        onCommit(next)
+                                        onSelect(id)
+                                    }
+                                },
+                                kind = ButtonKind.Secondary,
+                                modifier = Modifier.weight(1f),
+                            )
+                            VynButton(
+                                stringResource(Res.string.part_remove) + if (confirmRemove) "?" else "",
+                                {
+                                    if (confirmRemove) {
+                                        val next = PadEditing.remove(draft, selected)
+                                        onDraft(next)
+                                        onCommit(next)
+                                        onSelect(null)
+                                    } else {
+                                        confirmRemove = true
+                                    }
+                                },
+                                kind = ButtonKind.Destructive,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
                     }
                 }
             }
@@ -288,6 +373,21 @@ fun LayoutEditorChrome(
             }
         }
 
+        AddPartSheet(
+            visible = addOpen,
+            draft = draft,
+            onAdd = { template ->
+                val added = PadEditing.add(draft, template)
+                if (added != null) {
+                    onDraft(added.first)
+                    onCommit(added.first)
+                    onSelect(added.second)
+                }
+                added != null
+            },
+            onDismiss = { addOpen = false },
+        )
+
         ModelsSheet(
             visible = modelsOpen,
             settings = settings,
@@ -297,6 +397,70 @@ fun LayoutEditorChrome(
             onCommit = onCommit,
             onDismiss = { modelsOpen = false },
         )
+    }
+}
+
+/** O que um botão livre aciona, como se parece, o texto dele e se trava ao toque. */
+@Composable
+private fun ButtonOptions(widget: PadWidget, draft: PadLayout, onDraft: (PadLayout) -> Unit, onCommit: (PadLayout) -> Unit) {
+    val c = VynTheme.colors
+    val t = VynTheme.typography
+    fun apply(next: PadLayout) {
+        onDraft(next)
+        onCommit(next)
+    }
+    VynText(stringResource(Res.string.part_action), style = t.caption, color = c.textSecondary)
+    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        PadLayouts.ButtonMasks.forEach { mask ->
+            VynChip(PadLayouts.buttonName(mask), widget.mask == mask, { apply(PadEditing.setMask(draft, widget.id, mask)) })
+        }
+    }
+    VynText(stringResource(Res.string.part_style), style = t.caption, color = c.textSecondary)
+    VynSegmented(
+        options = listOf(
+            ButtonStyle.Round to stringResource(Res.string.style_round),
+            ButtonStyle.RoundLarge to stringResource(Res.string.style_large),
+            ButtonStyle.Pill to stringResource(Res.string.style_pill),
+        ),
+        selected = widget.style,
+        onSelect = { apply(PadEditing.setStyle(draft, widget.id, it)) },
+    )
+    VynText(stringResource(Res.string.part_text), style = t.caption, color = c.textSecondary)
+    VynTextField(
+        value = widget.label,
+        onValueChange = { onDraft(PadEditing.setLabel(draft, widget.id, it)) },
+        placeholder = stringResource(Res.string.part_text_hint),
+        onDone = { onCommit(draft) },
+    )
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        VynText(stringResource(Res.string.part_latch), style = t.body, modifier = Modifier.weight(1f))
+        VynToggle(widget.latch, { apply(PadEditing.setLatch(draft, widget.id, it)) })
+    }
+}
+
+/** A folha para acrescentar uma peça nova ao layout. */
+@Composable
+private fun AddPartSheet(visible: Boolean, draft: PadLayout, onAdd: (PadWidget) -> Boolean, onDismiss: () -> Unit) {
+    val c = VynTheme.colors
+    val t = VynTheme.typography
+    var full by remember(visible) { mutableStateOf(false) }
+    val add = { template: PadWidget ->
+        if (onAdd(template)) onDismiss() else full = true
+    }
+    VynSheet(visible = visible, onDismiss = onDismiss, maxWidth = 420.dp) {
+        VynText(stringResource(Res.string.part_add_title), style = t.title)
+        VynButton(stringResource(Res.string.part_add_button), { add(PadLayouts.newButton()) }, kind = ButtonKind.Secondary, modifier = Modifier.fillMaxWidth())
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            VynButton(stringResource(Res.string.part_add_pedal_left), {
+                add(PadLayouts.newPedal(left = true))
+            }, kind = ButtonKind.Secondary, modifier = Modifier.weight(1f))
+            VynButton(stringResource(Res.string.part_add_pedal_right), {
+                add(PadLayouts.newPedal(left = false))
+            }, kind = ButtonKind.Secondary, modifier = Modifier.weight(1f))
+        }
+        if (full || draft.widgets.size >= PadLayouts.MAX_WIDGETS) {
+            VynText(stringResource(Res.string.part_limit), style = t.caption, color = c.danger)
+        }
     }
 }
 
