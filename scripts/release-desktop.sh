@@ -8,7 +8,7 @@
 # rascunho no GitHub e clicar em "Publish release".
 #
 # Chaves e senhas (nunca vão para arquivo nem para o histórico):
-#   Atualizador (obrigatório)  TAURI_SIGNING_PRIVATE_KEY_PATH  (padrão ~/.vynpad/updater.key)
+#   Atualizador (obrigatório)  TAURI_SIGNING_PRIVATE_KEY_PATH  (padrão ~/.vynpad/updater-v1.key)
 #                              TAURI_SIGNING_PRIVATE_KEY_PASSWORD (pedida na hora se não definida)
 #   Assinatura de código (opcional, Azure Trusted Signing): AZURE_TENANT_ID, AZURE_CLIENT_ID,
 #     AZURE_CLIENT_SECRET, TRUSTED_SIGNING_ENDPOINT, TRUSTED_SIGNING_ACCOUNT, TRUSTED_SIGNING_PROFILE.
@@ -46,7 +46,7 @@ if gh release view "$tag" --repo "$repo" >/dev/null 2>&1; then
 fi
 
 # ---- Chave do atualizador
-key_path="${TAURI_SIGNING_PRIVATE_KEY_PATH:-$HOME/.vynpad/updater.key}"
+key_path="${TAURI_SIGNING_PRIVATE_KEY_PATH:-$HOME/.vynpad/updater-v1.key}"
 if [ ! -f "$key_path" ]; then
   echo "Chave do atualizador não encontrada: $key_path" >&2
   exit 1

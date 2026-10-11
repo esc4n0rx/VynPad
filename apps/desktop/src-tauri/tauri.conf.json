@@ -33,7 +33,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRFMEVFMDg0MUZEOEVDQzcKUldUSDdOZ2ZoT0FPVHVpdjY4NmFnRVM1Z1M3WU9yeEs0c3dEQ0FmNGwyWE5oc1hrNTVBa0tRYUQK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY3REVDRDg4MzFEMjY2QzkKUldUSlp0SXhpTTNlWjhyRjlDTk16UU5rNEZQYlJVSXBlUWcvUlZNVXhlTEdtdS9NZjMzcXdNWncK",
       "endpoints": ["https://github.com/esc4n0rx/VynPad/releases/latest/download/latest.json"],
       "windows": { "installMode": "passive" }
     }
