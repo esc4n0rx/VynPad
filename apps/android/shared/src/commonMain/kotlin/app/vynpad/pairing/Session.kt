@@ -44,6 +44,15 @@ interface SessionManager {
     /** `true` enquanto o gyro mede o viés: o usuário deve segurar o celular parado. */
     val gyroCalibrating: StateFlow<Boolean>
 
+    /**
+     * Inclinação do celular em radianos (positivo = girou no sentido horário, visto de frente; 0 =
+     * em pé e reto), para o volante do controle. `null` enquanto ninguém pede ([wantTilt]) ou sem sensor.
+     */
+    val tilt: StateFlow<Float?>
+
+    /** Liga ou desliga a leitura da inclinação (só o acelerômetro; não depende do gyro do PC). */
+    fun wantTilt(wanted: Boolean)
+
     /** Mede o viés do gyro de novo (recentraliza); o celular precisa ficar parado por ~2 s. */
     fun recenterGyro()
 

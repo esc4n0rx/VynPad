@@ -198,4 +198,11 @@
     <string name="part_axis">Axis</string>
     <string name="part_duplicate">Duplicate</string>
     <string name="part_remove">Remove</string>
+    <string name="el_wheel">Wheel</string>
+    <string name="part_add_wheel">Wheel</string>
+    <string name="wheel_range">Turn to full lock</string>
+    <string name="wheel_touch">Turn with your finger</string>
+    <string name="wheel_tilt">Tilt the phone</string>
+    <string name="wheel_deadzone">Center deadzone</string>
+    <string name="wheel_axis">Steers</string>
 </resources>

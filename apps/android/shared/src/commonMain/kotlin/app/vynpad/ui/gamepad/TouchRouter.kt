@@ -8,6 +8,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import app.vynpad.input.GamepadState
 import app.vynpad.input.PadButtons
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.roundToInt
 
@@ -48,6 +51,12 @@ class PadVisuals {
     var rt by mutableFloatStateOf(0f)
     var leftStick by mutableStateOf(StickVisual.Rest)
     var rightStick by mutableStateOf(StickVisual.Rest)
+
+    /** Posição do volante, de -1 (todo à esquerda) a 1 (todo à direita). */
+    var wheel by mutableFloatStateOf(0f)
+
+    /** O dedo acabou de soltar o volante: o desenho volta com mola em vez de seguir direto. */
+    var wheelSpring by mutableStateOf(false)
 }
 
 /**
@@ -93,6 +102,11 @@ class TouchRouter(
         var atLimit = false
     }
 
+    private class WheelHold(val part: WheelPart, var lastFinger: Float, var angle: Float) : Hold {
+        val value get() = angle / part.widget.wheel.range
+        var atLimit = false
+    }
+
     private class TriggerHold(val part: TriggerPart) : Hold {
         val left get() = part.widget.left
         var value = 0f
@@ -103,6 +117,11 @@ class TouchRouter(
     /** Botões que travam (peça com `latch`): id da peça → máscara, enquanto estão apertados. */
     private val latched = LinkedHashMap<String, Int>()
     private val lastTapUp = longArrayOf(NEVER, NEVER)
+
+    /** Inclinação do celular em radianos (horário positivo); nula sem leitura. Só vale sem dedo no volante. */
+    private var tilt: Float? = null
+    private var lastWheel = 0f
+    private var springNext = false
 
     fun down(id: Long, x: Float, y: Float, nowMs: Long) {
         if (holds.containsKey(id)) return
@@ -136,6 +155,13 @@ class TouchRouter(
                     downAt = nowMs,
                     clickHeld = nowMs - lastTapUp[index] <= DOUBLE_TAP_MS,
                 ).also { if (it.clickHeld) feedback.press() }
+            }
+
+            is Hit.Wheel -> {
+                if (holds.values.any { it is WheelHold && it.part.id == hit.part.id }) return
+                // O dedo pega o volante onde ele está (se a inclinação o girou, ele segue dali).
+                val start = tiltValue(hit.part.widget.wheel) * hit.part.widget.wheel.range
+                WheelHold(hit.part, fingerAngle(hit.part.zone, x, y), start).also { feedback.press() }
             }
 
             is Hit.Trigger -> {
@@ -187,6 +213,23 @@ class TouchRouter(
                 hold.atLimit = limit
             }
 
+            is WheelHold -> {
+                val zone = hold.part.zone
+                // Perto do centro o ângulo do dedo não existe: ignora.
+                if (hypot(x - zone.cx, y - zone.cy) > zone.r * WHEEL_DEAD_CENTER) {
+                    val finger = fingerAngle(zone, x, y)
+                    var delta = finger - hold.lastFinger
+                    if (delta > 180f) delta -= 360f
+                    if (delta < -180f) delta += 360f
+                    hold.lastFinger = finger
+                    val range = hold.part.widget.wheel.range
+                    hold.angle = (hold.angle + delta).coerceIn(-range, range)
+                    val limit = abs(hold.angle) >= range
+                    if (limit && !hold.atLimit) feedback.detent()
+                    hold.atLimit = limit
+                }
+            }
+
             is TriggerHold -> {
                 val value = g.triggerValue(hold.part, y)
                 if (crossed(hold.value, value, 0.5f) || crossed(hold.value, value, 0.98f)) feedback.detent()
@@ -202,6 +245,7 @@ class TouchRouter(
             val tap = nowMs - hold.downAt <= TAP_MS && hold.maxDeflection < TAP_DEFLECTION
             lastTapUp[if (hold.left) 0 else 1] = if (tap && !hold.clickHeld) nowMs else NEVER
         }
+        if (hold is WheelHold) springNext = true
         publish()
     }
 
@@ -210,6 +254,30 @@ class TouchRouter(
         holds.clear()
         latched.clear()
         lastTapUp.fill(NEVER)
+        publish()
+    }
+
+    /** Ângulo do dedo em torno do centro do volante, em graus (horário positivo: o eixo Y da tela desce). */
+    private fun fingerAngle(zone: Circle, x: Float, y: Float): Float = atan2(y - zone.cy, x - zone.cx) * (180f / PI.toFloat())
+
+    /** Posição do volante só pela inclinação do celular, de -1 a 1, já sem a zona morta. */
+    private fun tiltValue(config: WheelConfig): Float {
+        val roll = tilt ?: return 0f
+        if (!config.tilt) return 0f
+        val raw = (roll * (180f / PI.toFloat()) / config.range).coerceIn(-1f, 1f)
+        val dz = config.deadzone
+        return if (abs(raw) <= dz) 0f else (abs(raw) - dz) / (1f - dz) * if (raw < 0f) -1f else 1f
+    }
+
+    /**
+     * Nova leitura da inclinação do celular (radianos, horário positivo; `null` = sem sensor). Só
+     * recalcula o controle se o volante mudou de verdade: o sensor manda dezenas de leituras por segundo.
+     */
+    fun setTilt(roll: Float?) {
+        tilt = roll
+        val wheel = geometry().parts.firstOrNull { it is WheelPart && it.visible && it.widget.wheel.tilt } as? WheelPart ?: return
+        if (holds.values.any { it is WheelHold && it.part.id == wheel.id }) return
+        if (abs(tiltValue(wheel.widget.wheel) - lastWheel) < WHEEL_EPSILON) return
         publish()
     }
 
@@ -233,6 +301,9 @@ class TouchRouter(
 
                 is TriggerHold -> if (hold.left) lt = maxOf(lt, hold.value) else rt = maxOf(rt, hold.value)
 
+                // O volante é somado depois do laço, junto com a inclinação.
+                is WheelHold -> Unit
+
                 is StickHold -> {
                     val axisX = (hold.vx.coerceIn(-1f, 1f) * AXIS_MAX).roundToInt()
                     // O eixo Y do XInput é positivo para cima; o da tela é positivo para baixo.
@@ -253,6 +324,22 @@ class TouchRouter(
                 }
             }
         }
+        // Volante: o dedo manda; sem dedo, vale a inclinação. Vira o eixo X do analógico do lado dele.
+        var wheelValue = 0f
+        for (part in g.parts) {
+            if (part !is WheelPart || !part.visible) continue
+            val hold = holds.values.firstOrNull { it is WheelHold && it.part.id == part.id } as WheelHold?
+            val value = (hold?.value ?: tiltValue(part.widget.wheel)).coerceIn(-1f, 1f)
+            val axis = (value * AXIS_MAX).roundToInt()
+            // Se há também um analógico mexendo no mesmo eixo, vale o que estiver mais deflexionado.
+            if (part.widget.left) {
+                if (abs(axis) > abs(lx)) lx = axis
+            } else if (abs(axis) > abs(rx)) {
+                rx = axis
+            }
+            wheelValue = value
+        }
+        lastWheel = wheelValue
         state.buttons = buttons
         state.lt = (lt * TRIGGER_MAX).roundToInt()
         state.rt = (rt * TRIGGER_MAX).roundToInt()
@@ -266,6 +353,9 @@ class TouchRouter(
         visuals.rt = rt
         visuals.leftStick = left
         visuals.rightStick = right
+        visuals.wheel = wheelValue
+        visuals.wheelSpring = springNext
+        springNext = false
     }
 
     private companion object {
@@ -275,5 +365,9 @@ class TouchRouter(
         const val TAP_DEFLECTION = 0.35f
         const val AXIS_MAX = 32767
         const val TRIGGER_MAX = 255
+
+        /** Dentro desta fração do raio, o dedo está no miolo do volante e não define ângulo. */
+        const val WHEEL_DEAD_CENTER = 0.15f
+        const val WHEEL_EPSILON = 0.002f
     }
 }

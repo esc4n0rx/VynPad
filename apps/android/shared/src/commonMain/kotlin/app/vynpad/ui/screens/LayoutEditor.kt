@@ -41,6 +41,7 @@ import app.vynpad.resources.el_rb
 import app.vynpad.resources.el_right_stick
 import app.vynpad.resources.el_rt
 import app.vynpad.resources.el_start
+import app.vynpad.resources.el_wheel
 import app.vynpad.resources.layout_delete
 import app.vynpad.resources.layout_done
 import app.vynpad.resources.layout_export
@@ -69,6 +70,7 @@ import app.vynpad.resources.part_add_button
 import app.vynpad.resources.part_add_pedal_left
 import app.vynpad.resources.part_add_pedal_right
 import app.vynpad.resources.part_add_title
+import app.vynpad.resources.part_add_wheel
 import app.vynpad.resources.part_axis
 import app.vynpad.resources.part_duplicate
 import app.vynpad.resources.part_latch
@@ -90,6 +92,11 @@ import app.vynpad.resources.stick_travel
 import app.vynpad.resources.style_large
 import app.vynpad.resources.style_pill
 import app.vynpad.resources.style_round
+import app.vynpad.resources.wheel_axis
+import app.vynpad.resources.wheel_deadzone
+import app.vynpad.resources.wheel_range
+import app.vynpad.resources.wheel_tilt
+import app.vynpad.resources.wheel_touch
 import app.vynpad.settings.AppSettings
 import app.vynpad.skin.SkinBitmap
 import app.vynpad.skin.rememberLayoutExport
@@ -112,6 +119,7 @@ import app.vynpad.ui.gamepad.PadLayouts
 import app.vynpad.ui.gamepad.PadPreset
 import app.vynpad.ui.gamepad.PadWidget
 import app.vynpad.ui.gamepad.StickConfig
+import app.vynpad.ui.gamepad.WheelConfig
 import app.vynpad.ui.gamepad.WidgetKind
 import app.vynpad.ui.theme.VynTheme
 import org.jetbrains.compose.resources.StringResource
@@ -144,6 +152,7 @@ fun PadWidget.label(): StringResource = when (id) {
     else -> when (kind) {
         WidgetKind.Button -> Res.string.el_button
         WidgetKind.Pedal -> Res.string.el_pedal
+        WidgetKind.Wheel -> Res.string.el_wheel
         else -> Res.string.el_custom
     }
 }
@@ -244,6 +253,9 @@ fun LayoutEditorChrome(
                         )
                         if (selectedWidget.kind == WidgetKind.Button) {
                             ButtonOptions(selectedWidget, draft, onDraft, onCommit)
+                        }
+                        if (selectedWidget.kind == WidgetKind.Wheel) {
+                            WheelOptions(selectedWidget, draft, onDraft, onCommit)
                         }
                         if (selectedWidget.kind == WidgetKind.Pedal) {
                             VynText(stringResource(Res.string.part_axis), style = t.caption, color = c.textSecondary)
@@ -438,6 +450,46 @@ private fun ButtonOptions(widget: PadWidget, draft: PadLayout, onDraft: (PadLayo
     }
 }
 
+/** Como o volante gira (dedo, inclinação), até onde e qual eixo ele controla. */
+@Composable
+private fun WheelOptions(widget: PadWidget, draft: PadLayout, onDraft: (PadLayout) -> Unit, onCommit: (PadLayout) -> Unit) {
+    val c = VynTheme.colors
+    val t = VynTheme.typography
+    val config = widget.wheel
+    fun apply(next: PadLayout) {
+        onDraft(next)
+        onCommit(next)
+    }
+    VynText(stringResource(Res.string.wheel_axis), style = t.caption, color = c.textSecondary)
+    VynSegmented(
+        options = listOf(true to "LS X", false to "RS X"),
+        selected = widget.left,
+        onSelect = { apply(PadEditing.setSide(draft, widget.id, it)) },
+    )
+    VynText(stringResource(Res.string.wheel_range) + " · " + config.range.toInt() + "°", style = t.caption, color = c.textSecondary)
+    VynSlider(
+        value = config.range,
+        onValueChange = { onDraft(PadEditing.setWheel(draft, widget.id, config.copy(range = it))) },
+        valueRange = PadLayouts.MIN_WHEEL_RANGE..PadLayouts.MAX_WHEEL_RANGE,
+        onValueChangeFinished = { onCommit(draft) },
+    )
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        VynText(stringResource(Res.string.wheel_touch), style = t.body, modifier = Modifier.weight(1f))
+        VynToggle(config.touch, { apply(PadEditing.setWheel(draft, widget.id, config.copy(touch = it))) })
+    }
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        VynText(stringResource(Res.string.wheel_tilt), style = t.body, modifier = Modifier.weight(1f))
+        VynToggle(config.tilt, { apply(PadEditing.setWheel(draft, widget.id, config.copy(tilt = it))) })
+    }
+    VynText(stringResource(Res.string.wheel_deadzone) + " · " + (config.deadzone * 100).toInt() + "%", style = t.caption, color = c.textSecondary)
+    VynSlider(
+        value = config.deadzone,
+        onValueChange = { onDraft(PadEditing.setWheel(draft, widget.id, config.copy(deadzone = it))) },
+        valueRange = 0f..PadLayouts.MAX_WHEEL_DEADZONE,
+        onValueChangeFinished = { onCommit(draft) },
+    )
+}
+
 /** A folha para acrescentar uma peça nova ao layout. */
 @Composable
 private fun AddPartSheet(visible: Boolean, draft: PadLayout, onAdd: (PadWidget) -> Boolean, onDismiss: () -> Unit) {
@@ -450,6 +502,12 @@ private fun AddPartSheet(visible: Boolean, draft: PadLayout, onAdd: (PadWidget) 
     VynSheet(visible = visible, onDismiss = onDismiss, maxWidth = 420.dp) {
         VynText(stringResource(Res.string.part_add_title), style = t.title)
         VynButton(stringResource(Res.string.part_add_button), { add(PadLayouts.newButton()) }, kind = ButtonKind.Secondary, modifier = Modifier.fillMaxWidth())
+        // Um layout tem um volante só (o desenho e a leitura da inclinação são de um).
+        if (draft.widgets.none { it.kind == WidgetKind.Wheel }) {
+            VynButton(stringResource(Res.string.part_add_wheel), {
+                add(PadLayouts.newWheel())
+            }, kind = ButtonKind.Secondary, modifier = Modifier.fillMaxWidth())
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             VynButton(stringResource(Res.string.part_add_pedal_left), {
                 add(PadLayouts.newPedal(left = true))

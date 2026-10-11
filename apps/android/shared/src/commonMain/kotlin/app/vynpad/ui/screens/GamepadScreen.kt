@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -62,8 +63,10 @@ import app.vynpad.ui.gamepad.GamepadSurface
 import app.vynpad.ui.gamepad.PadEditing
 import app.vynpad.ui.gamepad.PadEditorOverlay
 import app.vynpad.ui.gamepad.PadFeedback
+import app.vynpad.ui.gamepad.WidgetKind
 import app.vynpad.ui.haptics.LocalHaptics
 import app.vynpad.ui.theme.VynTheme
+import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -78,6 +81,8 @@ fun GamepadScreen(
     gyroActive: Boolean,
     gyroCalibrating: Boolean,
     onRecenterGyro: () -> Unit,
+    tilt: StateFlow<Float?>,
+    onWantTilt: (Boolean) -> Unit,
     settings: AppSettings,
     onSettings: (AppSettings) -> Unit,
     onBack: () -> Unit,
@@ -113,6 +118,13 @@ fun GamepadScreen(
         else -> c.accent
     }
 
+    // O acelerômetro só roda enquanto há um volante por inclinação à vista e o controle está em uso.
+    val needsTilt = !editing && layout.widgets.any { it.kind == WidgetKind.Wheel && it.spec.visible && it.wheel.tilt }
+    DisposableEffect(needsTilt) {
+        onWantTilt(needsTilt)
+        onDispose { onWantTilt(false) }
+    }
+
     val feedback = remember(haptics) {
         object : PadFeedback {
             override fun press() = haptics.press()
@@ -144,6 +156,7 @@ fun GamepadScreen(
             feedback = feedback,
             layout = layout,
             background = background,
+            tilt = tilt,
             enabled = !menuOpen && !editing,
         )
 

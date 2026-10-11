@@ -65,6 +65,13 @@ enum class WidgetKind {
      * base (a fundo). Serve de acelerador e freio nos jogos de corrida.
      */
     Pedal,
+
+    /**
+     * Volante: gira com o dedo na tela e/ou com a inclinação do celular e vira o eixo X do
+     * analógico do lado [PadWidget.left] (esquerdo ou direito). É só uma entrada: o PC vê um
+     * controle comum.
+     */
+    Wheel,
 }
 
 /** Forma e tamanho-base de um [WidgetKind.Button]. */
@@ -98,6 +105,16 @@ data class ElementSpec(val x: Float, val y: Float, val scale: Float = 1f, val op
 data class StickConfig(val floating: Boolean = true, val travelScale: Float = 1f, val deadzone: Float = 0f)
 
 /**
+ * Como o volante responde.
+ * - `range`: ângulo, em graus, em que o eixo chega a 100% (de [PadLayouts.MIN_WHEEL_RANGE] a [PadLayouts.MAX_WHEEL_RANGE]).
+ * - `touch`: o dedo gira o volante na tela.
+ * - `tilt`: inclinar o celular, como um volante de verdade, gira o volante.
+ * - `deadzone`: fração do curso, em torno do centro, que vale zero (evita o carro "andar" sozinho).
+ */
+@Serializable
+data class WheelConfig(val range: Float = 90f, val touch: Boolean = true, val tilt: Boolean = true, val deadzone: Float = 0.04f)
+
+/**
  * Uma peça do layout. A ordem em [PadLayout.widgets] é a ordem de desenho.
  * Só os campos do [kind] valem: `left` para analógico e gatilho, `mask`/`style`/`label` para
  * botão e `stick` para analógico.
@@ -115,6 +132,7 @@ data class PadWidget(
     val stick: StickConfig = StickConfig(),
     /** Botão que trava: um toque o aperta e o próximo o solta (em vez de valer só enquanto o dedo está nele). */
     val latch: Boolean = false,
+    val wheel: WheelConfig = WheelConfig(),
 ) {
     /** O texto desenhado na peça: o escolhido pelo usuário ou o padrão do tipo. */
     fun displayLabel(): String = label.ifEmpty {
@@ -163,11 +181,17 @@ object PadLayouts {
     const val MAX_TRAVEL = 1.6f
     const val MAX_DEADZONE = 0.4f
 
+    const val MIN_WHEEL_RANGE = 30f
+    const val MAX_WHEEL_RANGE = 180f
+    const val MAX_WHEEL_DEADZONE = 0.3f
+
     /** Tamanho máximo do texto de um botão. */
     const val MAX_LABEL = 8
 
     /** Modelos para o editor acrescentar. */
     fun newButton(): PadWidget = PadWidget("", WidgetKind.Button, ElementSpec(0.5f, 0.5f), mask = PadButtons.A, style = ButtonStyle.Round)
+
+    fun newWheel(): PadWidget = PadWidget("", WidgetKind.Wheel, ElementSpec(0.5f, 0.55f), left = true)
 
     fun newPedal(left: Boolean): PadWidget = PadWidget("", WidgetKind.Pedal, ElementSpec(if (left) 0.35f else 0.65f, 0.55f), left = left)
 
@@ -363,6 +387,8 @@ object PadEditing {
     /** Uma cópia da peça [id], um pouco deslocada para não ficar escondida debaixo dela. */
     fun duplicate(layout: PadLayout, id: String): Pair<PadLayout, String>? {
         val source = layout.widget(id) ?: return null
+        // Um layout tem um volante só.
+        if (source.kind == WidgetKind.Wheel) return null
         val spec = source.spec.copy(
             x = (source.spec.x + DUPLICATE_SHIFT).coerceIn(EDGE, 1f - EDGE),
             y = (source.spec.y + DUPLICATE_SHIFT).coerceIn(
@@ -380,6 +406,13 @@ object PadEditing {
     fun setStyle(layout: PadLayout, id: String, style: ButtonStyle): PadLayout = layout.mapWidget(id) { it.copy(style = style) }
 
     fun setLabel(layout: PadLayout, id: String, label: String): PadLayout = layout.mapWidget(id) { it.copy(label = label.take(PadLayouts.MAX_LABEL)) }
+
+    fun setWheel(layout: PadLayout, id: String, config: WheelConfig): PadLayout = layout.mapWidget(id) { it.copy(wheel = clamp(config)) }
+
+    private fun clamp(config: WheelConfig) = config.copy(
+        range = config.range.coerceIn(PadLayouts.MIN_WHEEL_RANGE, PadLayouts.MAX_WHEEL_RANGE),
+        deadzone = config.deadzone.coerceIn(0f, PadLayouts.MAX_WHEEL_DEADZONE),
+    )
 
     fun setLatch(layout: PadLayout, id: String, latch: Boolean): PadLayout = layout.mapWidget(id) { it.copy(latch = latch) }
 

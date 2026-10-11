@@ -29,6 +29,13 @@ object MotionMath {
         else -> v
     }
 
+    /**
+     * Inclinação do aparelho como um volante: o ângulo, em radianos, em que ele foi girado no
+     * plano da tela (positivo = sentido horário, visto de frente), a partir da gravidade medida
+     * pelo acelerômetro no referencial do controle. Em pé e reto vale 0.
+     */
+    fun roll(accel: Vec3): Float = kotlin.math.atan2(-accel.x, accel.y)
+
     /** `rad/s × 1000` e `m/s² × 100` em inteiros, saturando em 16 bits como manda o protocolo. */
     fun toWire(gyro: Vec3, accel: Vec3) = WireMotion(
         gx = sat(gyro.x * GYRO_SCALE),

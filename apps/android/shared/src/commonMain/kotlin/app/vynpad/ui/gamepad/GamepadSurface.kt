@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.changedToDown
@@ -48,6 +49,7 @@ import app.vynpad.ui.theme.VynColors
 import app.vynpad.ui.theme.VynTheme
 import app.vynpad.ui.theme.vynSpring
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 /** Botões que acendem com uma mola cada: cada máscara tem o seu progresso 0..1. */
@@ -95,6 +97,8 @@ fun GamepadSurface(
     feedback: PadFeedback,
     layout: PadLayout,
     background: SkinBitmap? = null,
+    /** Inclinação do celular (rad, horário positivo) para o volante; `null` = sem leitura. */
+    tilt: StateFlow<Float?>? = null,
     modifier: Modifier = Modifier,
     /** Falso com o menu aberto: solta tudo e ignora os toques. */
     enabled: Boolean = true,
@@ -135,11 +139,19 @@ fun GamepadSurface(
     LaunchedEffect(enabled) { if (!enabled) router.cancelAll() }
 
     val presses = remember { PressAnimators() }
+    val wheelAnim = remember { Animatable(0f) }
     val leftAnim = remember { StickAnimator() }
     val rightAnim = remember { StickAnimator() }
 
     LaunchedEffect(visuals) {
         snapshotFlow { visuals.buttons }.collect { presses.update(it, this) }
+    }
+    LaunchedEffect(router, tilt) { tilt?.collect { router.setTilt(it) } }
+    LaunchedEffect(visuals) {
+        // Dedo ou inclinação: o volante segue direto; ao soltar o dedo, volta com mola.
+        snapshotFlow { visuals.wheel to visuals.wheelSpring }.collect { (value, spring) ->
+            if (spring) launch { wheelAnim.animateTo(value, vynSpring()) } else wheelAnim.snapTo(value)
+        }
     }
     LaunchedEffect(visuals) { followStick(this, leftAnim) { visuals.leftStick } }
     LaunchedEffect(visuals) { followStick(this, rightAnim) { visuals.rightStick } }
@@ -175,7 +187,7 @@ fun GamepadSurface(
     ) {
         val g = geometry ?: return@Canvas
         background?.let { drawSkinBackground(it.image, layout.skin.veil) }
-        drawPad(g, colors, accent, presses, visuals, leftAnim, rightAnim, labels, measurer, layout.skin.padOpacity)
+        drawPad(g, colors, accent, presses, visuals, leftAnim, rightAnim, wheelAnim.value, labels, measurer, layout.skin.padOpacity)
     }
 }
 
@@ -202,6 +214,7 @@ private fun DrawScope.drawPad(
     visuals: PadVisuals,
     left: StickAnimator,
     right: StickAnimator,
+    wheel: Float,
     labels: Map<String, TextLayoutResult>,
     measurer: TextMeasurer,
     padOpacity: Float,
@@ -225,6 +238,8 @@ private fun DrawScope.drawPad(
                 }
 
                 is DpadPart -> drawDpad(part.zone, presses, c, accent)
+
+                is WheelPart -> drawWheel(part.zone, wheel * part.widget.wheel.range, c, accent)
 
                 is FacePart -> for (button in part.buttons) {
                     drawRound(button.shape, presses[button.mask], c, accent, labels[button.label])
@@ -326,6 +341,38 @@ private fun DrawScope.drawTrigger(box: Box, value: Float, c: VynColors, accent: 
     label?.let {
         val color = lerp(c.padGlyph, Color.White, value)
         drawText(it, color, Offset(box.left + (box.width - it.size.width) / 2f, box.top + (box.height - it.size.height) / 2f))
+    }
+}
+
+/**
+ * Volante: aro grosso, três raios e o miolo, girando em torno do centro; uma marca na cor do
+ * jogador fica no topo do aro para ver o ângulo. O brilho cresce com a esterçada.
+ */
+private fun DrawScope.drawWheel(zone: Circle, degrees: Float, c: VynColors, accent: Color) {
+    val center = Offset(zone.cx, zone.cy)
+    val r = zone.r
+    val rim = r * 0.13f
+    val strength = (kotlin.math.abs(degrees) / 90f).coerceIn(0f, 1f)
+    if (strength > 0.02f) drawCircle(accent.copy(alpha = 0.16f * strength), r * 1.08f, center)
+    drawCircle(c.padWell, r, center)
+    rotate(degrees, center) {
+        val body = padFill(c, accent, 0f, center.y - r, r * 2)
+        // Aro.
+        drawCircle(body, r - rim / 2, center, style = Stroke(rim))
+        drawCircle(c.padEdge, r, center, style = Stroke(1.5.dp.toPx()))
+        drawCircle(c.padEdge, r - rim, center, style = Stroke(1.5.dp.toPx()))
+        // Raios: esquerda, direita e embaixo (o de cima ficaria sobre a marca).
+        val spoke = rim * 0.9f
+        fun arm(dx: Float, dy: Float) = drawLine(body, center, Offset(center.x + dx * (r - rim), center.y + dy * (r - rim)), spoke)
+        arm(-1f, 0f)
+        arm(1f, 0f)
+        arm(0f, 1f)
+        // Miolo.
+        drawCircle(body, r * 0.26f, center)
+        drawCircle(c.padEdge, r * 0.26f, center, style = Stroke(1.5.dp.toPx()))
+        drawCircle(accent.copy(alpha = 0.55f), r * 0.12f, center)
+        // Marca do topo.
+        drawLine(accent, Offset(center.x, center.y - r + 2f), Offset(center.x, center.y - r + rim), rim * 0.45f)
     }
 }
 

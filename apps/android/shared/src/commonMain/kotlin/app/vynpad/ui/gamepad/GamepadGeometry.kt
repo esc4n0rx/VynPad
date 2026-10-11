@@ -67,6 +67,14 @@ class TriggerPart(widget: PadWidget, val box: Box, val tall: Boolean = false) : 
     override val priority get() = 2
 }
 
+/** O volante: um círculo grande que gira. */
+class WheelPart(widget: PadWidget, val zone: Circle) : Part(widget) {
+    override val bounds get() = zone.box()
+
+    // Atrás de tudo: os botões e pedais postos sobre o volante têm preferência.
+    override val priority get() = 5
+}
+
 /** Onde um toque caiu. */
 sealed interface Hit {
     /** Botão redondo, ombro ou botão do centro. */
@@ -78,6 +86,8 @@ sealed interface Hit {
     data class Stick(val part: StickPart) : Hit
 
     data class Trigger(val part: TriggerPart) : Hit
+
+    data class Wheel(val part: WheelPart) : Hit
 }
 
 /**
@@ -127,6 +137,8 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
             }
 
             WidgetKind.Trigger -> TriggerPart(w, pill(cx, cy, s.scale))
+
+            WidgetKind.Wheel -> WheelPart(w, Circle(cx, cy, 0.30f * h * s.scale))
 
             WidgetKind.Pedal -> {
                 val halfW = 0.10f * h * s.scale
@@ -214,6 +226,8 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
                 is DpadPart -> Hit.Dpad(dpadMask(part.zone, x, y)).takeIf { part.zone.contains(x, y, 1.1f) }
 
                 is StickPart -> Hit.Stick(part).takeIf { part.zone.contains(x, y) }
+
+                is WheelPart -> Hit.Wheel(part).takeIf { part.widget.wheel.touch && part.zone.contains(x, y) }
             }
             if (hit != null) return hit
         }

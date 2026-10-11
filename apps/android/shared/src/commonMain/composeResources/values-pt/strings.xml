@@ -198,4 +198,11 @@
     <string name="part_axis">Eixo</string>
     <string name="part_duplicate">Duplicar</string>
     <string name="part_remove">Remover</string>
+    <string name="el_wheel">Volante</string>
+    <string name="part_add_wheel">Volante</string>
+    <string name="wheel_range">Giro até o limite</string>
+    <string name="wheel_touch">Girar com o dedo</string>
+    <string name="wheel_tilt">Inclinar o celular</string>
+    <string name="wheel_deadzone">Zona morta central</string>
+    <string name="wheel_axis">Controla</string>
 </resources>

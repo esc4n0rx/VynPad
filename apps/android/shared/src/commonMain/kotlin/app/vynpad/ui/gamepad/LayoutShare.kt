@@ -61,7 +61,11 @@ fun PadLayout.sanitized(): PadLayout {
         travelScale = f(s.travelScale, PadLayouts.MIN_TRAVEL, PadLayouts.MAX_TRAVEL, 1f),
         deadzone = f(s.deadzone, 0f, PadLayouts.MAX_DEADZONE, 0f),
     )
-    val clean = widgets.distinctBy { it.id }.take(PadLayouts.MAX_WIDGETS).map { w ->
+    var wheelSeen = false
+    val clean = widgets.distinctBy { it.id }.filter { w ->
+        // Um layout tem um volante só: os demais de um arquivo são descartados.
+        w.kind != WidgetKind.Wheel || (!wheelSeen).also { wheelSeen = true }
+    }.take(PadLayouts.MAX_WIDGETS).map { w ->
         w.copy(
             id = w.id.take(MAX_ID),
             spec = w.spec.copy(
@@ -74,6 +78,10 @@ fun PadLayout.sanitized(): PadLayout {
             // Uma máscara fora da lista de botões (um arquivo malicioso poderia apertar tudo) não aciona nada.
             mask = if (w.kind == WidgetKind.Button && w.mask in PadLayouts.ButtonMasks) w.mask else 0,
             stick = stick(w.stick),
+            wheel = w.wheel.copy(
+                range = f(w.wheel.range, PadLayouts.MIN_WHEEL_RANGE, PadLayouts.MAX_WHEEL_RANGE, 90f),
+                deadzone = f(w.wheel.deadzone, 0f, PadLayouts.MAX_WHEEL_DEADZONE, 0.04f),
+            ),
         )
     }
     return copy(

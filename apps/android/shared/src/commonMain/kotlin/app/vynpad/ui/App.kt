@@ -168,6 +168,8 @@ fun VynApp() {
                                     gyroActive = gyroActive,
                                     gyroCalibrating = gyroCalibrating,
                                     onRecenterGyro = { pairing.session.recenterGyro() },
+                                    tilt = pairing.session.tilt,
+                                    onWantTilt = { pairing.session.wantTilt(it) },
                                     settings = settings,
                                     onSettings = { settings = it },
                                     onBack = { screen = Screen.Connect },

@@ -74,6 +74,19 @@ internal class AndroidSessionManager(
 
     override fun recenterGyro() = motion.recalibrate()
 
+    private val _tilt = MutableStateFlow<Float?>(null)
+    override val tilt: StateFlow<Float?> = _tilt.asStateFlow()
+    private val tiltSensor = TiltSensor(appContext) { _tilt.value = it }
+
+    override fun wantTilt(wanted: Boolean) {
+        if (wanted && tiltSensor.available) {
+            tiltSensor.start()
+        } else {
+            tiltSensor.stop()
+            _tilt.value = null
+        }
+    }
+
     private val rumble = RumbleVibrator(appContext, scope)
     private var rumbleSettings = RumbleSettings()
 
