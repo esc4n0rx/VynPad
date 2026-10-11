@@ -7,7 +7,12 @@ repositorio) e as regras que o projeto segue. Nao coloque chaves nem senhas aqui
 1. O QUE VOCE PRECISA FAZER (em ordem)
 --------------------------------------
 
-[ ] 1.1  Guardar a chave de assinatura das atualizacoes.
+[x] 1.1  (FEITO em 2026-10-11) Chave definitiva do updater gerada COM senha:
+         C:\Users\paulo\.vynpad\updater-v1.key  (a publica ja esta no tauri.conf.json).
+         Falta apenas o backup offline da chave e da senha. A antiga (updater.key, sem senha, so
+         de desenvolvimento) pode ser apagada depois de conferir o backup da nova.
+         Texto original desta etapa, mantido como referencia:
+         Guardar a chave de assinatura das atualizacoes.
          Arquivo: C:\Users\paulo\.vynpad\updater.key  (a publica esta no tauri.conf.json)
          - Faca copia em um lugar seguro e offline (gerenciador de senhas ou pendrive).
          - Se perder, nenhum app instalado consegue receber atualizacao nova.
