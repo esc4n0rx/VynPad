@@ -80,14 +80,18 @@ else
   echo
   echo "AVISO: sem os segredos do Azure Trusted Signing o instalador sai SEM assinatura de código"
   echo "       (o Windows SmartScreen vai alertar quem baixar)."
-  read -r -p "Continuar mesmo assim? [s/N] " answer
-  [ "$answer" = "s" ] || [ "$answer" = "S" ] || exit 1
+  if [ "${VYNPAD_ALLOW_UNSIGNED:-}" != "1" ]; then
+    read -r -p "Continuar mesmo assim? [s/N] " answer
+    [ "$answer" = "s" ] || [ "$answer" = "S" ] || exit 1
+  fi
   echo '{"bundle":{"createUpdaterArtifacts":true}}' > "$out/signing.json"
 fi
 config="$out/signing.json"
 if command -v cygpath >/dev/null 2>&1; then config="$(cygpath -m "$config")"; fi
 
 # ---- Build
+# Instaladores de versões anteriores no mesmo diretório confundiriam o latest.json e o upload.
+rm -rf target/release/bundle/nsis target/release/bundle/msi
 pnpm install --frozen-lockfile
 pnpm --filter @vynpad/desktop tauri build --bundles nsis,msi --config "$config"
 
@@ -101,10 +105,19 @@ fi
 node scripts/changelog.mjs --tag "$tag" --repo "$repo" --out "$out/notes.md"
 node scripts/make-latest-json.mjs --tag "$tag" --repo "$repo" --dir "$nsis" --notes-file "$out/notes.md" --out "$out/latest.json"
 
-gh release create "$tag" --repo "$repo" --draft --target main \
+# VYNPAD_PUBLISH=1 publica na hora; sem ele o release fica como rascunho para você revisar.
+# VYNPAD_EXTRA_ASSETS: arquivos a mais (separados por espaço), como o APK do Android.
+draft="--draft"
+[ "${VYNPAD_PUBLISH:-}" = "1" ] && draft=""
+# shellcheck disable=SC2086
+gh release create "$tag" --repo "$repo" $draft --target main \
   --notes-file "$out/notes.md" --title "VynPad $tag" \
-  "$nsis"/*.exe "$nsis"/*.exe.sig "$msi"/*.msi "$out/latest.json"
+  "$nsis"/*.exe "$nsis"/*.exe.sig "$msi"/*.msi "$out/latest.json" ${VYNPAD_EXTRA_ASSETS:-}
 
 echo
-echo "Rascunho criado. Revise e publique em:  https://github.com/$repo/releases"
-echo "(Publicar cria a tag $tag; só então o site e o atualizador enxergam a versão.)"
+if [ -z "$draft" ]; then
+  echo "Release publicado: https://github.com/$repo/releases/tag/$tag"
+else
+  echo "Rascunho criado. Revise e publique em:  https://github.com/$repo/releases"
+  echo "(Publicar cria a tag $tag; só então o site e o atualizador enxergam a versão.)"
+fi

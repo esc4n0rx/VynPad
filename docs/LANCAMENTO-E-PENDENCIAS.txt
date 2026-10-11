@@ -76,6 +76,14 @@ repositorio) e as regras que o projeto segue. Nao coloque chaves nem senhas aqui
 
 2. FLUXO DE RELEASE
 -------------------
+  Automatico, da sua maquina (enquanto o CI do GitHub nao volta):
+      scripts/release.sh 0.2.0 --publish        (sem --publish o release fica como rascunho)
+  Sobe a versao (Cargo, Tauri, Android), roda as verificacoes, gera o AAB/APK assinados, o instalador
+  do Windows com o latest.json e cria o GitHub Release. Veja "scripts/release.sh --help". Os scripts
+  menores (release-android.sh e release-desktop.sh) rodam cada parte sozinhos. O AAB vai para a Play
+  Console manualmente.
+
+  Fluxo manual pelo CI (quando o GitHub Actions voltar):
   1. Atualize a versao em apps/desktop/src-tauri/tauri.conf.json (e nos Cargo.toml, se mudar).
   2. Commit na main com o CI verde.
   3. Crie a tag IGUAL a versao, com "v" na frente:   git tag v0.1.1 && git push origin v0.1.1
