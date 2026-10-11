@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | G |
 | Depende de | T-901 |
-| Status | 🟨 Em andamento (subtask E: layout, multitouch e haptics prontos; falta o ping e a qualidade da conexão no overlay e validar multitouch real) |
+| Status | ✅ Concluída (multitouch validado no aparelho, inclusive com mais de um controle) |
 
 ## Objetivo
 Um controle na tela que seja gostoso de usar: preciso, responsivo, bonito.

@@ -6,7 +6,7 @@
 | Prioridade | P2 |
 | Estimativa | G |
 | Depende de | T-905 |
-| Status | ✅ Concluída (estilos de tecla e sincronia com o PC ficam como follow-up) |
+| Status | ✅ Concluída (inclui peças livres, volante, pedais e modos de Corrida e FPS; estilos de tecla e sincronia com o PC ficam como follow-up) |
 
 ## Objetivo
 Cada jogador ajusta o controle na tela às próprias mãos.
@@ -49,6 +49,13 @@ Hoje o fundo do gamepad é só o grafite do tema. A ideia é o usuário carregar
 
 ## Entregue (2026-10-06)
 Ajustes persistentes (`AppSettings`, SharedPreferences); editor de layout (mover com ímã na grade, tamanho, opacidade, esconder, restaurar peça); layouts múltiplos (criar, renomear, excluir, trocar pelo menu de pausa); modelos Padrão, Compacto, Canhoto e Só direcional; analógicos fixo/flutuante com curso e zona morta de toque; intensidade do haptic de toque e cor do controle por jogador ou fixa; visual por jogo (banner pelo Photo Picker, véu, desfoque calculado na importação, cor extraída, opacidade dos botões, aviso de legibilidade com ajuste automático); exportar/importar `.vynlayout` com a imagem embutida e validação do arquivo.
+
+## Entregue depois (2026-10-11): modos de jogo
+- **Modelo de layout em peças:** o layout deixou de ser um conjunto fixo de 11 peças e virou uma lista de widgets (botão, analógico, direcional, ABXY, gatilho, pedal e volante). Layouts salvos e arquivos `.vynlayout` v1 são migrados ao ler; o formato novo é a versão 2, com limite e saneamento das peças importadas.
+- **Peças livres no editor:** botão livre (qualquer botão do controle, com texto, formato e trava ao toque), pedal (LT/RT com o dedo percorrendo a peça inteira) e gatilho/pedal de toque único; adicionar, duplicar e remover peças.
+- **Volante:** gira com o dedo e/ou com a inclinação do celular (acelerômetro) e vira o eixo X de um analógico calculado no próprio celular, sem mudar o protocolo nem o desktop.
+- **Modos prontos:** Corrida (volante, pedais e marchas) e FPS (mirar e atirar ao toque, correr com trava), além dos modelos anteriores. Os modos são layouts comuns: dá para editar, duplicar e exportar.
+- **A validar no aparelho:** o sentido da inclinação do volante e as posições dos modos em telas reais.
 
 ## Follow-up (não entregue)
 - Estilos de tecla (vidro, sólido, fosco, só contorno), cor das letras e formato dos botões.

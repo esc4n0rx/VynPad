@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | T-902, T-905 |
-| Status | 🟨 Em andamento (subtask F: envio, RTT, WifiLock e reconexão prontos e validados no PC real; faltam o serviço em primeiro plano e a medição de latência p95) |
+| Status | 🟨 Em andamento (envio, RTT, WifiLock, reconexão e serviço em primeiro plano prontos; falta a medição formal do RTT p95, planejada para a build final) |
 
 ## Objetivo
 Levar o toque até o PC o mais rápido possível, dentro da meta p95 < 10 ms.

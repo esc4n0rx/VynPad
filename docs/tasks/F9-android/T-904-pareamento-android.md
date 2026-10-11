@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | G |
 | Depende de | T-903 |
-| Status | 🟨 Em andamento (subtask D: implementado e testado contra o server em loopback; falta validar no aparelho com o desktop real) |
+| Status | ✅ Concluída (QR e PIN validados no aparelho com o desktop real) |
 
 ## Objetivo
 Parear com o PC em segundos e com segurança.

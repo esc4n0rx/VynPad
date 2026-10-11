@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | T-101, T-901 |
-| Status | 🟨 Em andamento (subtask B: núcleo Rust e bindings feitos; falta o laço de envio, no T-906) |
+| Status | ✅ Concluída (núcleo Rust via UniFFI com os test vectors; o laço de envio está no T-906) |
 
 > **Atualização (D-26, 2026-10-04):** o protocolo **não será reescrito em Kotlin**. O client usa o `vynpad-protocol` em Rust por UniFFI, então esta task vira "bindings UniFFI do núcleo + test vectors rodando nos dois lados": o Kotlin chama o mesmo código do server, e os `protocol/test-vectors/*.json` continuam como contrato. O escopo e os critérios abaixo ficam como referência do plano antigo e serão reescritos depois da prova de conceito do T-901.
 

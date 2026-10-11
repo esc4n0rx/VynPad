@@ -6,7 +6,7 @@
 | Prioridade | P0 |
 | Estimativa | M |
 | Depende de | — (iniciar após o M4, conforme o roadmap) |
-| Status | 🟨 Em andamento (subtask A: scaffold e design system) |
+| Status | ✅ Concluída (scaffold, design system e job de CI do Android) |
 
 > **Atualização (D-26, 2026-10-04):** o client passa a ser **Compose Multiplatform** (Android primeiro, iOS depois), com o núcleo de rede e protocolo em **Rust via UniFFI**. Esta task começa por uma **prova de conceito** que valida a arquitetura antes do scaffold final; os módulos abaixo viram `shared/` (commonMain) + `androidApp/`, e `core:protocol` e `core:network` passam a ser o crate Rust. Ver "Prova de conceito" no fim.
 

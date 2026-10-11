@@ -159,16 +159,16 @@ flowchart TD
 ### F9 — Client Android (por último)
 | ID | Task | Prio | Est. | Depende de | Status |
 |---|---|---|---|---|---|
-| [T-901](../tasks/F9-android/T-901-scaffold-android.md) | Scaffold Kotlin + Compose | P0 | M | — | ⬜ |
-| [T-902](../tasks/F9-android/T-902-protocolo-kotlin.md) | Protocolo em Kotlin + test vectors | P0 | M | T-101, T-901 | ⬜ |
-| [T-903](../tasks/F9-android/T-903-descoberta-android.md) | Descoberta NSD + broadcast + IP manual | P0 | M | T-902 | ⬜ |
-| [T-904](../tasks/F9-android/T-904-pareamento-android.md) | Pareamento QR/PIN + TLS pinning | P0 | G | T-903 | ⬜ |
-| [T-905](../tasks/F9-android/T-905-layout-gamepad.md) | Layout do gamepad (multitouch) | P0 | G | T-901 | ⬜ |
-| [T-906](../tasks/F9-android/T-906-motor-envio.md) | Motor de envio de baixa latência | P0 | M | T-902, T-905 | ⬜ |
-| [T-907](../tasks/F9-android/T-907-rumble-android.md) | Rumble → vibração | P1 | P | T-906 | ⬜ |
-| [T-908](../tasks/F9-android/T-908-gyro.md) | Gyro / acelerômetro | P1 | M | T-906 | ⬜ |
-| [T-909](../tasks/F9-android/T-909-personalizacao.md) | Personalização de layout e configurações | P2 | G | T-905 | ⬜ |
-| [T-910](../tasks/F9-android/T-910-release-android.md) | QA e release na Play Store | P1 | M | T-904–T-908 | ⬜ |
+| [T-901](../tasks/F9-android/T-901-scaffold-android.md) | Scaffold Kotlin + Compose | P0 | M | — | ✅ |
+| [T-902](../tasks/F9-android/T-902-protocolo-kotlin.md) | Protocolo em Kotlin + test vectors | P0 | M | T-101, T-901 | ✅ |
+| [T-903](../tasks/F9-android/T-903-descoberta-android.md) | Descoberta NSD + broadcast + IP manual | P0 | M | T-902 | 🟨 |
+| [T-904](../tasks/F9-android/T-904-pareamento-android.md) | Pareamento QR/PIN + TLS pinning | P0 | G | T-903 | ✅ |
+| [T-905](../tasks/F9-android/T-905-layout-gamepad.md) | Layout do gamepad (multitouch) | P0 | G | T-901 | ✅ |
+| [T-906](../tasks/F9-android/T-906-motor-envio.md) | Motor de envio de baixa latência | P0 | M | T-902, T-905 | 🟨 |
+| [T-907](../tasks/F9-android/T-907-rumble-android.md) | Rumble → vibração | P1 | P | T-906 | ✅ |
+| [T-908](../tasks/F9-android/T-908-gyro.md) | Gyro / acelerômetro | P1 | M | T-906 | ✅ |
+| [T-909](../tasks/F9-android/T-909-personalizacao.md) | Personalização de layout e configurações | P2 | G | T-905 | ✅ |
+| [T-910](../tasks/F9-android/T-910-release-android.md) | QA e release na Play Store | P1 | M | T-904–T-908 | 🟨 |
 
 ## 4. Definition of Done (vale para toda task)
 
