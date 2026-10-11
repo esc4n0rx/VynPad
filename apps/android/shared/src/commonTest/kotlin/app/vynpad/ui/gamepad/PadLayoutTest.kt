@@ -104,7 +104,10 @@ class PadLayoutTest {
     fun todoModeloTemTodasAsPecasDentroDaTela() {
         for (preset in PadPreset.entries) {
             val l = PadLayouts.fromPreset(preset, "p", "P")
-            assertEquals(PadIds.BuiltIn.toSet(), l.widgets.map { it.id }.toSet(), preset.name)
+            // Todo modo tem as peças do controle padrão (as que ele não usa ficam escondidas) e ids únicos.
+            val ids = l.widgets.map { it.id }
+            assertTrue(ids.containsAll(PadIds.BuiltIn), preset.name)
+            assertEquals(ids.size, ids.toSet().size, preset.name)
             for ((el, s) in l.widgets.map { it.id to it.spec }) {
                 assertTrue(s.x in 0f..1f && s.y in 0f..1f, "$preset $el")
                 assertTrue(s.scale in PadLayouts.MIN_SCALE..PadLayouts.MAX_SCALE, "$preset $el escala")

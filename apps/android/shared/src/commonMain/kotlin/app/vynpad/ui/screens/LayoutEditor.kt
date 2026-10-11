@@ -72,6 +72,7 @@ import app.vynpad.resources.part_add_pedal_right
 import app.vynpad.resources.part_add_title
 import app.vynpad.resources.part_add_wheel
 import app.vynpad.resources.part_axis
+import app.vynpad.resources.part_digital
 import app.vynpad.resources.part_duplicate
 import app.vynpad.resources.part_latch
 import app.vynpad.resources.part_limit
@@ -82,7 +83,13 @@ import app.vynpad.resources.part_text_hint
 import app.vynpad.resources.preset_compact
 import app.vynpad.resources.preset_default
 import app.vynpad.resources.preset_dpad
+import app.vynpad.resources.preset_fps
 import app.vynpad.resources.preset_left
+import app.vynpad.resources.preset_racing
+import app.vynpad.resources.preset_text_brake
+import app.vynpad.resources.preset_text_gas
+import app.vynpad.resources.preset_text_melee
+import app.vynpad.resources.preset_text_sprint
 import app.vynpad.resources.skin_open
 import app.vynpad.resources.stick_deadzone
 import app.vynpad.resources.stick_fixed
@@ -118,6 +125,7 @@ import app.vynpad.ui.gamepad.PadLayout
 import app.vynpad.ui.gamepad.PadLayouts
 import app.vynpad.ui.gamepad.PadPreset
 import app.vynpad.ui.gamepad.PadWidget
+import app.vynpad.ui.gamepad.PresetTexts
 import app.vynpad.ui.gamepad.StickConfig
 import app.vynpad.ui.gamepad.WheelConfig
 import app.vynpad.ui.gamepad.WidgetKind
@@ -162,6 +170,8 @@ private fun PadPreset.label(): StringResource = when (this) {
     PadPreset.Compact -> Res.string.preset_compact
     PadPreset.LeftHanded -> Res.string.preset_left
     PadPreset.DpadOnly -> Res.string.preset_dpad
+    PadPreset.Racing -> Res.string.preset_racing
+    PadPreset.Fps -> Res.string.preset_fps
 }
 
 /**
@@ -253,6 +263,16 @@ fun LayoutEditorChrome(
                         )
                         if (selectedWidget.kind == WidgetKind.Button) {
                             ButtonOptions(selectedWidget, draft, onDraft, onCommit)
+                        }
+                        if (selectedWidget.kind == WidgetKind.Trigger || selectedWidget.kind == WidgetKind.Pedal) {
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                VynText(stringResource(Res.string.part_digital), style = t.body, modifier = Modifier.weight(1f))
+                                VynToggle(selectedWidget.digital, {
+                                    val next = PadEditing.setDigital(draft, selected, it)
+                                    onDraft(next)
+                                    onCommit(next)
+                                })
+                            }
                         }
                         if (selectedWidget.kind == WidgetKind.Wheel) {
                             WheelOptions(selectedWidget, draft, onDraft, onCommit)
@@ -600,8 +620,14 @@ private fun ModelsSheet(
         }
 
         VynText(stringResource(Res.string.layout_presets), style = t.caption, color = c.textSecondary)
+        val texts = PresetTexts(
+            brake = stringResource(Res.string.preset_text_brake),
+            gas = stringResource(Res.string.preset_text_gas),
+            sprint = stringResource(Res.string.preset_text_sprint),
+            melee = stringResource(Res.string.preset_text_melee),
+        )
         val apply = { preset: PadPreset ->
-            val next = PadLayouts.fromPreset(preset, draft.id, draft.name).copy(skin = draft.skin)
+            val next = PadLayouts.fromPreset(preset, draft.id, draft.name, texts).copy(skin = draft.skin)
             onDraft(next)
             onCommit(next)
         }

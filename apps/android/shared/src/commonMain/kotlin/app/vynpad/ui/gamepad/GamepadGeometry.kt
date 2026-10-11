@@ -205,7 +205,14 @@ class GamepadGeometry(val width: Float, val height: Float, val layout: PadLayout
     val triggerReach = 0.30f * h
 
     /** O gatilho vale de 0 (dedo no topo) a 1 (dedo a [triggerReach] abaixo do topo). */
-    fun triggerValue(part: TriggerPart, y: Float): Float = ((y - part.box.top) / (if (part.tall) part.box.height else triggerReach)).coerceIn(0f, 1f)
+    fun triggerValue(part: TriggerPart, y: Float): Float = if (part.widget.digital) {
+        1f
+    } else {
+        (
+            (y - part.box.top) /
+                (if (part.tall) part.box.height else triggerReach)
+            ).coerceIn(0f, 1f)
+    }
 
     // ---- Toque
 

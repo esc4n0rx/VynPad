@@ -136,7 +136,7 @@
     <string name="layout_delete">Excluir</string>
     <string name="layout_name_hint">Nome do layout</string>
     <string name="layout_save">Salvar</string>
-    <string name="layout_presets">Começar de um modelo</string>
+    <string name="layout_presets">Começar de um modo de jogo</string>
     <string name="layout_restore">Restaurar padrão</string>
     <string name="gamepad_layout">Layout</string>
     <string name="preset_default">Padrão</string>
@@ -205,4 +205,11 @@
     <string name="wheel_tilt">Inclinar o celular</string>
     <string name="wheel_deadzone">Zona morta central</string>
     <string name="wheel_axis">Controla</string>
+    <string name="preset_racing">Corrida (volante)</string>
+    <string name="preset_fps">FPS (tiro)</string>
+    <string name="preset_text_brake">FREIO</string>
+    <string name="preset_text_gas">ACEL</string>
+    <string name="preset_text_sprint">CORRER</string>
+    <string name="preset_text_melee">FACA</string>
+    <string name="part_digital">Pressionar a fundo ao toque</string>
 </resources>

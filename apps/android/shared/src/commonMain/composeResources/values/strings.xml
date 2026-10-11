@@ -136,7 +136,7 @@
     <string name="layout_delete">Delete</string>
     <string name="layout_name_hint">Layout name</string>
     <string name="layout_save">Save</string>
-    <string name="layout_presets">Start from a preset</string>
+    <string name="layout_presets">Start from a game mode</string>
     <string name="layout_restore">Restore default</string>
     <string name="gamepad_layout">Layout</string>
     <string name="preset_default">Default</string>
@@ -205,4 +205,11 @@
     <string name="wheel_tilt">Tilt the phone</string>
     <string name="wheel_deadzone">Center deadzone</string>
     <string name="wheel_axis">Steers</string>
+    <string name="preset_racing">Racing (wheel)</string>
+    <string name="preset_fps">FPS (shooter)</string>
+    <string name="preset_text_brake">BRAKE</string>
+    <string name="preset_text_gas">GAS</string>
+    <string name="preset_text_sprint">SPRINT</string>
+    <string name="preset_text_melee">MELEE</string>
+    <string name="part_digital">Full press on touch</string>
 </resources>

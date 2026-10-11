@@ -133,6 +133,8 @@ data class PadWidget(
     /** Botão que trava: um toque o aperta e o próximo o solta (em vez de valer só enquanto o dedo está nele). */
     val latch: Boolean = false,
     val wheel: WheelConfig = WheelConfig(),
+    /** Gatilho ou pedal que vale 100% assim que o dedo toca (como um botão), em vez de depender da altura do dedo. */
+    val digital: Boolean = false,
 ) {
     /** O texto desenhado na peça: o escolhido pelo usuário ou o padrão do tipo. */
     fun displayLabel(): String = label.ifEmpty {
@@ -169,7 +171,17 @@ data class PadLayout(val id: String, val name: String, val widgets: List<PadWidg
 }
 
 /** Os modelos de partida oferecidos no editor. */
-enum class PadPreset { Default, Compact, LeftHanded, DpadOnly }
+enum class PadPreset { Default, Compact, LeftHanded, DpadOnly, Racing, Fps }
+
+/** Os textos que os modos prontos desenham nas peças, para o app passar no idioma do usuário. */
+data class PresetTexts(
+    val brake: String = "BRAKE",
+    val gas: String = "GAS",
+    val shiftDown: String = "−",
+    val shiftUp: String = "+",
+    val sprint: String = "SPRINT",
+    val melee: String = "MELEE",
+)
 
 object PadLayouts {
     const val DefaultId = "default"
@@ -213,6 +225,71 @@ object PadLayouts {
         PadWidget(PadIds.RightStick, WidgetKind.Stick, ElementSpec(0.68f, 0.75f), left = false),
     )
 
+    private fun PadWidget.moved(x: Float, y: Float, scale: Float = 1f) = copy(spec = spec.copy(x = x, y = y, scale = scale))
+
+    private fun PadWidget.hidden() = copy(spec = spec.copy(visible = false))
+
+    /**
+     * Corrida: o volante no centro (dedo e inclinação), freio e acelerador como pedais nas
+     * laterais, trocas de marcha nos ombros e os botões e o direcional pequenos, nos cantos de cima.
+     */
+    private fun racing(texts: PresetTexts): List<PadWidget> {
+        val base = DefaultWidgets.map { w ->
+            when (w.id) {
+                PadIds.LeftStick, PadIds.RightStick, PadIds.Guide, PadIds.LT, PadIds.RT -> w.hidden()
+                PadIds.LB -> w.copy(label = texts.shiftDown)
+                PadIds.RB -> w.copy(label = texts.shiftUp)
+                PadIds.Back -> w.moved(0.44f, 0.10f)
+                PadIds.Start -> w.moved(0.56f, 0.10f)
+                PadIds.Dpad -> w.moved(0.11f, 0.22f, 0.6f)
+                PadIds.Face -> w.moved(0.89f, 0.22f, 0.6f)
+                else -> w
+            }
+        }
+        return base + listOf(
+            PadWidget("wheel", WidgetKind.Wheel, ElementSpec(0.50f, 0.62f), left = true),
+            PadWidget("brake", WidgetKind.Pedal, ElementSpec(0.12f, 0.65f, scale = 0.8f), left = true, label = texts.brake),
+            PadWidget("gas", WidgetKind.Pedal, ElementSpec(0.88f, 0.65f, scale = 0.8f), left = false, label = texts.gas),
+        )
+    }
+
+    /**
+     * Tiro: analógicos grandes, gatilhos que disparam ao toque (mirar e atirar), direcional pequeno
+     * para trocar de arma e dois botões de correr (que trava) e golpear ao alcance dos polegares.
+     */
+    private fun fps(texts: PresetTexts): List<PadWidget> {
+        val base = DefaultWidgets.map { w ->
+            when (w.id) {
+                PadIds.Guide -> w.hidden()
+                PadIds.LT, PadIds.RT -> w.copy(digital = true)
+                PadIds.LeftStick -> w.moved(0.14f, 0.60f)
+                PadIds.RightStick -> w.moved(0.70f, 0.68f)
+                PadIds.Dpad -> w.moved(0.30f, 0.82f, 0.6f)
+                PadIds.Face -> w.moved(0.90f, 0.42f, 0.75f)
+                else -> w
+            }
+        }
+        return base + listOf(
+            PadWidget(
+                "sprint",
+                WidgetKind.Button,
+                ElementSpec(0.27f, 0.40f),
+                mask = PadButtons.LEFT_THUMB,
+                style = ButtonStyle.RoundLarge,
+                label = texts.sprint,
+                latch = true,
+            ),
+            PadWidget(
+                "melee",
+                WidgetKind.Button,
+                ElementSpec(0.62f, 0.40f),
+                mask = PadButtons.RIGHT_THUMB,
+                style = ButtonStyle.RoundLarge,
+                label = texts.melee,
+            ),
+        )
+    }
+
     /** Os botões do controle que uma peça [WidgetKind.Button] pode acionar, na ordem em que o editor os oferece. */
     val ButtonMasks: List<Int> = listOf(
         PadButtons.A, PadButtons.B, PadButtons.X, PadButtons.Y,
@@ -248,7 +325,12 @@ object PadLayouts {
     fun default(name: String = "Padrão"): PadLayout = PadLayout(DefaultId, name, DefaultWidgets)
 
     /** Monta o layout de um modelo, mantendo `id` e `name` de quem o recebe. */
-    fun fromPreset(preset: PadPreset, id: String, name: String): PadLayout {
+    fun fromPreset(preset: PadPreset, id: String, name: String, texts: PresetTexts = PresetTexts()): PadLayout {
+        when (preset) {
+            PadPreset.Racing -> return PadLayout(id, name, racing(texts))
+            PadPreset.Fps -> return PadLayout(id, name, fps(texts))
+            else -> Unit
+        }
         val specs: Map<String, ElementSpec> = when (preset) {
             PadPreset.Default -> DefaultSpecs
 
@@ -413,6 +495,8 @@ object PadEditing {
         range = config.range.coerceIn(PadLayouts.MIN_WHEEL_RANGE, PadLayouts.MAX_WHEEL_RANGE),
         deadzone = config.deadzone.coerceIn(0f, PadLayouts.MAX_WHEEL_DEADZONE),
     )
+
+    fun setDigital(layout: PadLayout, id: String, digital: Boolean): PadLayout = layout.mapWidget(id) { it.copy(digital = digital) }
 
     fun setLatch(layout: PadLayout, id: String, latch: Boolean): PadLayout = layout.mapWidget(id) { it.copy(latch = latch) }
 
