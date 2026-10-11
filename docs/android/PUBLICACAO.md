@@ -77,6 +77,8 @@ trocada pelo suporte se for perdida. Mesmo assim, não a perca.
 | `VIBRATE` | rumble do jogo e feedback de toque |
 | `CAMERA` | ler o QR de pareamento (opcional: o PIN funciona sem ela) |
 | `HIGH_SAMPLING_RATE_SENSORS` | gyro acima de 200 Hz para a mira por movimento |
+| `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_CONNECTED_DEVICE` | notificação "Conectado como P1" e processo vivo durante a sessão (ver seção 7) |
+| `POST_NOTIFICATIONS` | mostrar essa notificação (Android 13+); sem ela a sessão funciona, só não aparece o aviso |
 
 A seleção de imagem de fundo usa o seletor de fotos do sistema e **não** pede permissão de
 armazenamento.
@@ -120,9 +122,23 @@ and play with buttons, sticks, analog triggers, rumble and gyro aiming. Customiz
 game's banner as the background and keep one look per game. Everything stays on your local network: no
 account, no ads, no data collection. Requires VynPad on your PC (Windows).
 
-## 7. Foreground service (pendência da T-906)
+## 7. Serviço em primeiro plano
 
-Hoje a sessão não roda em serviço em primeiro plano: se o usuário sair do app, o Android pode suspender
-a rede. Antes de publicar é preciso decidir o tipo declarado no Play Console (por exemplo
-`specialUse`, com justificativa de "controle de jogo em tempo real"), pois a declaração é revisada pela
-Google. Veja o status em `docs/tasks/F9-android/T-910-release-android.md`.
+A sessão roda num serviço em primeiro plano (`SessionService`) enquanto o celular está conectado ou
+reconectando, com a notificação "Conectado como P1". Tipo declarado: `connectedDevice` (pré-requisito
+da permissão: `CHANGE_WIFI_MULTICAST_STATE`).
+
+No Play Console (Conteúdo do app > Permissões de serviço em primeiro plano) é preciso declarar o tipo
+`connectedDevice` com a justificativa "controle de jogo em tempo real: mantém a conexão e o envio dos
+comandos ao PC do usuário enquanto o app está em segundo plano" e, normalmente, um vídeo curto
+mostrando a notificação durante o uso.
+
+## 8. Gerar o release assinado
+
+Com a chave de upload criada (seção 2), `scripts/release-android.sh` roda os testes, o lint e gera o
+`.aab` e o APK assinados, pedindo a senha na hora, e confere a assinatura. O keystore fica fora do
+repositório (`*.jks` está no `.gitignore`). Antes de enviar à Play, instale o APK de release no celular
+e teste o pareamento por QR, a conexão e o volante: o R8 só atua no release.
+
+Atenção: um APK assinado com a chave de upload e distribuído fora da Play não é atualizado pela Play
+(a assinatura final é a da Google); quem o instalou precisa desinstalar antes.
