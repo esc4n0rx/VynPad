@@ -23,6 +23,11 @@ interface GamepadProps {
   report?: InputReportDto;
   /** Cor do slot como valor CSS (ex.: `slotColor(0)`); padrão: a cor de destaque. */
   color?: string;
+  /**
+   * Controle "vivo" (celular conectado): contorno e guide na cor do slot, anel de LED do jogador
+   * aceso e um brilho que respira. Sem isso o desenho fica neutro, como no slot vazio.
+   */
+  alive?: boolean;
   /** Elemento selecionado (modo `interactive`). */
   selected?: GamepadElement;
   onSelect?: (element: GamepadElement) => void;
@@ -38,6 +43,7 @@ export function Gamepad({
   slot,
   report,
   color,
+  alive = false,
   selected,
   onSelect,
   className,
@@ -75,6 +81,8 @@ export function Gamepad({
       role={interaction ? "group" : "img"}
       aria-label={t("gamepad.label")}
       data-mode={mode}
+      data-alive={alive || undefined}
+      data-slot={slot}
       style={style}
       className={cn("gamepad", className)}
     >

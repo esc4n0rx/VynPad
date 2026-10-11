@@ -327,6 +327,50 @@ html[data-corners="css"]:not([data-maximized="true"]) #root {
   stroke-width: 2.5;
 }
 
+/*
+ * Controle "vivo": com celular conectado o contorno e o guide pegam a cor do slot, o anel de LED
+ * acende o quadrante do jogador e o corpo respira com um brilho suave. Sem `data-alive` nada
+ * disso aparece (slot vazio e controles de lista continuam neutros).
+ */
+.gamepad .pad-led path {
+  fill: none;
+  stroke: var(--pad-color);
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+.gamepad[data-alive="true"] .pad-body {
+  stroke: var(--pad-color);
+  stroke-width: 2;
+  animation: pad-breathe 3.2s ease-in-out infinite;
+}
+.gamepad[data-alive="true"] [data-el="guide"] > .pad-shape {
+  fill: var(--pad-color);
+}
+.gamepad[data-alive="true"] [data-el="guide"] > .pad-ring {
+  stroke: var(--on-accent);
+}
+.gamepad[data-alive="true"] .pad-led path {
+  opacity: 0.18;
+}
+.gamepad[data-alive="true"][data-slot="0"] .pad-led [data-q="0"],
+.gamepad[data-alive="true"][data-slot="1"] .pad-led [data-q="1"],
+.gamepad[data-alive="true"][data-slot="2"] .pad-led [data-q="2"],
+.gamepad[data-alive="true"][data-slot="3"] .pad-led [data-q="3"] {
+  opacity: 1;
+  filter: drop-shadow(0 0 3px var(--pad-color));
+}
+@keyframes pad-breathe {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px color-mix(in srgb, var(--pad-color) 35%, transparent));
+  }
+  50% {
+    filter: drop-shadow(0 0 9px color-mix(in srgb, var(--pad-color) 70%, transparent));
+  }
+}
+
 /* Versão compacta: sem letras nem detalhes finos. */
 .gamepad[data-mode="mini"] [data-detail] {
   display: none;

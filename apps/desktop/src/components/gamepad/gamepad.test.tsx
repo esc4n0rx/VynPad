@@ -222,3 +222,15 @@ describe("ticker", () => {
     expect(cancel).toHaveBeenCalled();
   });
 });
+
+describe("controle vivo", () => {
+  it("só marca como vivo quando pedido e expõe o slot para o anel de LED", () => {
+    const { container, rerender } = render(<Gamepad mode="mini" slot={2} report={undefined} />);
+    const wrapper = container.querySelector(".gamepad") as HTMLElement;
+    expect(wrapper.hasAttribute("data-alive")).toBe(false);
+    rerender(<Gamepad mode="mini" slot={2} report={undefined} alive />);
+    expect(wrapper.getAttribute("data-alive")).toBe("true");
+    expect(wrapper.getAttribute("data-slot")).toBe("2");
+    expect(wrapper.querySelectorAll(".pad-led path")).toHaveLength(4);
+  });
+});

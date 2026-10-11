@@ -4,7 +4,7 @@
 // final feita à mão (o original gerado está em `source/app-icon.original.png`). Para refazer
 // os .ico/.icns/PNGs a partir dela: `pnpm tauri icon src-tauri/icons/source/app-icon.png`.
 // Uso deste script: `pnpm icons`.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Resvg } from "@resvg/resvg-js";
@@ -20,20 +20,17 @@ function rasterize(svg, size) {
   return new Resvg(svg, { fitTo: { mode: "width", value: size } }).render().asPng();
 }
 
-// Bandeja: o gamepad em branco (fica bem sobre a barra escura do Windows), sem fundo; o estado
-// vai num selo no canto. Os tamanhos cobrem 100% a 200%+ de escala (16/24/32 px) e o 256 do ICO.
-const GAMEPAD =
-  "M240 78C200 78 170 70 140 74C96 80 70 120 52 190C40 238 44 276 70 282C96 288 112 262 132 232C148 210 170 208 190 208L290 208C310 208 332 210 348 232C368 262 384 288 410 282C436 276 440 238 428 190C410 120 384 80 340 74C310 70 280 78 240 78Z";
-const HOLES =
-  '<circle cx="138" cy="124" r="22"/><circle cx="292" cy="172" r="22"/><path d="M178 148h20v18h18v20h-18v18h-20v-18h-18v-20h18z" transform="translate(-2 -4)"/><circle cx="342" cy="98" r="11"/><circle cx="342" cy="150" r="11"/><circle cx="316" cy="124" r="11"/><circle cx="368" cy="124" r="11"/>';
+// Bandeja: o próprio ícone do app (`source/app-icon.png`, o quadrado azul com o gamepad branco),
+// para a bandeja e o app terem a mesma identidade; o estado vai num selo no canto. Os tamanhos
+// cobrem 100% a 200%+ de escala (16/24/32 px) e o 256 do ICO.
+const appIcon = readFileSync(join(source, "app-icon.png")).toString("base64");
 
 function trayIcon(badge) {
   const dot = badge
-    ? `<circle cx="392" cy="268" r="60" fill="${badge}" stroke="#1C1C1E" stroke-width="14"/>`
+    ? `<circle cx="780" cy="780" r="230" fill="${badge}" stroke="#1C1C1E" stroke-width="50"/>`
     : "";
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="30 -29 420 420">
-    <path d="${GAMEPAD}" fill="#FFFFFF"/>
-    <g fill="#1C1C1E" fill-opacity="0.9">${HOLES}</g>${dot}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024">
+    <image width="1024" height="1024" xlink:href="data:image/png;base64,${appIcon}"/>${dot}</svg>`;
 }
 
 const variants = { normal: undefined, active: "#30D158", error: "#FF453A" };

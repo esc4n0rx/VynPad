@@ -304,6 +304,7 @@ export function SlotCard(props: SlotCardProps) {
               mode="live"
               slot={slot.slot}
               color={slotColor(slot.slot)}
+              alive={kind === "connected"}
               className={cn("w-full max-w-72 transition-opacity", reconnecting && "opacity-40")}
             />
           </div>

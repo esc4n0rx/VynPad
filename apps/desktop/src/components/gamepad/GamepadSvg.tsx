@@ -5,6 +5,14 @@ import type { GamepadElement } from "./elements";
 /** Letras gravadas nos botões (não são texto traduzível). */
 const GLYPH = { a: "A", b: "B", x: "X", y: "Y", lb: "LB", rb: "RB", lt: "LT", rt: "RT" } as const;
 
+/** Quatro arcos de 70° ao redor do guide (raio 21), na ordem P1 (alto-esq.), P2, P3, P4. */
+const LED_ARCS = [
+  "M219.3 98.4A21 21 0 0 1 236.4 81.3",
+  "M243.6 81.3A21 21 0 0 1 260.7 98.4",
+  "M260.7 105.6A21 21 0 0 1 243.6 122.7",
+  "M236.4 122.7A21 21 0 0 1 219.3 105.6",
+];
+
 interface Interaction {
   selected: GamepadElement | undefined;
   onSelect: (element: GamepadElement) => void;
@@ -252,6 +260,12 @@ export const GamepadSvg = memo(function GamepadSvg({ interaction, className }: G
       <Face id="btn-x" glyph={GLYPH.x} cx={316} cy={124} interaction={interaction} />
       <Face id="btn-b" glyph={GLYPH.b} cx={368} cy={124} interaction={interaction} />
 
+      {/* Anel de LED do guide, como o do X360: um quadrante por jogador; só acende com celular. */}
+      <g className="pad-led" pointerEvents="none">
+        {LED_ARCS.map((d, q) => (
+          <path key={q} data-q={q} d={d} />
+        ))}
+      </g>
       <El id="guide" interaction={interaction}>
         <circle className="pad-shape" cx={240} cy={102} r={14} />
         <circle className="pad-ring" cx={240} cy={102} r={7} data-detail />
