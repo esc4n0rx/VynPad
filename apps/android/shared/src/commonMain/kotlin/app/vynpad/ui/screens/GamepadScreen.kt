@@ -61,7 +61,6 @@ import app.vynpad.ui.components.rttColor
 import app.vynpad.ui.gamepad.GamepadSurface
 import app.vynpad.ui.gamepad.PadEditing
 import app.vynpad.ui.gamepad.PadEditorOverlay
-import app.vynpad.ui.gamepad.PadElement
 import app.vynpad.ui.gamepad.PadFeedback
 import app.vynpad.ui.haptics.LocalHaptics
 import app.vynpad.ui.theme.VynTheme
@@ -93,7 +92,7 @@ fun GamepadScreen(
     // Editor de layout: `draft` é o layout em edição (a tela já o mostra enquanto se arrasta);
     // só vai para os ajustes (e para o disco) quando o dedo solta.
     var editing by remember { mutableStateOf(false) }
-    var selected by remember { mutableStateOf<PadElement?>(null) }
+    var selected by remember { mutableStateOf<String?>(null) }
     var snap by remember { mutableStateOf(true) }
     var draft by remember(settings.activeLayout) { mutableStateOf(settings.activeLayout) }
     val layout = if (editing) draft else settings.activeLayout

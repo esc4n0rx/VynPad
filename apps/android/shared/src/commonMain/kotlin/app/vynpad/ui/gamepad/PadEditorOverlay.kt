@@ -32,10 +32,10 @@ import app.vynpad.ui.theme.VynTheme
 @Composable
 fun PadEditorOverlay(
     layout: PadLayout,
-    selected: PadElement?,
+    selected: String?,
     snap: Boolean,
-    onSelect: (PadElement?) -> Unit,
-    onMove: (PadElement, x: Float, y: Float, aspect: Float) -> Unit,
+    onSelect: (String?) -> Unit,
+    onMove: (String, x: Float, y: Float, aspect: Float) -> Unit,
     onMoveEnd: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -85,10 +85,10 @@ fun PadEditorOverlay(
 
         val dash = PathEffect.dashPathEffect(floatArrayOf(10.dp.toPx(), 7.dp.toPx()))
         val corner = CornerRadius(14.dp.toPx())
-        for (element in PadElement.entries) {
-            val b = g.bounds(element)
-            val isSelected = element == selected
-            val hidden = !layout.spec(element).visible
+        for (part in g.parts) {
+            val b = part.bounds
+            val isSelected = part.id == selected
+            val hidden = !part.visible
             if (!isSelected && !hidden) continue
             val pad = 6.dp.toPx()
             val topLeft = Offset(b.left - pad, b.top - pad)

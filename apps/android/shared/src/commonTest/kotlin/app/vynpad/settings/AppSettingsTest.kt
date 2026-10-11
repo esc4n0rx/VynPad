@@ -1,7 +1,7 @@
 package app.vynpad.settings
 
 import app.vynpad.input.RumbleStrength
-import app.vynpad.ui.gamepad.PadElement
+import app.vynpad.ui.gamepad.PadIds
 import app.vynpad.ui.gamepad.PadLayouts
 import app.vynpad.ui.theme.ThemeMode
 import kotlin.test.Test
@@ -14,7 +14,7 @@ class AppSettingsTest {
     @Test
     fun ida_e_volta_preserva_tudo() {
         val base = AppSettings(theme = ThemeMode.Light, rumbleStrength = RumbleStrength.Soft, hapticsEnabled = false)
-        val moved = base.activeLayout.with(PadElement.Dpad, base.activeLayout.spec(PadElement.Dpad).copy(x = 0.4f, opacity = 0.5f))
+        val moved = base.activeLayout.with(PadIds.Dpad, base.activeLayout.spec(PadIds.Dpad).copy(x = 0.4f, opacity = 0.5f))
         val s = base.withLayout(moved)
         assertEquals(s, AppSettings.decode(AppSettings.encode(s)))
     }
@@ -36,8 +36,8 @@ class AppSettingsTest {
     @Test
     fun layout_antigo_sem_todas_as_pecas_completa_com_o_padrao() {
         val s = AppSettings.decode("""{"layouts":[{"id":"x","name":"Velho","elements":{"Dpad":{"x":0.5,"y":0.5}}}],"activeLayoutId":"x"}""")
-        assertEquals(0.5f, s.activeLayout.spec(PadElement.Dpad).x)
-        assertEquals(PadLayouts.DefaultSpecs.getValue(PadElement.Face), s.activeLayout.spec(PadElement.Face))
+        assertEquals(0.5f, s.activeLayout.spec(PadIds.Dpad).x)
+        assertEquals(PadLayouts.DefaultSpecs.getValue(PadIds.Face), s.activeLayout.spec(PadIds.Face))
     }
 
     @Test

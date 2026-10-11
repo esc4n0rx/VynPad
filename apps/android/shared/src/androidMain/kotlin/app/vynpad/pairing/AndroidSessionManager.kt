@@ -172,8 +172,11 @@ internal class AndroidSessionManager(
         val intent = Intent().setClassName(appContext, SERVICE_CLASS)
         when (state) {
             is SessionState.Connecting -> intent.putExtra("phase", "connecting").putExtra("server", state.serverName)
+
             is SessionState.Connected -> intent.putExtra("phase", "connected").putExtra("server", state.serverName).putExtra("slot", state.slot)
+
             is SessionState.Reconnecting -> intent.putExtra("phase", "reconnecting").putExtra("server", state.serverName)
+
             SessionState.Idle, is SessionState.Ended -> {
                 runCatching { appContext.stopService(intent) }
                 return

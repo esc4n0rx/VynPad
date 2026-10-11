@@ -59,7 +59,7 @@ class PadSkinTest {
 
     @Test
     fun pecaEscondidaNaoEntraNaMedida() {
-        val hidden = PadElement.entries.fold(PadLayouts.default()) { l, e -> PadEditing.setVisible(l, e, false) }
+        val hidden = PadIds.BuiltIn.fold(PadLayouts.default()) { l, e -> PadEditing.setVisible(l, e, false) }
         assertNull(SkinContrast.worst(gridOf(0xFF454545.toInt()), GamepadGeometry(w, h, hidden), 0f, fill))
     }
 

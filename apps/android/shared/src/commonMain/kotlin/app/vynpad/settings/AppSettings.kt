@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import app.vynpad.input.RumbleSettings
 import app.vynpad.input.RumbleStrength
 import app.vynpad.ui.gamepad.PadLayout
+import app.vynpad.ui.gamepad.PadLayoutSerializer
 import app.vynpad.ui.gamepad.PadLayouts
 import app.vynpad.ui.haptics.HapticStrength
 import app.vynpad.ui.theme.ThemeMode
@@ -33,7 +34,10 @@ data class AppSettings(
     val slotAccent: Boolean = true,
     val rumbleEnabled: Boolean = true,
     val rumbleStrength: RumbleStrength = RumbleStrength.Strong,
-    val layouts: List<PadLayout> = listOf(PadLayouts.default()),
+    val layouts: List<
+        @Serializable(with = PadLayoutSerializer::class)
+        PadLayout,
+        > = listOf(PadLayouts.default()),
     val activeLayoutId: String = PadLayouts.DefaultId,
 ) {
     val rumble: RumbleSettings get() = RumbleSettings(rumbleEnabled, rumbleStrength)

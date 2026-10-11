@@ -205,33 +205,35 @@ private fun DrawScope.drawPad(
     padOpacity: Float,
 ) {
     // Cada peça some se o usuário a escondeu e usa a opacidade que ele escolheu.
-    fun part(element: PadElement, draw: DrawScope.() -> Unit) {
-        val spec = g.layout.spec(element)
-        if (spec.visible) layer(spec.opacity * padOpacity, g.bounds(element), draw)
-    }
+    for (part in g.parts) {
+        if (!part.visible) continue
+        val widget = part.widget
+        layer(widget.spec.opacity * padOpacity, part.bounds) {
+            when (part) {
+                is TriggerPart -> drawTrigger(part.box, if (widget.left) visuals.lt else visuals.rt, c, accent, labels[widget.displayLabel()])
 
-    // ---- Gatilhos e ombros
-    part(PadElement.LT) { drawTrigger(g.lt, visuals.lt, c, accent, labels["LT"]) }
-    part(PadElement.RT) { drawTrigger(g.rt, visuals.rt, c, accent, labels["RT"]) }
-    part(PadElement.LB) { drawShoulder(g.lb, presses[PadButtons.LEFT_SHOULDER], c, accent, labels["LB"]) }
-    part(PadElement.RB) { drawShoulder(g.rb, presses[PadButtons.RIGHT_SHOULDER], c, accent, labels["RB"]) }
+                is PillPart -> drawShoulder(part.box, presses[widget.mask], c, accent, labels[widget.displayLabel()])
 
-    // ---- Centro
-    part(PadElement.Back) { drawCenterButton(g.back, presses[PadButtons.BACK], c, accent, CenterGlyph.Back) }
-    part(PadElement.Guide) { drawCenterButton(g.guide, presses[PadButtons.GUIDE], c, accent, CenterGlyph.Guide) }
-    part(PadElement.Start) { drawCenterButton(g.start, presses[PadButtons.START], c, accent, CenterGlyph.Start) }
+                is RoundPart -> when (widget.mask) {
+                    PadButtons.BACK -> drawCenterButton(part.button, presses[widget.mask], c, accent, CenterGlyph.Back)
+                    PadButtons.GUIDE -> drawCenterButton(part.button, presses[widget.mask], c, accent, CenterGlyph.Guide)
+                    PadButtons.START -> drawCenterButton(part.button, presses[widget.mask], c, accent, CenterGlyph.Start)
+                    else -> drawRound(part.button.shape, presses[widget.mask], c, accent, labels[widget.displayLabel()])
+                }
 
-    // ---- Direcional e ABXY
-    part(PadElement.Dpad) { drawDpad(g.dpad, presses, c, accent) }
-    part(PadElement.Face) {
-        for (button in g.faceButtons) {
-            drawRound(button.shape, presses[button.mask], c, accent, labels[button.label])
+                is DpadPart -> drawDpad(part.zone, presses, c, accent)
+
+                is FacePart -> for (button in part.buttons) {
+                    drawRound(button.shape, presses[button.mask], c, accent, labels[button.label])
+                }
+
+                is StickPart -> {
+                    val clicked = presses[if (widget.left) PadButtons.LEFT_THUMB else PadButtons.RIGHT_THUMB]
+                    drawStick(part, g, if (widget.left) left else right, clicked, c, accent)
+                }
+            }
         }
     }
-
-    // ---- Analógicos
-    part(PadElement.LeftStick) { drawStick(g.leftStickZone, g, true, left, presses[PadButtons.LEFT_THUMB], c, accent) }
-    part(PadElement.RightStick) { drawStick(g.rightStickZone, g, false, right, presses[PadButtons.RIGHT_THUMB], c, accent) }
 }
 
 /** A imagem do jogo cobrindo a tela (corte central, sem distorcer) e o véu escuro por cima. */
@@ -385,20 +387,21 @@ private fun DrawScope.drawDpad(zone: Circle, presses: PressAnimators, c: VynColo
  * Analógico flutuante: em repouso é só uma base apagada na zona; ao tocar, a base nasce onde o
  * dedo pousou e o polegar acompanha o dedo; ao soltar, o polegar volta ao centro com mola.
  */
-private fun DrawScope.drawStick(zone: Circle, g: GamepadGeometry, left: Boolean, anim: StickAnimator, clicked: Float, c: VynColors, accent: Color) {
+private fun DrawScope.drawStick(part: StickPart, g: GamepadGeometry, anim: StickAnimator, clicked: Float, c: VynColors, accent: Color) {
+    val zone = part.zone
     val rest = Offset(zone.cx, zone.cy)
-    val travel = g.travelOf(left)
+    val travel = g.travelOf(part)
     val active = anim.active.value
     // Base de repouso (some quando o analógico está em uso).
     drawCircle(c.padWell.copy(alpha = c.padWell.alpha * (1f - 0.6f * active)), travel * 1.25f, rest)
     drawCircle(c.padEdge.copy(alpha = c.padEdge.alpha * (1f - active)), travel * 1.25f, rest, style = Stroke(1.5.dp.toPx()))
-    if (active < 0.99f) drawKnob(rest + anim.knob.value * (1f - active), g.knobOf(left), c, accent, clicked, 0f)
+    if (active < 0.99f) drawKnob(rest + anim.knob.value * (1f - active), g.knobOf(part), c, accent, clicked, 0f)
 
     if (active > 0.01f) {
         val origin = anim.origin
         drawCircle(accent.copy(alpha = 0.10f * active), travel * 1.25f, origin)
         drawCircle(accent.copy(alpha = 0.55f * active), travel * 1.25f, origin, style = Stroke(2.dp.toPx()))
-        drawKnob(origin + anim.knob.value, g.knobOf(left), c, accent, clicked, active)
+        drawKnob(origin + anim.knob.value, g.knobOf(part), c, accent, clicked, active)
     }
 }
 

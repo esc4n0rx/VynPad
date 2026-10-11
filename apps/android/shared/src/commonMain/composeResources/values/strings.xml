@@ -153,6 +153,7 @@
     <string name="el_lt">LT trigger</string>
     <string name="el_lb">LB bumper</string>
     <string name="el_rb">RB bumper</string>
+    <string name="el_custom">Part</string>
     <string name="el_rt">RT trigger</string>
     <string name="stick_mode">Behavior</string>
     <string name="stick_floating">Floating</string>

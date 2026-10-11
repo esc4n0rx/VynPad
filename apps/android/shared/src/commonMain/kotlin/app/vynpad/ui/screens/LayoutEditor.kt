@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import app.vynpad.resources.Res
 import app.vynpad.resources.el_back
+import app.vynpad.resources.el_custom
 import app.vynpad.resources.el_dpad
 import app.vynpad.resources.el_face
 import app.vynpad.resources.el_guide
@@ -85,27 +86,31 @@ import app.vynpad.ui.components.VynText
 import app.vynpad.ui.components.VynTextField
 import app.vynpad.ui.components.VynToggle
 import app.vynpad.ui.gamepad.PadEditing
-import app.vynpad.ui.gamepad.PadElement
+import app.vynpad.ui.gamepad.PadIds
 import app.vynpad.ui.gamepad.PadLayout
 import app.vynpad.ui.gamepad.PadLayouts
 import app.vynpad.ui.gamepad.PadPreset
+import app.vynpad.ui.gamepad.PadWidget
 import app.vynpad.ui.gamepad.StickConfig
+import app.vynpad.ui.gamepad.WidgetKind
 import app.vynpad.ui.theme.VynTheme
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-fun PadElement.label(): StringResource = when (this) {
-    PadElement.LeftStick -> Res.string.el_left_stick
-    PadElement.RightStick -> Res.string.el_right_stick
-    PadElement.Dpad -> Res.string.el_dpad
-    PadElement.Face -> Res.string.el_face
-    PadElement.Back -> Res.string.el_back
-    PadElement.Guide -> Res.string.el_guide
-    PadElement.Start -> Res.string.el_start
-    PadElement.LT -> Res.string.el_lt
-    PadElement.LB -> Res.string.el_lb
-    PadElement.RB -> Res.string.el_rb
-    PadElement.RT -> Res.string.el_rt
+/** O nome da peça no editor: as do controle padrão têm o seu; as demais, um nome genérico. */
+fun PadWidget.label(): StringResource = when (id) {
+    PadIds.LeftStick -> Res.string.el_left_stick
+    PadIds.RightStick -> Res.string.el_right_stick
+    PadIds.Dpad -> Res.string.el_dpad
+    PadIds.Face -> Res.string.el_face
+    PadIds.Back -> Res.string.el_back
+    PadIds.Guide -> Res.string.el_guide
+    PadIds.Start -> Res.string.el_start
+    PadIds.LT -> Res.string.el_lt
+    PadIds.LB -> Res.string.el_lb
+    PadIds.RB -> Res.string.el_rb
+    PadIds.RT -> Res.string.el_rt
+    else -> Res.string.el_custom
 }
 
 private fun PadPreset.label(): StringResource = when (this) {
@@ -127,7 +132,7 @@ private fun PadPreset.label(): StringResource = when (this) {
 fun LayoutEditorChrome(
     settings: AppSettings,
     draft: PadLayout,
-    selected: PadElement?,
+    selected: String?,
     snap: Boolean,
     background: SkinBitmap?,
     aspect: Float,
@@ -140,6 +145,7 @@ fun LayoutEditorChrome(
 ) {
     val c = VynTheme.colors
     val t = VynTheme.typography
+    val selectedWidget = selected?.let(draft::widget)
     var modelsOpen by remember { mutableStateOf(false) }
     var skinOpen by remember { mutableStateOf(false) }
     // Escolher uma peça troca o painel do visual pelo painel dela.
@@ -165,7 +171,7 @@ fun LayoutEditorChrome(
                     VynToggle(snap, onSnap)
                 }
                 VynText(
-                    if (selected != null) stringResource(selected.label()) else stringResource(Res.string.layout_hint),
+                    if (selectedWidget != null) stringResource(selectedWidget.label()) else stringResource(Res.string.layout_hint),
                     style = t.caption,
                     color = c.textSecondary,
                     maxLines = 1,
@@ -174,8 +180,8 @@ fun LayoutEditorChrome(
         }
 
         // ---- Painel da peça escolhida
-        if (selected != null) {
-            val spec = draft.spec(selected)
+        if (selected != null && selectedWidget != null) {
+            val spec = selectedWidget.spec
             val onRight = spec.x < 0.5f
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 GlassCard(
@@ -189,7 +195,7 @@ fun LayoutEditorChrome(
                     base = c.windowSolid.copy(alpha = 0.88f),
                 ) {
                     Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        VynText(stringResource(selected.label()), style = t.bodyStrong, maxLines = 1)
+                        VynText(stringResource(selectedWidget.label()), style = t.bodyStrong, maxLines = 1)
                         VynText(stringResource(Res.string.layout_size), style = t.caption, color = c.textSecondary)
                         VynSlider(
                             value = spec.scale,
@@ -197,9 +203,8 @@ fun LayoutEditorChrome(
                             valueRange = PadLayouts.MIN_SCALE..PadLayouts.MAX_SCALE,
                             onValueChangeFinished = { onCommit(draft) },
                         )
-                        if (selected == PadElement.LeftStick || selected == PadElement.RightStick) {
-                            val left = selected == PadElement.LeftStick
-                            val stick = draft.stick(left)
+                        if (selectedWidget.kind == WidgetKind.Stick) {
+                            val stick = selectedWidget.stick
                             VynText(stringResource(Res.string.stick_mode), style = t.caption, color = c.textSecondary)
                             VynSegmented(
                                 options = listOf(
@@ -208,7 +213,7 @@ fun LayoutEditorChrome(
                                 ),
                                 selected = stick.floating,
                                 onSelect = {
-                                    val next = PadEditing.setStick(draft, left, stick.copy(floating = it))
+                                    val next = PadEditing.setStick(draft, selected, stick.copy(floating = it))
                                     onDraft(next)
                                     onCommit(next)
                                 },
@@ -216,7 +221,7 @@ fun LayoutEditorChrome(
                             VynText(stringResource(Res.string.stick_travel), style = t.caption, color = c.textSecondary)
                             VynSlider(
                                 value = stick.travelScale,
-                                onValueChange = { onDraft(PadEditing.setStick(draft, left, stick.copy(travelScale = it))) },
+                                onValueChange = { onDraft(PadEditing.setStick(draft, selected, stick.copy(travelScale = it))) },
                                 valueRange = PadLayouts.MIN_TRAVEL..PadLayouts.MAX_TRAVEL,
                                 onValueChangeFinished = { onCommit(draft) },
                             )
@@ -227,7 +232,7 @@ fun LayoutEditorChrome(
                             )
                             VynSlider(
                                 value = stick.deadzone,
-                                onValueChange = { onDraft(PadEditing.setStick(draft, left, stick.copy(deadzone = it))) },
+                                onValueChange = { onDraft(PadEditing.setStick(draft, selected, stick.copy(deadzone = it))) },
                                 valueRange = 0f..PadLayouts.MAX_DEADZONE,
                                 onValueChangeFinished = { onCommit(draft) },
                             )

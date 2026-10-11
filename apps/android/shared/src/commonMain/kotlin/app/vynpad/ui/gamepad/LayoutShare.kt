@@ -9,10 +9,17 @@ import kotlinx.serialization.json.Json
  * (que só existe neste aparelho), e a imagem de fundo embutida em Base64 (JPEG).
  */
 @Serializable
-data class LayoutPackage(val format: String = FORMAT, val version: Int = VERSION, val layout: PadLayout, val image: String? = null) {
+data class LayoutPackage(
+    val format: String = FORMAT,
+    val version: Int = VERSION,
+    @Serializable(with = PadLayoutSerializer::class) val layout: PadLayout,
+    val image: String? = null,
+) {
     companion object {
         const val FORMAT = "vynpad-layout"
-        const val VERSION = 1
+
+        /** 2: o layout é uma lista de widgets (o 1 tinha as 11 peças fixas e é migrado ao ler). */
+        const val VERSION = 2
 
         /** Acima disto o arquivo é recusado antes de ser lido (a imagem já vem reduzida). */
         const val MAX_BYTES = 12 * 1024 * 1024
@@ -54,19 +61,23 @@ fun PadLayout.sanitized(): PadLayout {
         travelScale = f(s.travelScale, PadLayouts.MIN_TRAVEL, PadLayouts.MAX_TRAVEL, 1f),
         deadzone = f(s.deadzone, 0f, PadLayouts.MAX_DEADZONE, 0f),
     )
+    val clean = widgets.distinctBy { it.id }.take(PadLayouts.MAX_WIDGETS).map { w ->
+        w.copy(
+            id = w.id.take(MAX_ID),
+            spec = w.spec.copy(
+                x = f(w.spec.x, 0f, 1f, 0.5f),
+                y = f(w.spec.y, 0f, 1f, 0.5f),
+                scale = f(w.spec.scale, PadLayouts.MIN_SCALE, PadLayouts.MAX_SCALE, 1f),
+                opacity = f(w.spec.opacity, PadLayouts.MIN_OPACITY, 1f, 1f),
+            ),
+            label = w.label.take(MAX_LABEL),
+            stick = stick(w.stick),
+        )
+    }
     return copy(
         name = name.trim().take(MAX_NAME).ifEmpty { "Layout" },
-        elements = PadElement.entries.associateWith { e ->
-            val s = spec(e)
-            s.copy(
-                x = f(s.x, 0f, 1f, 0.5f),
-                y = f(s.y, 0f, 1f, 0.5f),
-                scale = f(s.scale, PadLayouts.MIN_SCALE, PadLayouts.MAX_SCALE, 1f),
-                opacity = f(s.opacity, PadLayouts.MIN_OPACITY, 1f, 1f),
-            )
-        },
-        leftStick = stick(leftStick),
-        rightStick = stick(rightStick),
+        // Um arquivo sem nenhuma peça deixaria a tela vazia: volta ao controle padrão.
+        widgets = clean.ifEmpty { PadLayouts.DefaultWidgets },
         skin = skin.copy(
             veil = f(skin.veil, 0f, PadSkins.MAX_VEIL, PadSkins.DEFAULT_VEIL),
             padOpacity = f(skin.padOpacity, PadSkins.MIN_PAD_OPACITY, 1f, 1f),
@@ -77,3 +88,5 @@ fun PadLayout.sanitized(): PadLayout {
 }
 
 private const val MAX_NAME = 24
+private const val MAX_ID = 32
+private const val MAX_LABEL = 8

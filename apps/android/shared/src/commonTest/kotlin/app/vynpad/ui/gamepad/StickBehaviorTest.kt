@@ -85,8 +85,8 @@ class StickBehaviorTest {
     @Test
     fun ajusteDoEditorFicaNosLimites() {
         val l = PadEditing.setStick(PadLayouts.default(), false, StickConfig(travelScale = 9f, deadzone = 9f))
-        assertEquals(PadLayouts.MAX_TRAVEL, l.rightStick.travelScale)
-        assertEquals(PadLayouts.MAX_DEADZONE, l.rightStick.deadzone)
-        assertEquals(StickConfig(), l.leftStick)
+        assertEquals(PadLayouts.MAX_TRAVEL, l.stick(false).travelScale)
+        assertEquals(PadLayouts.MAX_DEADZONE, l.stick(false).deadzone)
+        assertEquals(StickConfig(), l.stick(true))
     }
 }

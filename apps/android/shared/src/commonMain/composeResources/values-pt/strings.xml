@@ -153,6 +153,7 @@
     <string name="el_lt">Gatilho LT</string>
     <string name="el_lb">Ombro LB</string>
     <string name="el_rb">Ombro RB</string>
+    <string name="el_custom">Peça</string>
     <string name="el_rt">Gatilho RT</string>
     <string name="stick_mode">Comportamento</string>
     <string name="stick_floating">Flutuante</string>

@@ -71,7 +71,7 @@ class TouchRouter(
     private class ButtonHold(var mask: Int) : Hold
 
     private class StickHold(
-        val left: Boolean,
+        val part: StickPart,
         /** Centro do analógico: onde o dedo pousou (flutuante) ou o meio da zona (fixo). */
         val origin: Offset,
         /** Onde o dedo pousou: o toque curto (L3) é medido a partir daqui, nos dois modos. */
@@ -80,6 +80,8 @@ class TouchRouter(
         val downAt: Long,
         val clickHeld: Boolean,
     ) : Hold {
+        val left get() = part.widget.left
+
         /** Deflexão enviada ao PC (já com a zona morta de toque). */
         var vx = 0f
         var vy = 0f
@@ -91,7 +93,8 @@ class TouchRouter(
         var atLimit = false
     }
 
-    private class TriggerHold(val left: Boolean) : Hold {
+    private class TriggerHold(val part: TriggerPart) : Hold {
+        val left get() = part.widget.left
         var value = 0f
     }
 
@@ -108,12 +111,12 @@ class TouchRouter(
 
             is Hit.Stick -> {
                 // Um analógico só tem um dedo: o segundo toque na mesma zona é ignorado.
-                if (holds.values.any { it is StickHold && it.left == hit.left }) return
-                val index = if (hit.left) 0 else 1
-                val config = g.layout.stick(hit.left)
-                val rest = g.stickRest(hit.left)
+                if (holds.values.any { it is StickHold && it.part.id == hit.part.id }) return
+                val index = if (hit.part.widget.left) 0 else 1
+                val config = hit.part.widget.stick
+                val rest = hit.part.zone
                 StickHold(
-                    left = hit.left,
+                    part = hit.part,
                     origin = if (config.floating) Offset(x, y) else Offset(rest.cx, rest.cy),
                     downPoint = Offset(x, y),
                     deadzone = config.deadzone,
@@ -123,9 +126,9 @@ class TouchRouter(
             }
 
             is Hit.Trigger -> {
-                if (holds.values.any { it is TriggerHold && it.left == hit.left }) return
-                TriggerHold(hit.left).also {
-                    it.value = g.triggerValue(hit.left, y)
+                if (holds.values.any { it is TriggerHold && it.part.id == hit.part.id }) return
+                TriggerHold(hit.part).also {
+                    it.value = g.triggerValue(hit.part, y)
                     feedback.press()
                 }
             }
@@ -155,7 +158,7 @@ class TouchRouter(
                 val dx = x - hold.origin.x
                 val dy = y - hold.origin.y
                 val length = hypot(dx, dy)
-                val travel = g.travelOf(hold.left)
+                val travel = g.travelOf(hold.part)
                 val scale = if (length > travel) travel / length else 1f
                 hold.kx = dx * scale / travel
                 hold.ky = dy * scale / travel
@@ -169,7 +172,7 @@ class TouchRouter(
             }
 
             is TriggerHold -> {
-                val value = g.triggerValue(hold.left, y)
+                val value = g.triggerValue(hold.part, y)
                 if (crossed(hold.value, value, 0.5f) || crossed(hold.value, value, 0.98f)) feedback.detent()
                 hold.value = value
             }
@@ -217,7 +220,7 @@ class TouchRouter(
                     val axisX = (hold.vx.coerceIn(-1f, 1f) * AXIS_MAX).roundToInt()
                     // O eixo Y do XInput é positivo para cima; o da tela é positivo para baixo.
                     val axisY = (-hold.vy.coerceIn(-1f, 1f) * AXIS_MAX).roundToInt()
-                    val travel = g.travelOf(hold.left)
+                    val travel = g.travelOf(hold.part)
                     val visual = StickVisual(hold.origin, Offset(hold.kx * travel, hold.ky * travel))
                     if (hold.left) {
                         lx = axisX

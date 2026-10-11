@@ -111,14 +111,14 @@ object SkinContrast {
      * Pior contraste entre o corpo das peças visíveis (`fillLuma`) e a imagem sob elas depois do
      * véu; `null` se não há peça visível. Devolve a peça e a razão.
      */
-    fun worst(luma: LumaGrid, g: GamepadGeometry, veil: Float, fillLuma: Float): Pair<PadElement, Float>? {
-        var worst: Pair<PadElement, Float>? = null
-        for (element in PadElement.entries) {
-            if (!g.layout.spec(element).visible) continue
-            val b = g.bounds(element)
+    fun worst(luma: LumaGrid, g: GamepadGeometry, veil: Float, fillLuma: Float): Pair<String, Float>? {
+        var worst: Pair<String, Float>? = null
+        for (part in g.parts) {
+            if (!part.visible) continue
+            val b = part.bounds
             val bg = luma.mean(b.left / g.width, b.top / g.height, b.right / g.width, b.bottom / g.height) * (1f - veil)
             val r = ratio(fillLuma, bg)
-            if (worst == null || r < worst.second) worst = element to r
+            if (worst == null || r < worst.second) worst = part.id to r
         }
         return worst
     }
