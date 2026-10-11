@@ -1,6 +1,7 @@
 package app.vynpad.pairing
 
 import android.content.Context
+import android.content.Intent
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Build
@@ -75,6 +76,11 @@ internal class AndroidSessionManager(
 
     private val rumble = RumbleVibrator(appContext, scope)
     private var rumbleSettings = RumbleSettings()
+
+    init {
+        // Serviço em primeiro plano enquanto há sessão (conectada, conectando ou reconectando).
+        scope.launch { state.collect(::syncForegroundService) }
+    }
 
     private val lock = Any()
     private var connection: ControlConnection? = null
@@ -158,6 +164,24 @@ internal class AndroidSessionManager(
                 override fun onClosed(reason: String) = handleClosed(conn, server, reason)
             },
         )
+    }
+
+    // ---- Serviço em primeiro plano ---------------------------------------------------------
+
+    private fun syncForegroundService(state: SessionState) {
+        val intent = Intent().setClassName(appContext, SERVICE_CLASS)
+        when (state) {
+            is SessionState.Connecting -> intent.putExtra("phase", "connecting").putExtra("server", state.serverName)
+            is SessionState.Connected -> intent.putExtra("phase", "connected").putExtra("server", state.serverName).putExtra("slot", state.slot)
+            is SessionState.Reconnecting -> intent.putExtra("phase", "reconnecting").putExtra("server", state.serverName)
+            SessionState.Idle, is SessionState.Ended -> {
+                runCatching { appContext.stopService(intent) }
+                return
+            }
+        }
+        // Falha se o app estiver em segundo plano sem o serviço já ativo: a sessão segue, só sem a notificação.
+        runCatching { appContext.startForegroundService(intent) }
+            .onFailure { Log.w(TAG, "serviço em primeiro plano não iniciou: $it") }
     }
 
     // ---- Motor de envio -------------------------------------------------------------------
@@ -365,6 +389,7 @@ internal class AndroidSessionManager(
 
     private companion object {
         const val UNKNOWN_BATTERY = 255
+        const val SERVICE_CLASS = "app.vynpad.android.SessionService"
     }
 }
 
