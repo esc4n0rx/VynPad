@@ -5,7 +5,28 @@ import { getDictionary, intlLocale } from "@/i18n";
 import { fmt, isLocale } from "@/i18n/config";
 
 /** A data em que o texto da política foi revisado pela última vez. */
-const UPDATED = "2026-10-06";
+const UPDATED = "2026-10-11";
+
+/** Contato de suporte e privacidade (o mesmo informado no Google Play Console). */
+const SUPPORT_EMAIL = "matheusxpcamper@gmail.com";
+
+/** Troca o `{email}` do texto por um link de e-mail. */
+function withEmail(text: string) {
+  const [before, after] = text.split("{email}");
+  if (after === undefined) return text;
+  return (
+    <>
+      {before}
+      <a
+        href={`mailto:${SUPPORT_EMAIL}`}
+        className="rounded font-medium text-fg underline underline-offset-4 focus-ring"
+      >
+        {SUPPORT_EMAIL}
+      </a>
+      {after}
+    </>
+  );
+}
 
 export async function generateMetadata({
   params,
@@ -43,7 +64,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
             <section key={section.title}>
               <h2 className="text-xl font-semibold tracking-tight">{section.title}</h2>
               <p className="mt-3 text-[17px] leading-relaxed text-pretty text-fg-2">
-                {section.body}
+                {withEmail(section.body)}
               </p>
             </section>
           ))}

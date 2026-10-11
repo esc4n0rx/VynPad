@@ -158,6 +158,9 @@ export const ptBR = {
       requirements: "Windows 10 ou 11, 64 bits",
       button: "Baixar o instalador",
       altMsi: "Instalador MSI (para empresas)",
+      warningTitle: "O Windows pode mostrar um aviso na primeira vez",
+      warningBody:
+        "O instalador ainda não tem assinatura de código, então o Windows SmartScreen pode exibir “O Windows protegeu o computador”. Isso não significa que o arquivo seja perigoso: clique em “Mais informações” e depois em “Executar assim mesmo”. Para ter certeza de que o arquivo é o original, compare o SHA-256 abaixo com o do seu download. O aviso desaparece conforme o instalador ganha reputação.",
     },
     android: {
       name: "VynPad para Android",
@@ -246,12 +249,16 @@ export const ptBR = {
         body: "O app conversa apenas com o PC que você pareou, na sua rede local. A conexão de controle é cifrada com TLS e autenticada pelo certificado do PC fixado no pareamento, e o input viaja cifrado.",
       },
       {
+        title: "App para Windows",
+        body: "O VynPad no Windows guarda no seu computador, em %APPDATA%\\VynPad, o banco de dados, os perfis de controle e os pareamentos, e não envia telemetria. A única conexão com a internet é a procura de atualizações, feita no GitHub (releases do projeto), que você pode desligar em Configurações, Sobre. Como em qualquer download, o GitHub recebe o seu endereço IP. O app nunca instala atualização sozinho.",
+      },
+      {
         title: "Dados guardados no seu aparelho",
         body: "O pareamento (o token fica protegido pelo Android Keystore), as suas configurações, os layouts do controle e as imagens que você escolher como fundo. As imagens ficam só no aparelho e saem dele apenas se você exportar um layout. Backup na nuvem e transferência entre aparelhos estão desligados. Desinstalar o app apaga tudo.",
       },
       {
         title: "Permissões do app Android",
-        body: "Câmera: usada somente para ler o QR de pareamento; nenhuma imagem é gravada ou enviada, e o pareamento por PIN funciona sem ela. Vibração: rumble do jogo e retorno de toque. Rede e Wi-Fi: falar com o PC e descobri-lo na rede local. Sensores: giroscópio e acelerômetro, só enquanto o gyro está ligado no PC. A seleção de imagem de fundo usa o seletor de fotos do sistema e não pede acesso ao armazenamento.",
+        body: "Câmera: usada somente para ler o QR de pareamento; nenhuma imagem é gravada ou enviada, e o pareamento por PIN funciona sem ela. Vibração: rumble do jogo e retorno de toque. Rede e Wi-Fi: falar com o PC e descobri-lo na rede local. Notificações e serviço em primeiro plano: mostram o aviso “Conectado como P1” enquanto a sessão está ativa, para o Android não encerrar a conexão com o PC; tudo local, nada é enviado. Sensores: giroscópio e acelerômetro. Eles vão ao PC só enquanto o gyro está ligado lá; no volante por inclinação, a leitura do acelerômetro é usada apenas no aparelho e o PC recebe somente a posição do analógico. A seleção de imagem de fundo usa o seletor de fotos do sistema e não pede acesso ao armazenamento.",
       },
       {
         title: "Este site",
@@ -263,7 +270,7 @@ export const ptBR = {
       },
       {
         title: "Mudanças e contato",
-        body: "Se esta política mudar, a data acima será atualizada. Dúvidas podem ser enviadas pelo canal de suporte indicado na página do app na Google Play.",
+        body: "Se esta política mudar, a data acima será atualizada. Dúvidas e pedidos podem ser enviados para {email}.",
       },
     ],
   },

@@ -188,6 +188,12 @@ export function DownloadCards({ locale, dict, view }: DownloadCardsProps) {
                   </a>
                 )}
               </div>
+              <aside className="mt-4 rounded-2xl border border-warning/40 bg-control p-3">
+                <p className="text-xs font-semibold text-warning">{dict.windows.warningTitle}</p>
+                <p className="mt-1 text-xs leading-relaxed text-pretty text-fg-2">
+                  {dict.windows.warningBody}
+                </p>
+              </aside>
               {win.sha256 && <Checksum sha={win.sha256} labels={dict.meta} />}
               <p className="mt-4 text-xs text-pretty text-fg-3">{dict.verify}</p>
             </>

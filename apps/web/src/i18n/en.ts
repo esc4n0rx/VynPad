@@ -160,6 +160,9 @@ export const en: Dictionary = {
       requirements: "Windows 10 or 11, 64-bit",
       button: "Download the installer",
       altMsi: "MSI installer (for organizations)",
+      warningTitle: "Windows may show a warning the first time",
+      warningBody:
+        "The installer isn't code-signed yet, so Windows SmartScreen may show “Windows protected your PC”. That doesn't mean the file is unsafe: click “More info” and then “Run anyway”. To be sure the file is the original, compare the SHA-256 below with your download's. The warning goes away as the installer builds reputation.",
     },
     android: {
       name: "VynPad for Android",
@@ -249,12 +252,16 @@ export const en: Dictionary = {
         body: "The app talks only to the PC you paired, on your local network. The control connection is encrypted with TLS and authenticated by the PC's certificate pinned at pairing, and input travels encrypted.",
       },
       {
+        title: "Windows app",
+        body: "VynPad on Windows keeps its database, controller profiles and pairings on your computer, in %APPDATA%\\VynPad, and sends no telemetry. The only internet connection is the update check, made against GitHub (the project's releases), which you can turn off under Settings, About. As with any download, GitHub receives your IP address. The app never installs an update by itself.",
+      },
+      {
         title: "Data stored on your device",
         body: "The pairing (the token is protected by the Android Keystore), your settings, your controller layouts and the images you choose as backgrounds. Images stay on the device and leave it only if you export a layout. Cloud backup and device-to-device transfer are turned off. Uninstalling the app deletes everything.",
       },
       {
         title: "Android app permissions",
-        body: "Camera: used only to read the pairing QR code; no image is recorded or sent, and PIN pairing works without it. Vibration: game rumble and touch feedback. Network and Wi-Fi: talking to the PC and discovering it on the local network. Sensors: gyroscope and accelerometer, only while the gyro is turned on at the PC. Picking a background image uses the system photo picker and doesn't ask for storage access.",
+        body: "Camera: used only to read the pairing QR code; no image is recorded or sent, and PIN pairing works without it. Vibration: game rumble and touch feedback. Network and Wi-Fi: talking to the PC and discovering it on the local network. Notifications and foreground service: they show the “Connected as P1” notice while a session is active, so Android doesn't close the connection to the PC; everything is local and nothing is sent. Sensors: gyroscope and accelerometer. They go to the PC only while the gyro is turned on there; for the tilt steering wheel, the accelerometer reading is used only on the device and the PC receives just the stick position. Picking a background image uses the system photo picker and doesn't ask for storage access.",
       },
       {
         title: "This website",
@@ -266,7 +273,7 @@ export const en: Dictionary = {
       },
       {
         title: "Changes and contact",
-        body: "If this policy changes, the date above will be updated. Questions can be sent through the support channel listed on the app's Google Play page.",
+        body: "If this policy changes, the date above will be updated. Questions and requests can be sent to {email}.",
       },
     ],
   },
